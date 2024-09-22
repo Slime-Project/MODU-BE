@@ -56,6 +56,7 @@ module.exports = {
         }
       }
     ],
-    'import/no-unresolved': [2, { ignore: ['@/'] }]
+    'import/no-unresolved': [2, { ignore: ['@/'] }],
+    'import/prefer-default-export': 'off'
   }
 };
