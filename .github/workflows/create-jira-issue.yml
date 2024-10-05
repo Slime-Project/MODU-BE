@@ -21,10 +21,22 @@ jobs:
           ref: main
 
       - name: Issue Parser
-        uses: stefanbuck/github-issue-praser@v3
+        uses: stefanbuck/github-issue-parser@v3
         id: issue-parser
         with:
-          template-path: .github/ISSUE_TEMPLATE/issue_form.yml
+          template-path: .github/ISSUE_TEMPLATE/bug_report.yml
+
+      - name: Feature Request Parser
+        uses: stefanbuck/github-issue-parser@v3
+        id: feature-request-parser
+        with:
+          template-path: .github/ISSUE_TEMPLATE/feature_request.yml
+      
+      - name: Custom Issue Parser
+        uses: stefanbuck/github-issue-parser@v3
+        id: custom-issue-parser
+        with:
+          template-path: .github/ISSUE_TEMPLATE/custom_issue.yml
 
       - name: Log Issue Parser
         run: |
