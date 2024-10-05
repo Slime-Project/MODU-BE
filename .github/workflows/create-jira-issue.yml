@@ -21,7 +21,7 @@ jobs:
           ref: main
 
       - name: Issue Parser
-        uses: stefanbuck/github-issue-praser@v3
+        uses: stefanbuck/github-issue-parser@latest
         id: issue-parser
         with:
           template-path: .github/ISSUE_TEMPLATE/issue-form.yml
