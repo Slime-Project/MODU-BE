@@ -22,7 +22,7 @@ body:
       required: true
 
   - type: textarea
-    id: To Reproduce
+    id: to-reproduce
     attributes:
       label: 'To Reproduce'
       description: "Steps to reproduce the behavior:\n1. Go to '...'\n2. Click on '...'\n3. Scroll down to '...'\n4. See error."
@@ -30,7 +30,7 @@ body:
       required: true
       
   - type: textarea
-    id: Expected behavior
+    id: expected-behavior
     attributes:
       label: 'Expected behavior'
       description: A clear and concise description of what you expected to happen.
