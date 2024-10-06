@@ -1,7 +1,8 @@
-name: 'MODU Backend 이슈 생성'
-description: 'MODU Backend Repo에 이슈를 생성하며, 생성된 이슈는 Jira와 연동됩니다.'
-labels: [order]
-title: '이슈 이름을 작성해주세요'
+name: "Bug report"
+description: "Create a report to help us improve"
+title: "[BUG]: "
+labels: ["bug"]
+assignees: []
 body:
   - type: input
     id: parentKey
