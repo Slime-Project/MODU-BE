@@ -1,4 +1,4 @@
-name: Create Jira feature request
+name: Create Jira issue
 on:
   issues:
     types:
@@ -8,7 +8,7 @@ permissions:
   issues: write
 jobs:
   create-issue:
-    name: Create Jira feature request
+    name: Create Jira issue
     runs-on: ubuntu-latest
     steps:
       - name: Login
