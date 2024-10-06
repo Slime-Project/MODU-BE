@@ -38,7 +38,7 @@ body:
     validations:
       required: true
 
-  - type: file
+  - type: image
     id: screenshots
     attributes:
       label: 'Screenshots'
