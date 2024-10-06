@@ -27,7 +27,7 @@ jobs:
         uses: stefanbuck/github-issue-praser@v3
         id: issue-parser
         with:
-          template-path: .github/ISSUE_TEMPLATE/issue-form.yml
+          template-path: .github/ISSUE_TEMPLATE/custom.yml
 
       - name: Log Issue Parser
         run: |
