@@ -38,22 +38,44 @@ body:
     validations:
       required: true
 
-  - type: textarea
-    id: tasks
+  - type: file
+    id: screenshots
     attributes:
-      label: '체크리스트(Tasks)'
-      description: '해당 이슈에 대해 필요한 작업 목록을 작성해주세요'
-      value: |
-        -[ ] Task1
-    validations:
-      required: true
-
-  - type: textarea
-    id: references
-    attributes:
-      label: '참조(References)'
-      description: '해당 이슈과 관련된 레퍼런스를 참조해주세요'
-      value: |
-        - Reference1
+      label: 'Screenshots'
+      description: 'If applicable, add screenshots to help explain your problem.'
     validations:
       required: false
+
+  - type: textarea
+    id: desktop
+    attributes:
+      label: 'Desktop'
+      description: 'please complete the following information'
+      value: |
+         - OS: [e.g. iOS]
+         - Browser [e.g. chrome, safari]
+         - Version [e.g. 22]
+    validations:
+      required: false
+
+  - type: textarea
+    id: smartphone
+    attributes:
+      label: 'Smartphone'
+      description: 'please complete the following information'
+      value: | 
+        - Device: [e.g. iPhone6]
+        - OS: [e.g. iOS8.1]
+        - Browser [e.g. stock browser, safari]
+        - Version [e.g. 22]
+    validations:
+      required: false
+
+      
+    - type: textarea
+      id: additional-context
+      attributes:
+        label: 'Additional context'
+        description: 'Add any other context about the problem here.'
+      validations:
+        required: false
