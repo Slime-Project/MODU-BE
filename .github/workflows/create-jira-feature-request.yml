@@ -27,7 +27,10 @@ jobs:
         uses: stefanbuck/github-issue-praser@v3
         id: issue-parser
         with:
-          template-path: .github/ISSUE_TEMPLATE/feature_request.yml
+          template-path: |
+            ${{ contains(github.event.issue.body, 'feature_request') && '.github/ISSUE_TEMPLATE/feature_request.yml' ||
+                contains(github.event.issue.body, 'custom') && '.github/ISSUE_TEMPLATE/custom.yml' ||
+                '.github/ISSUE_TEMPLATE/bug_report.yml' }}
 
       - name: Log Issue Parser
         run: |
