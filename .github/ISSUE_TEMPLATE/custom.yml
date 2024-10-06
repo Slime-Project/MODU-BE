@@ -13,7 +13,6 @@ body:
       required: true
 
   - type: textarea
-    attributes:
-      label: 'Description'
+    id: description
     validations:
       required: true
