@@ -70,7 +70,6 @@ body:
         - Version [e.g. 22]
     validations:
       required: false
-
       
     - type: textarea
       id: additional-context
