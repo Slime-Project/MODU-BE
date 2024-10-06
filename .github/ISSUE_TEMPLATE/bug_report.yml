@@ -38,11 +38,13 @@ body:
     validations:
       required: true
       
-  - type: markdown
+  - type: textarea
+    id: screenshots
     attributes:
-      value: |
-        **Screenshots**  
-        If applicable, add screenshots to help explain your problem.
+      label: 'Screenshots'
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
 
   - type: textarea
     id: desktop
