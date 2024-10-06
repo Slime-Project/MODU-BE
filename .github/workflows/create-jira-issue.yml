@@ -5,6 +5,7 @@ on:
       - opened
 permissions:
   contents: write
+  issues: write
 jobs:
   create-issue:
     name: Create Jira issue
