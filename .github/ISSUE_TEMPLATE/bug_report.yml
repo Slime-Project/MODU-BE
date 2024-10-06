@@ -25,7 +25,8 @@ body:
     id: to-reproduce
     attributes:
       label: 'To Reproduce'
-      description: "Steps to reproduce the behavior:\n1. Go to '...'\n2. Click on '...'\n3. Scroll down to '...'\n4. See error."
+      description: "Steps to reproduce the behavior:"
+      placehorder: '\n1. Go to '...'\n2. Click on '...'\n3. Scroll down to '...'\n4. See error.'
     validations:
       required: true
       
