@@ -20,6 +20,4 @@ export class LoginReqDto {
   @IsString()
   @IsNotEmpty()
   nickname: string;
-
-  test?: number;
 }
