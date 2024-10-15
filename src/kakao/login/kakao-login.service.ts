@@ -4,6 +4,7 @@ import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 
 import { GetTokenDto } from './dto/get-token.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UserInfoDto } from './dto/user-info.dto';
 
 @Injectable()
@@ -26,6 +27,23 @@ export class KakaoLoginService {
       }
     });
     return plainToInstance(GetTokenDto, data, { excludeExtraneousValues: true });
+  }
+
+  async refreshToken(refreshToken: string): Promise<RefreshTokenDto> {
+    const body = {
+      grant_type: 'authorization_code',
+      client_id: this.configService.get('KAKAO_REST_API_KEY'),
+      refresh_token: refreshToken,
+      client_secret: this.configService.get('KAKAO_CLIENT_SECRET')
+    };
+
+    const { data } = await axios.post(KakaoLoginService.tokenUrl, body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    return data;
   }
 
   static async getUserInfo(accessToken: string) {

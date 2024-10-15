@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Auth, User } from '@prisma/client';
@@ -8,6 +8,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
 
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
 import { JwtPayload, Token } from '@/types/auth.type';
 
@@ -34,6 +35,41 @@ export class AuthService {
         kakaoRefreshToken: hashedKaKaoRefreshToken
       }
     });
+  }
+
+  async update(id: number, data: UpdateAuthDto): Promise<Auth> {
+    return this.prismaService.auth.update({
+      where: { id },
+      data
+    });
+  }
+
+  async remove(id: number): Promise<Auth> {
+    return this.prismaService.auth.delete({
+      where: { id }
+    });
+  }
+
+  async findOne(userId: bigint, refreshToken: string): Promise<Auth> {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId,
+          refreshToken
+        }
+      }
+    });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    if (new Date() > auth.refreshTokenExp) {
+      this.remove(auth.id);
+      throw new UnauthorizedException('The refresh token has expired. Please log in again.');
+    }
+
+    return auth;
   }
 
   async createAccessToken(id: bigint, expMills: number) {
@@ -109,5 +145,45 @@ export class AuthService {
         refreshTokenExp
       }
     };
+  }
+
+  async refresh(id: bigint, refreshToken: string) {
+    const auth = await this.findOne(id, refreshToken);
+
+    if (!auth) {
+      throw new UnauthorizedException('You need to log in first');
+    }
+
+    const refreshedKakaoToken = await this.kakaoLoginService.refreshToken(auth.kakaoRefreshToken);
+    const expMills = AuthService.convertSecondsToMills(refreshedKakaoToken.expiresIn);
+    const { accessToken, exp } = await this.createAccessToken(id, expMills);
+
+    const updateAuthDto: UpdateAuthDto = {
+      kakaoAccessToken: refreshedKakaoToken.accessToken
+    };
+    const newToken: Token = {
+      accessToken,
+      exp
+    };
+
+    if (refreshedKakaoToken.refreshToken) {
+      const refreshTokenExpMills = AuthService.convertSecondsToMills(
+        refreshedKakaoToken.refreshTokenExpiresIn
+      );
+      const { refreshToken: newRefreshToken, refreshTokenExp } = await this.createRefreshToken(
+        id,
+        refreshTokenExpMills
+      );
+
+      updateAuthDto.kakaoRefreshToken = refreshedKakaoToken.refreshToken;
+      updateAuthDto.refreshToken = newRefreshToken;
+      updateAuthDto.refreshTokenExp = refreshTokenExp;
+
+      newToken.refreshToken = newRefreshToken;
+      newToken.refreshTokenExp = refreshTokenExp;
+    }
+
+    await this.update(auth.id, updateAuthDto);
+    return newToken;
   }
 }
