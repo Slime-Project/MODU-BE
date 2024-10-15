@@ -1,131 +1,113 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
-import { compare, hash } from 'bcrypt';
+import { Auth, User } from '@prisma/client';
 
-import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
 
-import { LoginReqDto } from './dto/login-req.dto';
+import { CreateAuthDto } from './dto/create-auth.dto';
+
+import { JwtPayload, Token } from '@/types/auth.type';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly kakaoLoginService: KakaoLoginService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly prismaService: PrismaService
   ) {}
 
-  async validateUser(loginReqDto: LoginReqDto): Promise<User> {
-    const { id, password } = loginReqDto;
+  async create(createAuthDto: CreateAuthDto): Promise<Auth> {
+    const hashedRefreshToken = createAuthDto.refreshToken;
+    const hashedKaKaoAccessToken = createAuthDto.kakaoAccessToken;
+    const hashedKaKaoRefreshToken = createAuthDto.kakaoRefreshToken;
 
-    const user = await this.userService.findOne(id);
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    const comparePassword = await compare(password, user.password);
-
-    if (!comparePassword) {
-      throw new UnauthorizedException('password is wrong');
-    }
-
-    return user;
+    return this.prismaService.auth.create({
+      data: {
+        ...createAuthDto,
+        refreshToken: hashedRefreshToken,
+        kakaoAccessToken: hashedKaKaoAccessToken,
+        kakaoRefreshToken: hashedKaKaoRefreshToken
+      }
+    });
   }
 
-  async createAccessToken(user: User) {
-    const payload = {
-      userId: user.id
+  async createAccessToken(id: bigint, expMills: number) {
+    const payload: JwtPayload = {
+      id
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: parseInt(this.configService.get('JWT_ACCESS_TOKEN_EXP'), 10)
+      expiresIn: expMills
     });
 
-    return accessToken;
+    return { accessToken, exp: AuthService.getExpDate(expMills) };
   }
 
-  async createRefreshToken(user: User) {
-    const payload = {
-      userId: user.id
+  async createRefreshToken(id: bigint, expMills: number) {
+    const payload: JwtPayload = {
+      id
     };
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
-      expiresIn: parseInt(this.configService.get('JWT_REFRESH_TOKEN_EXP'), 10)
+      expiresIn: expMills
     });
 
-    return refreshToken;
+    return { refreshToken, refreshTokenExp: AuthService.getExpDate(expMills) };
   }
 
-  getAccessTokenExpDate() {
-    const exp = parseInt(this.configService.get('JWT_ACCESS_TOKEN_EXP'), 10);
-    return new Date(Date.now() + exp);
+  private static convertSecondsToMills(seconds: number) {
+    return seconds * 1000;
   }
 
-  getRefreshTokenExpDate() {
-    const exp = parseInt(this.configService.get('JWT_REFRESH_TOKEN_EXP'), 10);
-    return new Date(Date.now() + exp);
+  private static getExpDate(expMills: number) {
+    return new Date(Date.now() + expMills);
   }
 
-  async setUserCurrentRefreshToken(id: string, refreshToken: string): Promise<User> {
-    const hashedRefreshToken = await hash(refreshToken, 10);
-    const refreshTokenExp = this.getRefreshTokenExpDate();
+  async login(code: string): Promise<{ user: User; token: Token }> {
+    const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
+    const expMills = AuthService.convertSecondsToMills(kakaoToken.expiresIn);
+    const { accessToken, exp } = await this.createAccessToken(kakaoUser.id, expMills);
+    const refreshTokenExpMills = AuthService.convertSecondsToMills(
+      kakaoToken.refreshTokenExpiresIn
+    );
+    const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
+      kakaoUser.id,
+      refreshTokenExpMills
+    );
+    const user = await this.userService.findOne(kakaoUser.id);
+    let userId: bigint;
 
-    return this.userService.update(id, {
-      currentRefreshToken: hashedRefreshToken,
-      currentRefreshTokenExp: refreshTokenExp
-    });
-  }
-
-  async login(loginReqDto: LoginReqDto) {
-    const user = await this.validateUser(loginReqDto);
-    const accessToken = await this.createAccessToken(user);
-    const refreshToken = await this.createRefreshToken(user);
-
-    const updatedUser = await this.setUserCurrentRefreshToken(user.id, refreshToken);
-
-    const loginResDto: LoginResDto = {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      nickname: updatedUser.nickname,
-      picture: updatedUser.picture
-    };
-
-    return {
-      user: loginResDto,
-      accessToken,
-      refreshToken
-    };
-  }
-
-  async compareUserRefreshToken(id: string, refreshToken: string) {
-    const user = await this.userService.findOne(id);
-
-    if (!user?.currentRefreshToken) {
-      return false;
+    if (!user) {
+      const { id } = await this.userService.create({ id: kakaoUser.id });
+      userId = id;
+    } else {
+      userId = user.id;
     }
 
-    const result = await compare(refreshToken, user.currentRefreshToken);
-
-    return result;
-  }
-
-  async refresh(id: string, refreshToken: string) {
-    const result = this.compareUserRefreshToken(id, refreshToken);
-
-    if (!result) {
-      throw new UnauthorizedException('You need to log in first');
-    }
-
-    const user = await this.userService.findOne(id);
-    const accessToken = await this.createAccessToken(user);
+    const createAuthDto: CreateAuthDto = {
+      userId,
+      refreshToken,
+      refreshTokenExp,
+      kakaoAccessToken: kakaoToken.accessToken,
+      kakaoRefreshToken: kakaoToken.refreshToken
+    };
+    this.create(createAuthDto);
 
     return {
-      accessToken
+      user,
+      token: {
+        accessToken,
+        exp,
+        refreshToken,
+        refreshTokenExp
+      }
     };
   }
 }
