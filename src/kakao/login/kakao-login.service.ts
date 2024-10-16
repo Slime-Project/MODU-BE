@@ -29,9 +29,9 @@ export class KakaoLoginService {
     return plainToInstance(GetTokenDto, data, { excludeExtraneousValues: true });
   }
 
-  async refreshToken(refreshToken: string): Promise<RefreshTokenDto> {
+  async refreshToken(refreshToken: string) {
     const body = {
-      grant_type: 'authorization_code',
+      grant_type: 'refresh_token',
       client_id: this.configService.get('KAKAO_REST_API_KEY'),
       refresh_token: refreshToken,
       client_secret: this.configService.get('KAKAO_CLIENT_SECRET')
@@ -39,11 +39,11 @@ export class KakaoLoginService {
 
     const { data } = await axios.post(KakaoLoginService.tokenUrl, body, {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
       }
     });
 
-    return data;
+    return plainToInstance(RefreshTokenDto, data, { excludeExtraneousValues: true });
   }
 
   static async getUserInfo(accessToken: string) {
