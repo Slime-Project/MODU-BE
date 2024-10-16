@@ -1,11 +1,11 @@
 import { Body, Controller, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+
+import { RefreshReq } from '@/auth/dto/refresh.dto';
 
 import { AuthService } from './auth.service';
 import { LoginReqDto } from './dto/login-req.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
-
-import { RefreshReq } from '@/types/auth.type';
 
 @Controller('auth')
 export class AuthController {
@@ -37,8 +37,12 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   @Post('refresh')
-  async refresh(@Req() req: RefreshReq, @Res({ passthrough: true }) res: Response) {
-    const { id } = req.user;
+  async refresh(
+    @Body() body: RefreshReq,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { id } = body;
     const refreshToken = req.cookies.refresh_token;
     const data = await this.authService.refresh(id, refreshToken);
 
