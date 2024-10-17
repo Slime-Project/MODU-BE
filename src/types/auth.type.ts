@@ -1,7 +1,12 @@
-import { Request } from 'express';
+type Token = {
+  accessToken: string;
+  exp: Date;
+  refreshToken?: string;
+  refreshTokenExp?: Date;
+};
 
-export interface RefreshReq extends Request {
-  user: {
-    email: string;
-  };
-}
+type JwtPayload = {
+  id: bigint;
+};
+
+export { Token, JwtPayload };

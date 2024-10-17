@@ -1,5 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AccessTokenGuard extends AuthGuard('access_token') {}
+export class AccessTokenGuard implements CanActivate {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService
+  ) {}
+
+  async canActivate(context: ExecutionContext) {
+    try {
+      const request = context.switchToHttp().getRequest();
+      const accessToken = request.cookies.access_token;
+
+      if (!accessToken) {
+        throw new UnauthorizedException('You need to log in first');
+      }
+
+      await this.jwtService.verify(accessToken, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET')
+      });
+      return true;
+    } catch (err) {
+      throw new UnauthorizedException('Invalid or expired access token');
+    }
+  }
+}
