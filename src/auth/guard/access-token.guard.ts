@@ -15,7 +15,7 @@ export class AccessTokenGuard implements CanActivate {
       const accessToken = request.cookies.access_token;
 
       if (!accessToken) {
-        throw new UnauthorizedException('You need to log in first');
+        throw new UnauthorizedException('Access token is missing');
       }
 
       await this.jwtService.verify(accessToken, {

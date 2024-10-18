@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
@@ -14,19 +14,23 @@ export class KakaoLoginService {
   private static readonly tokenUrl = 'https://kauth.kakao.com/oauth/token';
 
   async getToken(code: string) {
-    const body = {
-      grant_type: 'authorization_code',
-      client_id: this.configService.get('KAKAO_REST_API_KEY'),
-      redirect_uri: this.configService.get('KAKAO_REDIRECT_URL'),
-      code,
-      client_secret: this.configService.get('KAKAO_CLIENT_SECRET')
-    };
-    const { data } = await axios.post(KakaoLoginService.tokenUrl, body, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-      }
-    });
-    return plainToInstance(GetTokenDto, data, { excludeExtraneousValues: true });
+    try {
+      const body = {
+        grant_type: 'authorization_code',
+        client_id: this.configService.get('KAKAO_REST_API_KEY'),
+        redirect_uri: this.configService.get('KAKAO_REDIRECT_URL'),
+        code,
+        client_secret: this.configService.get('KAKAO_CLIENT_SECRET')
+      };
+      const { data } = await axios.post(KakaoLoginService.tokenUrl, body, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+        }
+      });
+      return plainToInstance(GetTokenDto, data, { excludeExtraneousValues: true });
+    } catch (error) {
+      throw new BadRequestException('Invalid code');
+    }
   }
 
   async refreshToken(refreshToken: string) {

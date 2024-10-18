@@ -9,4 +9,6 @@ type JwtPayload = {
   id: bigint;
 };
 
-export { Token, JwtPayload };
+type DecodedJWT = { id: bigint; iat: number; exp: number };
+
+export { Token, JwtPayload, DecodedJWT };

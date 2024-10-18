@@ -15,7 +15,7 @@ export class RefreshTokenGuard implements CanActivate {
       const refreshToken = request.cookies.refresh_token;
 
       if (!refreshToken) {
-        throw new UnauthorizedException('Refresh token is missing');
+        throw new UnauthorizedException('You need to log in first');
       }
 
       await this.jwtService.verify(refreshToken, {
