@@ -66,10 +66,10 @@ export class AuthController {
   })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
-  @Post('refresh')
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  @Post('token/reissue')
+  async reissueToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    const data = await this.authService.refresh(refreshToken);
+    const data = await this.authService.reissueToken(refreshToken);
 
     res.cookie('access_token', data.accessToken, {
       httpOnly: true,

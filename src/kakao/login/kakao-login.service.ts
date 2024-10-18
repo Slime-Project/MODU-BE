@@ -4,7 +4,7 @@ import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 
 import { GetTokenDto } from './dto/get-token.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ReissueTokenDto } from './dto/reissue-token.dto';
 import { UserInfoDto } from './dto/user-info.dto';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class KakaoLoginService {
     }
   }
 
-  async refreshToken(refreshToken: string) {
+  async reissueToken(refreshToken: string) {
     const body = {
       grant_type: 'refresh_token',
       client_id: this.configService.get('KAKAO_REST_API_KEY'),
@@ -47,7 +47,7 @@ export class KakaoLoginService {
       }
     });
 
-    return plainToInstance(RefreshTokenDto, data, { excludeExtraneousValues: true });
+    return plainToInstance(ReissueTokenDto, data, { excludeExtraneousValues: true });
   }
 
   static async getUserInfo(accessToken: string) {
