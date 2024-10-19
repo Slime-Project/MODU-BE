@@ -153,7 +153,7 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshToken: string) {
+  async reissueToken(refreshToken: string) {
     const { id } = await this.decodeRefreshToken(refreshToken);
     const auth = await this.findOne(id, refreshToken);
 
@@ -161,28 +161,28 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const refreshedKakaoToken = await this.kakaoLoginService.refreshToken(auth.kakaoRefreshToken);
-    const expMills = AuthService.convertSecondsToMills(refreshedKakaoToken.expiresIn);
+    const newKakaoToken = await this.kakaoLoginService.reissueToken(auth.kakaoRefreshToken);
+    const expMills = AuthService.convertSecondsToMills(newKakaoToken.expiresIn);
     const { accessToken, exp } = await this.createAccessToken(id, expMills);
 
     const updateAuthDto: UpdateAuthDto = {
-      kakaoAccessToken: refreshedKakaoToken.accessToken
+      kakaoAccessToken: newKakaoToken.accessToken
     };
     const newToken: Token = {
       accessToken,
       exp
     };
 
-    if (refreshedKakaoToken.refreshToken) {
+    if (newKakaoToken.refreshToken) {
       const refreshTokenExpMills = AuthService.convertSecondsToMills(
-        refreshedKakaoToken.refreshTokenExpiresIn
+        newKakaoToken.refreshTokenExpiresIn
       );
       const { refreshToken: newRefreshToken, refreshTokenExp } = await this.createRefreshToken(
         id,
         refreshTokenExpMills
       );
 
-      updateAuthDto.kakaoRefreshToken = refreshedKakaoToken.refreshToken;
+      updateAuthDto.kakaoRefreshToken = newKakaoToken.refreshToken;
       updateAuthDto.refreshToken = newRefreshToken;
       updateAuthDto.refreshTokenExp = refreshTokenExp;
 
