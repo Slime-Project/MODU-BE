@@ -25,7 +25,7 @@ export class AuthController {
     status: 400,
     description: 'Invalid code'
   })
-  @Post('login')
+  @Post('')
   async login(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
     const { user, token } = await this.authService.login(code);
 
