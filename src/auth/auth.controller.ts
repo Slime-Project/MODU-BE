@@ -14,11 +14,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({
-    summary: 'signup & login'
+    summary: 'Signup & Login'
   })
   @ApiResponse({
     status: 200,
-    description: 'success'
+    description: 'success',
+    type: LoginResDto
   })
   @ApiResponse({
     status: 400,
@@ -54,15 +55,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token'
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'expired refresh token'
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'You need to log in first'
+    description: 'Invalid or expired refresh token, or login required'
   })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
