@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 type Token = {
   accessToken: string;
   exp: Date;
@@ -9,6 +11,10 @@ type JwtPayload = {
   id: bigint;
 };
 
-type DecodedJWT = { id: bigint; iat: number; exp: number };
+type VerifyedJWT = { id: bigint; iat: number; exp: number };
 
-export { Token, JwtPayload, DecodedJWT };
+interface AuthReq extends Request {
+  id: bigint;
+}
+
+export { Token, JwtPayload, VerifyedJWT, AuthReq };

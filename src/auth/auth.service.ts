@@ -10,7 +10,7 @@ import { UserService } from '@/user/user.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 
-import { DecodedJWT, JwtPayload, Token } from '@/types/auth.type';
+import { JwtPayload, Token } from '@/types/auth.type';
 
 @Injectable()
 export class AuthService {
@@ -98,17 +98,11 @@ export class AuthService {
     return { refreshToken, refreshTokenExp: AuthService.getExpDate(expMills) };
   }
 
-  async decodeRefreshToken(token: string): Promise<DecodedJWT> {
-    return this.jwtService.verify(token, {
-      secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET')
-    });
-  }
-
   private static convertSecondsToMills(seconds: number) {
     return seconds * 1000;
   }
 
-  private static getExpDate(expMills: number) {
+  static getExpDate(expMills: number) {
     return new Date(Date.now() + expMills);
   }
 
@@ -153,8 +147,7 @@ export class AuthService {
     };
   }
 
-  async reissueToken(refreshToken: string) {
-    const { id } = await this.decodeRefreshToken(refreshToken);
+  async reissueToken(refreshToken: string, id: bigint) {
     const auth = await this.findOne(id, refreshToken);
 
     if (!auth) {
