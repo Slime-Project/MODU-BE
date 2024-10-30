@@ -36,6 +36,7 @@
     "cookie-parser": "^1.4.7",
     "express": "^4.21.0",
     "express-basic-auth": "^1.2.1",
+    "jest-mock-extended": "^4.0.0-beta1",
     "multer": "^1.4.5-lts.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -90,6 +91,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    }
   }
 }

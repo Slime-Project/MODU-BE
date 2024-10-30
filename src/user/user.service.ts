@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
+import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -7,9 +8,9 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(user: User): Promise<User> {
-    return this.prismaService.user.create({
-      data: user
+  async create(data: User, prisma?: Omit<PrismaClient, ITXClientDenyList>): Promise<User> {
+    return (prisma || this.prismaService).user.create({
+      data
     });
   }
 

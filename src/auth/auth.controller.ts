@@ -28,8 +28,8 @@ export class AuthController {
     description: 'Invalid code'
   })
   @Post('')
-  async login(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.login(code);
+  async create(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.create(code);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,
