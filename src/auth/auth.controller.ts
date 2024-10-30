@@ -2,13 +2,13 @@ import { Body, Controller, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/c
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 
 import { AuthService } from './auth.service';
-import { LoginReqDto } from './dto/login-req.dto';
+import { CreateAuthReqDto } from './dto/create-auth-req.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
-import { AuthReq } from '@/types/auth.type';
+import { ReissuTokenReq } from '@/types/auth.type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -21,14 +21,14 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'success',
-    type: LoginResDto
+    type: CreateAuthResDto
   })
   @ApiResponse({
     status: 400,
     description: 'Invalid code'
   })
   @Post('')
-  async create(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
+  async create(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
     const { user, token } = await this.authService.create(code);
 
     res.cookie('access_token', token.accessToken, {
@@ -44,7 +44,7 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    const body: LoginResDto = { id: Number(user.id) };
+    const body: CreateAuthResDto = { id: Number(user.id) };
     return body;
   }
 
@@ -62,7 +62,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   @Post('token/reissue')
-  async reissueToken(@Req() req: AuthReq, @Res({ passthrough: true }) res: Response) {
+  async reissueToken(@Req() req: ReissuTokenReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     const data = await this.authService.reissueToken(refreshToken, req.id);
 

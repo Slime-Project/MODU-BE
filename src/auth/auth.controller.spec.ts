@@ -5,8 +5,8 @@ import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { AuthService } from '@/auth/auth.service';
-import { LoginReqDto } from '@/auth/dto/login-req.dto';
-import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 
 import { AuthController } from './auth.controller';
 
@@ -42,7 +42,7 @@ describe('AuthController', () => {
         refreshToken: 'mockRefreshToken',
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
-      const reqBody: LoginReqDto = { code };
+      const reqBody: CreateAuthReqDto = { code };
       const res = {
         cookie: jest.fn()
       } as unknown as Response;
@@ -72,14 +72,14 @@ describe('AuthController', () => {
         refreshToken: 'refreshToken',
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
-      const reqBody: LoginReqDto = { code };
+      const reqBody: CreateAuthReqDto = { code };
       const res = {
         cookie: jest.fn()
       } as unknown as Response;
       const resBody = { id: Number(user.id) };
 
       service.create.mockResolvedValue({ user, token });
-      const result: LoginResDto = await controller.create(reqBody, res);
+      const result: CreateAuthResDto = await controller.create(reqBody, res);
       expect(result).toEqual(resBody);
     });
   });
