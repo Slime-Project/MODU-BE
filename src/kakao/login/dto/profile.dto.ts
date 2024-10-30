@@ -9,13 +9,13 @@ export class ProfileDto {
 
   @IsString()
   @IsNotEmpty()
-  @Expose({ name: 'profile_image' })
-  readonly profileImage: string;
+  @Expose({ name: 'profile_image_url' })
+  readonly profileImageUrl: string;
 
   @IsString()
   @IsNotEmpty()
-  @Expose({ name: 'thumbnail_image' })
-  readonly thumbnailImage: string;
+  @Expose({ name: 'thumbnail_image_url' })
+  readonly thumbnailImageUrl: string;
 
   @IsString()
   @IsNotEmpty()

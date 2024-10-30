@@ -1,19 +1,35 @@
 import { Body, Controller, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
-import { RefreshReq } from '@/auth/dto/refresh.dto';
+import { LoginResDto } from '@/auth/dto/login-res.dto';
 
 import { AuthService } from './auth.service';
 import { LoginReqDto } from './dto/login-req.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
+import { AuthReq } from '@/types/auth.type';
+
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  async login(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.login(code);
+  @ApiOperation({
+    summary: 'Signup & Login'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'success',
+    type: LoginResDto
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid code'
+  })
+  @Post('')
+  async create(@Body() { code }: LoginReqDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.create(code);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,
@@ -28,23 +44,27 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    return {
-      ...user,
-      id: user.id.toString()
-    };
+    const body: LoginResDto = { id: Number(user.id) };
+    return body;
   }
 
+  @ApiOperation({
+    summary: 'Reissue token'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'success'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token, or login required'
+  })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
-  @Post('refresh')
-  async refresh(
-    @Body() body: RefreshReq,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { id } = body;
+  @Post('token/reissue')
+  async reissueToken(@Req() req: AuthReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    const data = await this.authService.refresh(id, refreshToken);
+    const data = await this.authService.reissueToken(refreshToken, req.id);
 
     res.cookie('access_token', data.accessToken, {
       httpOnly: true,

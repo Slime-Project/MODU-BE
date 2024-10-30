@@ -30,5 +30,5 @@ export class GetTokenDto {
   @IsString()
   @IsNotEmpty()
   @Expose({ name: 'scope' })
-  readonly scope: string;
+  readonly scope?: string;
 }

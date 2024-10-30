@@ -1,8 +1,8 @@
-import { IsString, IsOptional, IsDate } from 'class-validator';
+import { IsString, IsOptional, IsDate, IsNotEmpty } from 'class-validator';
 
 export class UpdateAuthDto {
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   refreshToken?: string;
 
   @IsDate()
@@ -10,10 +10,10 @@ export class UpdateAuthDto {
   refreshTokenExp?: Date;
 
   @IsString()
-  @IsOptional()
-  kakaoAccessToken?: string;
+  @IsNotEmpty()
+  kakaoAccessToken: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   kakaoRefreshToken?: string;
 }

@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import { IsString, IsOptional, IsNotEmpty, IsIn, IsNumber } from 'class-validator';
 
-export class RefreshTokenDto {
+export class ReissueTokenDto {
   @IsIn(['bearer'])
   @IsNotEmpty()
   @Expose({ name: 'token_type' })

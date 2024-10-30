@@ -10,14 +10,14 @@ export class AccessTokenGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    const accessToken = request.cookies.access_token;
+
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token is missing');
+    }
+
     try {
-      const request = context.switchToHttp().getRequest();
-      const accessToken = request.cookies.access_token;
-
-      if (!accessToken) {
-        throw new UnauthorizedException('You need to log in first');
-      }
-
       await this.jwtService.verify(accessToken, {
         secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET')
       });
