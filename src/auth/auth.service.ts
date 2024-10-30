@@ -7,7 +7,6 @@ import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
 
-import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 
 import {
@@ -15,7 +14,8 @@ import {
   AccessTokenInfo,
   RefreshTokenInfo,
   TokensInfo,
-  ReissuedToken
+  ReissuedToken,
+  CreateAuth
 } from '@/types/auth.type';
 
 @Injectable()
@@ -71,7 +71,7 @@ export class AuthService {
       kakaoToken.refreshTokenExpiresIn
     );
     let user = await this.userService.findOne(BigInt(kakaoUser.id));
-    const createAuthDto: CreateAuthDto = {
+    const createAuth: CreateAuth = {
       userId: BigInt(kakaoUser.id),
       refreshToken,
       refreshTokenExp,
@@ -83,13 +83,13 @@ export class AuthService {
       user = await this.prismaService.$transaction(async prisma => {
         const createdUser = await this.userService.create({ id: BigInt(kakaoUser.id) }, prisma);
         await prisma.auth.create({
-          data: createAuthDto
+          data: createAuth
         });
         return createdUser;
       });
     } else {
       await this.prismaService.auth.create({
-        data: createAuthDto
+        data: createAuth
       });
     }
 

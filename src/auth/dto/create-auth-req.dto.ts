@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class LoginReqDto {
+export class CreateAuthReqDto {
   @ApiProperty({
     description: 'The authorization code included in the redirect URI',
     example:

@@ -5,7 +5,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Auth, User } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import { UpdateAuthDto } from '@/auth/dto/update-auth.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
@@ -16,7 +15,13 @@ import { UserService } from '@/user/user.service';
 
 import { AuthService } from './auth.service';
 
-import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/types/auth.type';
+import {
+  AccessTokenInfo,
+  CreateAuth,
+  RefreshTokenInfo,
+  ReissuedToken,
+  TokensInfo
+} from '@/types/auth.type';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -78,7 +83,7 @@ describe('AuthService', () => {
         ...accessTokenInfo,
         ...refreshTokenInfo
       };
-      const createAuthDto: CreateAuthDto = {
+      const createAuth: CreateAuth = {
         userId: user.id,
         ...refreshTokenInfo,
         kakaoAccessToken: kakaoToken.accessToken,
@@ -86,7 +91,7 @@ describe('AuthService', () => {
       };
       const auth: Auth = {
         id: 1,
-        ...createAuthDto
+        ...createAuth
       };
 
       kakaoLoginService.login.mockResolvedValue({
