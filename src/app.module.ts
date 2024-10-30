@@ -1,13 +1,21 @@
 import { Module } from '@nestjs/common';
-
+import { ConfigModule } from '@nestjs/config';
 import { KakaoLoginModule } from '@/kakao/login/kakao-login.module';
 
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
+import { OpenAiModule } from './open-ai/open-ai.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, UserModule, KakaoLoginModule],
+  imports: [
+    ConfigModule.forRoot(),
+    AuthModule,
+    PrismaModule,
+    UserModule,
+    KakaoLoginModule,
+    OpenAiModule
+  ],
   controllers: [],
   providers: []
 })
