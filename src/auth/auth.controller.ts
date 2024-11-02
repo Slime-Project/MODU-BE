@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 import { CreateAuthReqDto } from './dto/create-auth-req.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
-import { ReissuTokenReq } from '@/types/auth.type';
+import { ReissueTokenReq } from '@/types/auth.type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -62,7 +62,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   @Post('token/reissue')
-  async reissueToken(@Req() req: ReissuTokenReq, @Res({ passthrough: true }) res: Response) {
+  async reissueToken(@Req() req: ReissueTokenReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     const data = await this.authService.reissueToken(refreshToken, req.id);
 
