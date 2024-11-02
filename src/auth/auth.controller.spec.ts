@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
@@ -13,9 +13,10 @@ import { AuthController } from './auth.controller';
 describe('AuthController', () => {
   let controller: AuthController;
   let service: DeepMockProxy<AuthService>;
+  let response: DeepMockProxy<Response>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         { provide: AuthService, useValue: mockDeep<AuthService>() },
@@ -26,6 +27,7 @@ describe('AuthController', () => {
 
     controller = module.get(AuthController);
     service = module.get(AuthService);
+    response = mockDeep<Response>();
   });
 
   it('should be defined', () => {
@@ -43,19 +45,16 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const res = {
-        cookie: jest.fn()
-      } as unknown as Response;
 
       service.create.mockResolvedValue({ user, token });
-      await controller.create(reqBody, res);
-      expect(res.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
+      await controller.create(reqBody, response);
+      expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
         expires: token.exp
       });
-      expect(res.cookie).toHaveBeenCalledWith('refresh_token', token.refreshToken, {
+      expect(response.cookie).toHaveBeenCalledWith('refresh_token', token.refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
@@ -73,13 +72,10 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const res = {
-        cookie: jest.fn()
-      } as unknown as Response;
       const resBody = { id: Number(user.id) };
 
       service.create.mockResolvedValue({ user, token });
-      const result: CreateAuthResDto = await controller.create(reqBody, res);
+      const result: CreateAuthResDto = await controller.create(reqBody, response);
       expect(result).toEqual(resBody);
     });
   });
