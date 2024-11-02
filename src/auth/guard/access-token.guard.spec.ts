@@ -1,7 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { AccessTokenGuard } from './access-token.guard';
@@ -11,7 +11,7 @@ describe('AccessTokenGuard', () => {
   let jwtService: DeepMockProxy<JwtService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         AccessTokenGuard,
         { provide: JwtService, useValue: mockDeep<JwtService>() },
@@ -52,9 +52,7 @@ describe('AccessTokenGuard', () => {
         })
       } as ExecutionContext;
 
-      jwtService.verify.mockRejectedValue(
-        new UnauthorizedException('Access token is missing') as never
-      );
+      jwtService.verify.mockRejectedValue(null as never);
       await expect(guard.canActivate(context)).rejects.toThrow(
         new UnauthorizedException('Access token is missing')
       );
@@ -69,9 +67,7 @@ describe('AccessTokenGuard', () => {
         })
       } as ExecutionContext;
 
-      jwtService.verify.mockRejectedValue(
-        new UnauthorizedException('Invalid or expired access token') as never
-      );
+      jwtService.verify.mockRejectedValue(null as never);
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('Invalid or expired access token')
       );

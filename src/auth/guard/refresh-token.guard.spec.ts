@@ -1,7 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { RefreshTokenGuard } from './refresh-token.guard';
@@ -11,7 +11,7 @@ describe('RefreshTokenGuard', () => {
   let jwtService: DeepMockProxy<JwtService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         RefreshTokenGuard,
         { provide: JwtService, useValue: mockDeep<JwtService>() },
