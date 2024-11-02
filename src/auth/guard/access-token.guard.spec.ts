@@ -43,7 +43,7 @@ describe('AccessTokenGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should throw UnauthorizedException when access token is missing', async () => {
+    it('should throw UnauthorizedException when access token is missing', () => {
       const context = {
         switchToHttp: () => ({
           getRequest: () => ({
@@ -53,22 +53,22 @@ describe('AccessTokenGuard', () => {
       } as ExecutionContext;
 
       jwtService.verify.mockRejectedValue(null as never);
-      await expect(guard.canActivate(context)).rejects.toThrow(
+      return expect(guard.canActivate(context)).rejects.toThrow(
         new UnauthorizedException('Access token is missing')
       );
     });
 
-    it('should throw UnauthorizedException when access token is invalid', async () => {
+    it('should throw UnauthorizedException when access token is invalid', () => {
       const mockContext = {
         switchToHttp: () => ({
           getRequest: () => ({
-            cookies: { access_token: 'invalid-token' }
+            cookies: { access_token: 'invalidToken' }
           })
         })
       } as ExecutionContext;
 
       jwtService.verify.mockRejectedValue(null as never);
-      await expect(guard.canActivate(mockContext)).rejects.toThrow(
+      return expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('Invalid or expired access token')
       );
     });

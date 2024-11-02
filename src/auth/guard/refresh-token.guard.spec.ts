@@ -43,7 +43,7 @@ describe('RefreshTokenGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should throw UnauthorizedException when refresh token is missing', async () => {
+    it('should throw UnauthorizedException when refresh token is missing', () => {
       const context = {
         switchToHttp: () => ({
           getRequest: () => ({
@@ -53,22 +53,22 @@ describe('RefreshTokenGuard', () => {
       } as ExecutionContext;
 
       jwtService.verify.mockRejectedValue(null as never);
-      await expect(guard.canActivate(context)).rejects.toThrow(
+      return expect(guard.canActivate(context)).rejects.toThrow(
         new UnauthorizedException('You need to log in first')
       );
     });
 
-    it('should throw UnauthorizedException when refresh token is invalid', async () => {
+    it('should throw UnauthorizedException when refresh token is invalid', () => {
       const mockContext = {
         switchToHttp: () => ({
           getRequest: () => ({
-            cookies: { refresh_token: 'invalid-token' }
+            cookies: { refresh_token: 'invalidToken' }
           })
         })
       } as ExecutionContext;
 
       jwtService.verify.mockRejectedValue(null as never);
-      await expect(guard.canActivate(mockContext)).rejects.toThrow(
+      return expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('Invalid or expired refresh token')
       );
     });
