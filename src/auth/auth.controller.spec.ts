@@ -1,3 +1,4 @@
+import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -9,6 +10,8 @@ import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
 import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 
 import { AuthController } from './auth.controller';
+
+import { ReissuedToken, ReissueTokenReq } from '@/types/auth.type';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -39,9 +42,9 @@ describe('AuthController', () => {
       const code = 'test-code';
       const user = { id: BigInt(1234567890) };
       const token = {
-        accessToken: 'mockAccessToken',
+        accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
-        refreshToken: 'mockRefreshToken',
+        refreshToken: 'refreshToken',
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
@@ -77,6 +80,54 @@ describe('AuthController', () => {
       service.create.mockResolvedValue({ user, token });
       const result: CreateAuthResDto = await controller.create(reqBody, response);
       expect(result).toEqual(resBody);
+    });
+  });
+
+  describe('reissueToken', () => {
+    it('should set cookies', async () => {
+      const token: ReissuedToken = {
+        accessToken: 'newAccessToken',
+        exp: new Date(Date.now() + 3600000),
+        refreshToken: 'newRefreshToken',
+        refreshTokenExp: new Date(Date.now() + 604800000)
+      };
+      const req = {
+        id: BigInt(1234567890)
+      } as ReissueTokenReq;
+      req.cookies = {
+        refresh_token: 'refreshToken'
+      };
+
+      service.reissueToken.mockResolvedValue(token);
+      await controller.reissueToken(req, response);
+      expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: token.exp
+      });
+      expect(response.cookie).toHaveBeenCalledWith('refresh_token', token.refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: token.refreshTokenExp
+      });
+    });
+
+    it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
+      const req = {
+        id: BigInt(1234567890)
+      } as ReissueTokenReq;
+      req.cookies = {
+        refresh_token: 'invalidToken'
+      };
+
+      service.reissueToken.mockRejectedValue(
+        new UnauthorizedException('Invalid or expired refresh token')
+      );
+      return expect(controller.reissueToken(req, response)).rejects.toThrow(
+        new UnauthorizedException('Invalid or expired refresh token')
+      );
     });
   });
 });
