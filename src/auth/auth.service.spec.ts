@@ -1,7 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Auth, User } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
@@ -31,7 +31,7 @@ describe('AuthService', () => {
   let jwtService: DeepMockProxy<JwtService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UserService, useValue: mockDeep<UserService>() },
@@ -274,9 +274,9 @@ describe('AuthService', () => {
       expect(result).toEqual(reissuedToken);
     });
 
-    it('should throw UnauthorizedException when refreshToken is invalid or expired', async () => {
+    it('should throw UnauthorizedException when refreshToken is invalid or expired', () => {
       authService.findOne = jest.fn().mockResolvedValue(null);
-      expect(authService.reissueToken('invalid-token', BigInt(1234567890))).rejects.toThrow(
+      return expect(authService.reissueToken('invalidToken', BigInt(1234567890))).rejects.toThrow(
         new UnauthorizedException('Invalid or expired refresh token')
       );
     });

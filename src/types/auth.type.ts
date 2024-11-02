@@ -3,7 +3,7 @@ import { Request } from 'express';
 
 type CreateAuth = Omit<Auth, 'id'>;
 
-interface ReissuTokenReq extends Request {
+interface ReissueTokenReq extends Request {
   id: bigint;
 }
 
@@ -19,7 +19,7 @@ type ReissuedToken = AccessTokenInfo & Partial<RefreshTokenInfo>;
 
 export {
   CreateAuth,
-  ReissuTokenReq,
+  ReissueTokenReq,
   JwtPayload,
   VerifyedJWT,
   TokensInfo,

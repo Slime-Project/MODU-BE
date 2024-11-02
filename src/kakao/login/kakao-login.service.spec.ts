@@ -1,14 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { mockDeep } from 'jest-mock-extended';
 
-import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
-import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
-import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
-
+import { GetTokenDto } from './dto/get-token.dto';
+import { ReissueTokenDto } from './dto/reissue-token.dto';
+import { UserInfoDto } from './dto/user-info.dto';
 import { KakaoLoginService } from './kakao-login.service';
 
 import { GetTokenRes, ReissueTokenRes, UserInfoRes } from '@/types/kakao.type';
@@ -17,7 +16,7 @@ describe('KakaoLoginService', () => {
   let kakaoLoginService: KakaoLoginService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         KakaoLoginService,
         { provide: ConfigService, useValue: mockDeep<ConfigService>() }
