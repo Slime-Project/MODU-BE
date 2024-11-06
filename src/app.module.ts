@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { OpenAiModule } from './open-ai/open-ai.module';
+import { CrawlerModule } from './crawler/crawler.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { OpenAiModule } from './open-ai/open-ai.module';
     PrismaModule,
     UserModule,
     KakaoLoginModule,
-    OpenAiModule
+    OpenAiModule,
+    CrawlerModule
   ],
   controllers: [],
   providers: []
