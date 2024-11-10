@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Auth, User } from '@prisma/client';
@@ -118,7 +118,7 @@ export class AuthService {
   }
 
   async findOne(userId: bigint, refreshToken: string): Promise<Auth> {
-    const auth = await this.prismaService.auth.findUnique({
+    return this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {
           userId,
@@ -126,26 +126,10 @@ export class AuthService {
         }
       }
     });
-
-    if (!auth) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
-    if (new Date() > auth.refreshTokenExp) {
-      this.remove(auth.id);
-      throw new UnauthorizedException('expired refresh token');
-    }
-
-    return auth;
   }
 
   async reissueToken(refreshToken: string, id: bigint) {
     const auth = await this.findOne(id, refreshToken);
-
-    if (!auth) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
     const newKakaoToken = await this.kakaoLoginService.reissueToken(auth.kakaoRefreshToken);
     const { accessToken, exp } = await this.createAccessToken(Number(id), newKakaoToken.expiresIn);
 

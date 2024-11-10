@@ -1,4 +1,3 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -112,22 +111,6 @@ describe('AuthController', () => {
         sameSite: 'strict',
         expires: token.refreshTokenExp
       });
-    });
-
-    it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
-      const req = {
-        id: BigInt(1234567890)
-      } as ReissueTokenReq;
-      req.cookies = {
-        refresh_token: 'invalidToken'
-      };
-
-      service.reissueToken.mockRejectedValue(
-        new UnauthorizedException('Invalid or expired refresh token')
-      );
-      return expect(controller.reissueToken(req, response)).rejects.toThrow(
-        new UnauthorizedException('Invalid or expired refresh token')
-      );
     });
   });
 });

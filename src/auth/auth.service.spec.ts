@@ -1,4 +1,3 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -273,6 +272,7 @@ describe('AuthService', () => {
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });
+
     it('should return a reissed accessToken and refreshToken', async () => {
       const auth = {
         id: 1,
@@ -311,13 +311,6 @@ describe('AuthService', () => {
       authService.update = jest.fn().mockResolvedValue(updateAuthDto);
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
-    });
-
-    it('should throw UnauthorizedException when refreshToken is invalid or expired', () => {
-      authService.findOne = jest.fn().mockResolvedValue(null);
-      return expect(authService.reissueToken('invalidToken', BigInt(1234567890))).rejects.toThrow(
-        new UnauthorizedException('Invalid or expired refresh token')
-      );
     });
   });
 });
