@@ -19,8 +19,8 @@ export class AuthController {
     summary: 'Signup & Login'
   })
   @ApiResponse({
-    status: 200,
-    description: 'success',
+    status: 201,
+    description: 'created',
     type: CreateAuthResDto
   })
   @ApiResponse({
