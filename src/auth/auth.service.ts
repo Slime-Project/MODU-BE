@@ -81,10 +81,12 @@ export class AuthService {
 
     if (!user) {
       user = await this.prismaService.$transaction(async prisma => {
-        const createdUser = await this.userService.create({ id: BigInt(kakaoUser.id) }, prisma);
-        await prisma.auth.create({
-          data: createAuth
-        });
+        const [createdUser] = await Promise.all([
+          this.userService.create({ id: BigInt(kakaoUser.id) }, prisma),
+          prisma.auth.create({
+            data: createAuth
+          })
+        ]);
         return createdUser;
       });
     } else {
