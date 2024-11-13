@@ -91,7 +91,7 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const req = {
-        id: BigInt(1234567890)
+        id: 1234567890
       } as ReissueTokenReq;
       req.cookies = {
         refresh_token: 'refreshToken'
