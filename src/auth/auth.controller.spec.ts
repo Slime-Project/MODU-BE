@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
+import { UserRole } from '@prisma/client';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
@@ -39,7 +40,7 @@ describe('AuthController', () => {
   describe('create', () => {
     it('should set cookies', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890) };
+      const user = { id: BigInt(1234567890), role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
@@ -47,8 +48,9 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
+      const resBody: CreateAuthResDto = { id: Number(user.id) };
 
-      service.create.mockResolvedValue({ user, token });
+      service.create.mockResolvedValue({ user: resBody, token });
       await controller.create(reqBody, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
         httpOnly: true,
@@ -66,7 +68,7 @@ describe('AuthController', () => {
 
     it('should return the body with user', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890) };
+      const user = { id: BigInt(1234567890), role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
@@ -74,9 +76,9 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const resBody = { id: Number(user.id) };
+      const resBody: CreateAuthResDto = { id: Number(user.id) };
 
-      service.create.mockResolvedValue({ user, token });
+      service.create.mockResolvedValue({ user: resBody, token });
       const result: CreateAuthResDto = await controller.create(reqBody, response);
       expect(result).toEqual(resBody);
     });

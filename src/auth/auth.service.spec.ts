@@ -1,9 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { Auth, User } from '@prisma/client';
+import { Auth, User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { UpdateAuthDto } from '@/auth/dto/update-auth.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
@@ -101,7 +102,7 @@ describe('AuthService', () => {
         ...accessTokenInfo,
         ...refreshTokenInfo
       };
-      const user: User = { id: BigInt(kakaoUser.id) };
+      const user: User = { id: BigInt(kakaoUser.id), role: UserRole.USER };
 
       return {
         user,
@@ -111,10 +112,11 @@ describe('AuthService', () => {
 
     it('should return a user and an auth record if the user already exists', async () => {
       const { user, token } = await setupCreateAuthMocks();
-      userService.findOne.mockResolvedValue({ id: user.id });
+      userService.findOne.mockResolvedValue({ id: user.id, role: UserRole.USER });
+      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.create('mockCode');
       expect(result).toEqual({
-        user,
+        user: createAuthResDto,
         token
       });
     });
@@ -123,9 +125,10 @@ describe('AuthService', () => {
       const { user, token } = await setupCreateAuthMocks();
       userService.findOne.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
+      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.create('mockCode');
       expect(result).toEqual({
-        user,
+        user: createAuthResDto,
         token
       });
     });

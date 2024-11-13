@@ -44,8 +44,7 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    const body: CreateAuthResDto = { id: Number(user.id) };
-    return body;
+    return user;
   }
 
   @ApiOperation({

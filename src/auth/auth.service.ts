@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Auth, User } from '@prisma/client';
+import { Auth, UserRole } from '@prisma/client';
 
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
@@ -63,7 +64,7 @@ export class AuthService {
     return { refreshToken, refreshTokenExp: expDate };
   }
 
-  async create(code: string): Promise<{ user: User; token: TokensInfo }> {
+  async create(code: string): Promise<{ user: CreateAuthResDto; token: TokensInfo }> {
     const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
     const { accessToken, exp } = await this.createAccessToken(kakaoUser.id, kakaoToken.expiresIn);
     const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
@@ -82,7 +83,7 @@ export class AuthService {
     if (!user) {
       user = await this.prismaService.$transaction(async prisma => {
         const [createdUser] = await Promise.all([
-          this.userService.create({ id: BigInt(kakaoUser.id) }, prisma),
+          this.userService.create({ id: BigInt(kakaoUser.id), role: UserRole.USER }, prisma),
           prisma.auth.create({
             data: createAuth
           })
@@ -96,7 +97,7 @@ export class AuthService {
     }
 
     return {
-      user,
+      user: { id: Number(user.id) },
       token: {
         accessToken,
         exp,
