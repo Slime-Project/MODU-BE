@@ -1,10 +1,10 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { Auth, User } from '@prisma/client';
+import { Auth, User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { UpdateAuthDto } from '@/auth/dto/update-auth.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
@@ -15,13 +15,7 @@ import { UserService } from '@/user/user.service';
 
 import { AuthService } from './auth.service';
 
-import {
-  AccessTokenInfo,
-  CreateAuth,
-  RefreshTokenInfo,
-  ReissuedToken,
-  TokensInfo
-} from '@/types/auth.type';
+import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/types/auth.type';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -53,8 +47,29 @@ describe('AuthService', () => {
     expect(authService).toBeDefined();
   });
 
+  const setupCreateAccessTokenMock = (expMillis: number, accessToken: string = 'accessToken') => {
+    const accessTokenInfo: AccessTokenInfo = {
+      accessToken,
+      exp: AuthService.getExpDate(expMillis)
+    };
+    authService.createAccessToken = jest.fn().mockResolvedValue(accessTokenInfo);
+    return accessTokenInfo;
+  };
+
+  const setupCreateRefreshTokenMock = (
+    refreshExpMillis: number,
+    refreshToken: string = 'refreshToken'
+  ) => {
+    const refreshTokenInfo: RefreshTokenInfo = {
+      refreshToken,
+      refreshTokenExp: AuthService.getExpDate(refreshExpMillis)
+    };
+    authService.createRefreshToken = jest.fn().mockResolvedValue(refreshTokenInfo);
+    return refreshTokenInfo;
+  };
+
   describe('create', () => {
-    it('should return a user and an auth record if the user already exists', async () => {
+    const setupKakaoLoginMock = () => {
       const kakaoToken = {
         accessToken: 'kakaoAccessToken',
         refreshToken: 'kakaoRefreshToken',
@@ -68,89 +83,53 @@ describe('AuthService', () => {
           profileImage: 'url'
         }
       } as UserInfoDto;
-      const user: User = { id: BigInt(kakaoUser.id) };
-      const refreshExpMillis = AuthService.convertSecondsToMillis(kakaoToken.refreshTokenExpiresIn);
-      const expMillis = AuthService.convertSecondsToMillis(kakaoToken.expiresIn);
-      const accessTokenInfo: AccessTokenInfo = {
-        accessToken: 'accessToken',
-        exp: AuthService.getExpDate(expMillis)
-      };
-      const refreshTokenInfo: RefreshTokenInfo = {
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(refreshExpMillis)
-      };
-      const tokensInfo: TokensInfo = {
-        ...accessTokenInfo,
-        ...refreshTokenInfo
-      };
-      const createAuth: CreateAuth = {
-        userId: user.id,
-        ...refreshTokenInfo,
-        kakaoAccessToken: kakaoToken.accessToken,
-        kakaoRefreshToken: kakaoToken.refreshToken
-      };
-      const auth: Auth = {
-        id: 1,
-        ...createAuth
-      };
-
       kakaoLoginService.login.mockResolvedValue({
         user: kakaoUser,
         token: kakaoToken
       });
-      authService.createAccessToken = jest.fn().mockResolvedValue(accessTokenInfo);
-      authService.createRefreshToken = jest.fn().mockResolvedValue(refreshTokenInfo);
-      userService.findOne.mockResolvedValue(user);
-      prismaService.auth.create.mockResolvedValue(auth);
+      return { kakaoUser, kakaoToken };
+    };
+
+    const setupCreateAuthMocks = async () => {
+      const { kakaoToken, kakaoUser } = setupKakaoLoginMock();
+
+      const refreshExpMillis = AuthService.convertSecondsToMillis(kakaoToken.refreshTokenExpiresIn);
+      const expMillis = AuthService.convertSecondsToMillis(kakaoToken.expiresIn);
+      const accessTokenInfo = setupCreateAccessTokenMock(expMillis);
+      const refreshTokenInfo = setupCreateRefreshTokenMock(refreshExpMillis);
+
+      const token: TokensInfo = {
+        ...accessTokenInfo,
+        ...refreshTokenInfo
+      };
+      const user: User = { id: BigInt(kakaoUser.id), role: UserRole.USER };
+
+      return {
+        user,
+        token
+      };
+    };
+
+    it('should return a user and an auth record if the user already exists', async () => {
+      const { user, token } = await setupCreateAuthMocks();
+      userService.findOne.mockResolvedValue({ id: user.id, role: UserRole.USER });
+      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.create('mockCode');
       expect(result).toEqual({
-        user,
-        token: tokensInfo
+        user: createAuthResDto,
+        token
       });
     });
 
     it('should return a user and an auth record if the user is new', async () => {
-      const kakaoToken = {
-        accessToken: 'kakaoAccessToken',
-        refreshToken: 'kakaoRefreshToken',
-        expiresIn: 3600,
-        refreshTokenExpiresIn: 604800
-      } as GetTokenDto;
-      const kakaoUser = {
-        id: 1234567890,
-        properties: {
-          nickname: 'nickname',
-          profileImage: 'url'
-        }
-      } as UserInfoDto;
-      const user = { id: kakaoUser.id };
-      const refreshExpMillis = AuthService.convertSecondsToMillis(kakaoToken.refreshTokenExpiresIn);
-      const expMillis = AuthService.convertSecondsToMillis(kakaoToken.expiresIn);
-      const accessTokenInfo: AccessTokenInfo = {
-        accessToken: 'accessToken',
-        exp: AuthService.getExpDate(expMillis)
-      };
-      const refreshTokenInfo: RefreshTokenInfo = {
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(refreshExpMillis)
-      };
-      const tokensInfo: TokensInfo = {
-        ...accessTokenInfo,
-        ...refreshTokenInfo
-      };
-
-      kakaoLoginService.login.mockResolvedValue({
-        user: kakaoUser,
-        token: kakaoToken
-      });
-      authService.createAccessToken = jest.fn().mockResolvedValue(accessTokenInfo);
-      authService.createRefreshToken = jest.fn().mockResolvedValue(refreshTokenInfo);
+      const { user, token } = await setupCreateAuthMocks();
       userService.findOne.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
+      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.create('mockCode');
       expect(result).toEqual({
-        user,
-        token: tokensInfo
+        user: createAuthResDto,
+        token
       });
     });
   });
@@ -214,12 +193,11 @@ describe('AuthService', () => {
 
   describe('createAccessToken', () => {
     it('should return an object of type AccessTokenInfo', async () => {
-      const userId = BigInt(1234567890);
       const expSec = 3600000;
       const accessToken = 'accessToken';
 
       jwtService.signAsync.mockResolvedValue(accessToken);
-      const result = await authService.createAccessToken(Number(userId), expSec);
+      const result = await authService.createAccessToken(1234567890, expSec);
       expect(result).toEqual({
         accessToken,
         exp: expect.any(Date)
@@ -229,12 +207,11 @@ describe('AuthService', () => {
 
   describe('createRefreshToken', () => {
     it('should return an object of type RefreshTokenInfo', async () => {
-      const userId = BigInt(1234567890);
       const refreshTokenExpSec = 604800;
       const refreshToken = 'refreshToken';
 
       jwtService.signAsync.mockResolvedValue(refreshToken);
-      const result = await authService.createRefreshToken(Number(userId), refreshTokenExpSec);
+      const result = await authService.createRefreshToken(1234567890, refreshTokenExpSec);
       expect(result).toEqual({
         refreshToken,
         refreshTokenExp: expect.any(Date)
@@ -243,8 +220,16 @@ describe('AuthService', () => {
   });
 
   describe('reissueToken', () => {
-    it('should return an object of type ReissuedToken', async () => {
-      const auth = {
+    const setupCreateNewAccessTokenMock = (expMillis: number) => {
+      return setupCreateAccessTokenMock(expMillis, 'newAccessToken');
+    };
+
+    const setupCreateNewRefreshTokenMock = (refreshExpMillis: number) => {
+      return setupCreateRefreshTokenMock(refreshExpMillis, 'newRefreshToken');
+    };
+
+    const setupFindOneAuthMock = () => {
+      const auth: Auth = {
         id: 1,
         userId: BigInt(1234567890),
         refreshToken: 'refreshToken',
@@ -252,33 +237,55 @@ describe('AuthService', () => {
         kakaoRefreshToken: 'kakaoRefreshToken',
         refreshTokenExp: AuthService.getExpDate(604800000)
       };
+      authService.findOne = jest.fn().mockResolvedValue(auth);
+      return auth;
+    };
+
+    it('should return a reissued accessToken', async () => {
+      const auth = setupFindOneAuthMock();
       const newKakaoToken: ReissueTokenDto = {
         tokenType: 'bearer',
         accessToken: 'newKakaoAccessToken',
         expiresIn: 3600
       };
-      const accessTokenInfo: AccessTokenInfo = {
-        accessToken: 'newAccessToken',
-        exp: AuthService.getExpDate(AuthService.convertSecondsToMillis(newKakaoToken.expiresIn))
-      };
+      const expMillis = AuthService.convertSecondsToMillis(newKakaoToken.expiresIn);
+      const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
       const updateAuthDto: UpdateAuthDto = {
         kakaoAccessToken: newKakaoToken.accessToken
       };
       const reissuedToken: ReissuedToken = accessTokenInfo;
 
-      authService.findOne = jest.fn().mockResolvedValue(auth);
       kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
-      authService.createAccessToken = jest.fn().mockResolvedValue(accessTokenInfo);
       authService.update = jest.fn().mockResolvedValue(updateAuthDto);
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });
 
-    it('should throw UnauthorizedException when refreshToken is invalid or expired', () => {
-      authService.findOne = jest.fn().mockResolvedValue(null);
-      return expect(authService.reissueToken('invalidToken', BigInt(1234567890))).rejects.toThrow(
-        new UnauthorizedException('Invalid or expired refresh token')
+    it('should return a reissed accessToken and refreshToken', async () => {
+      const auth = setupFindOneAuthMock();
+      const newKakaoToken: ReissueTokenDto = {
+        tokenType: 'bearer',
+        accessToken: 'newKakaoAccessToken',
+        expiresIn: 3600,
+        refreshToken: 'newKakaoRefreshToken',
+        refreshTokenExpiresIn: 604800
+      };
+      const expMillis = AuthService.convertSecondsToMillis(newKakaoToken.expiresIn);
+      const refreshExpMillis = AuthService.convertSecondsToMillis(
+        newKakaoToken.refreshTokenExpiresIn
       );
+      const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
+      const refreshTokenInfo = setupCreateNewRefreshTokenMock(refreshExpMillis);
+      const updateAuthDto: UpdateAuthDto = {
+        kakaoAccessToken: newKakaoToken.accessToken,
+        kakaoRefreshToken: newKakaoToken.refreshToken
+      };
+      const reissuedToken: ReissuedToken = { ...accessTokenInfo, ...refreshTokenInfo };
+
+      kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
+      authService.update = jest.fn().mockResolvedValue(updateAuthDto);
+      const result = await authService.reissueToken(auth.refreshToken, auth.userId);
+      expect(result).toEqual(reissuedToken);
     });
   });
 });

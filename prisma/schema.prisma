@@ -7,9 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
 model User {
   id                     BigInt    @id
   auths                  Auth[]
+  role                   UserRole  @default(USER)
 }
 
 model Auth {
