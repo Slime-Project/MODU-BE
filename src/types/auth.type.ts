@@ -4,7 +4,7 @@ import { Request } from 'express';
 type CreateAuth = Omit<Auth, 'id'>;
 
 interface ReissueTokenReq extends Request {
-  id: bigint;
+  id: number;
 }
 
 type JwtPayload = {

@@ -125,7 +125,7 @@ describe('AuthController (e2e)', () => {
       const { header } = await request(app.getHttpServer())
         .post('/api/auth/token/reissue')
         .set('Cookie', [refreshTokenCookie])
-        .send({ id })
+        .send({ id: Number(id) })
         .expect(204);
 
       const cookies = header['set-cookie'] as unknown as string[];
@@ -140,7 +140,10 @@ describe('AuthController (e2e)', () => {
     });
 
     it('401', () => {
-      return request(app.getHttpServer()).post('/api/auth/token/reissue').send({ id }).expect(401);
+      return request(app.getHttpServer())
+        .post('/api/auth/token/reissue')
+        .send({ id: Number(id) })
+        .expect(401);
     });
   });
 });

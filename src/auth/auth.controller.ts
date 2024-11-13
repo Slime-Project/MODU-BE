@@ -64,7 +64,7 @@ export class AuthController {
   @Post('token/reissue')
   async reissueToken(@Req() req: ReissueTokenReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    const data = await this.authService.reissueToken(refreshToken, req.id);
+    const data = await this.authService.reissueToken(refreshToken, BigInt(req.id));
 
     res.cookie('access_token', data.accessToken, {
       httpOnly: true,
