@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 
-import { AppModule } from '@/app.module';
+import { AuthModule } from '@/auth/auth.module';
 import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
@@ -19,7 +19,7 @@ describe('AuthController (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule]
+      imports: [AuthModule]
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -78,16 +78,12 @@ describe('AuthController (e2e)', () => {
       const req: CreateAuthReqDto = { code: 'testCode' };
 
       mockKakaoLogin();
-      const { body, header } = await request(app.getHttpServer())
-        .post('/api/auth')
-        .send(req)
-        .expect(201);
+      const res = await request(app.getHttpServer()).post('/api/auth').send(req).expect(201);
 
-      expect(body).toHaveProperty('id');
-      expect(typeof body.id).toBe('number');
+      expect(res.body).toHaveProperty('id');
+      expect(typeof res.body.id).toBe('number');
 
-      const cookies = header['set-cookie'] as unknown as string[];
-
+      const cookies = res.get('Set-Cookie');
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
       expect(accessTokenCookie).toBeDefined();
       expect(accessTokenCookie).toContain('HttpOnly');
@@ -122,13 +118,13 @@ describe('AuthController (e2e)', () => {
       } as ReissueTokenDto;
 
       kakaoLoginService.reissueToken = jest.fn().mockResolvedValue(kakaoReissuedToken);
-      const { header } = await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/api/auth/token/reissue')
         .set('Cookie', [refreshTokenCookie])
         .send({ id: Number(id) })
         .expect(204);
 
-      const cookies = header['set-cookie'] as unknown as string[];
+      const cookies = res.get('Set-Cookie');
 
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
       expect(accessTokenCookie).toBeDefined();

@@ -1,14 +1,12 @@
 {
-  "preset": "ts-jest",
-  "testEnvironment": "node",
+  "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../",
-  "moduleNameMapper": {
-    "^@/(.*)$": "<rootDir>/src/$1"
-  },
+  "testEnvironment": "node",
+  "testRegex": ".*\\.e2e-spec\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "moduleFileExtensions": ["ts", "js", "json"],
-  "testRegex": ".*\\.e2e-spec\\.ts$",
-  "collectCoverageFrom": ["**/*.(t|j)s"]
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
 }
