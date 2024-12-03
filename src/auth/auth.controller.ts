@@ -27,9 +27,9 @@ export class AuthController {
     status: 400,
     description: 'Invalid code'
   })
-  @Post('')
-  async create(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.create(code);
+  @Post('/login')
+  async login(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.login(code);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,

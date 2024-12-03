@@ -50,8 +50,8 @@ describe('AuthController', () => {
       const reqBody: CreateAuthReqDto = { code };
       const resBody: CreateAuthResDto = { id: Number(user.id) };
 
-      service.create.mockResolvedValue({ user: resBody, token });
-      await controller.create(reqBody, response);
+      service.login.mockResolvedValue({ user: resBody, token });
+      await controller.login(reqBody, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
         httpOnly: true,
         secure: true,
@@ -78,8 +78,8 @@ describe('AuthController', () => {
       const reqBody: CreateAuthReqDto = { code };
       const resBody: CreateAuthResDto = { id: Number(user.id) };
 
-      service.create.mockResolvedValue({ user: resBody, token });
-      const result: CreateAuthResDto = await controller.create(reqBody, response);
+      service.login.mockResolvedValue({ user: resBody, token });
+      const result: CreateAuthResDto = await controller.login(reqBody, response);
       expect(result).toEqual(resBody);
     });
   });
