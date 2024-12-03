@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { PrismaService } from '@/prisma/prisma.service';
@@ -25,7 +25,7 @@ describe('UserService', () => {
 
   describe('create', () => {
     it('should return a user record', async () => {
-      const user: User = { id: BigInt(1234567890) };
+      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
 
       prismaService.user.create.mockResolvedValue(user);
       const result = await userService.create(user);
@@ -33,9 +33,19 @@ describe('UserService', () => {
     });
   });
 
+  describe('remove', () => {
+    it('should return a user record', async () => {
+      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
+
+      prismaService.user.delete.mockResolvedValue(user);
+      const result = await userService.remove(user.id);
+      expect(result).toEqual(user);
+    });
+  });
+
   describe('findOne', () => {
     it('should return a user record if the user exists', async () => {
-      const user: User = { id: BigInt(1234567890) };
+      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
 
       prismaService.user.findUnique.mockResolvedValue(user);
       const result = await userService.findOne(user.id);

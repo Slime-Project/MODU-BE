@@ -14,6 +14,12 @@ export class UserService {
     });
   }
 
+  async remove(id: bigint): Promise<User> {
+    return this.prismaService.user.delete({
+      where: { id }
+    });
+  }
+
   async findOne(id: bigint): Promise<User | null> {
     return this.prismaService.user.findUnique({
       where: { id }

@@ -68,7 +68,7 @@ describe('AuthService', () => {
     return refreshTokenInfo;
   };
 
-  describe('create', () => {
+  describe('login', () => {
     const setupKakaoLoginMock = () => {
       const kakaoToken = {
         accessToken: 'kakaoAccessToken',
@@ -114,7 +114,7 @@ describe('AuthService', () => {
       const { user, token } = await setupCreateAuthMocks();
       userService.findOne.mockResolvedValue({ id: user.id, role: UserRole.USER });
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
-      const result = await authService.create('mockCode');
+      const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
         token
@@ -126,11 +126,28 @@ describe('AuthService', () => {
       userService.findOne.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
-      const result = await authService.create('mockCode');
+      const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
         token
       });
+    });
+  });
+
+  describe('create', () => {
+    it('should return an auth record', async () => {
+      const auth: Auth = {
+        id: 1,
+        userId: BigInt(1234567890),
+        refreshToken: 'refreshToken',
+        refreshTokenExp: AuthService.getExpDate(604800000),
+        kakaoAccessToken: 'kakaoAccessToken',
+        kakaoRefreshToken: 'kakaoRefreshToken'
+      };
+
+      prismaService.auth.create.mockResolvedValue(auth);
+      const result = await authService.create(auth);
+      expect(result).toEqual(auth);
     });
   });
 
@@ -171,6 +188,15 @@ describe('AuthService', () => {
       prismaService.auth.delete.mockResolvedValue(auth);
       const result = await authService.remove(auth.id);
       expect(result).toEqual(auth);
+    });
+  });
+
+  describe('removeExpiredAuthRecords', () => {
+    it('should return the count of deleted auth records', async () => {
+      const count = 5;
+      prismaService.auth.deleteMany.mockResolvedValue({ count });
+      const result = await authService.removeExpiredAuthRecords();
+      expect(result).toEqual({ count });
     });
   });
 

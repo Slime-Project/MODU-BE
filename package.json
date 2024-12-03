@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:integration": "jest --config ./test/jest-integration.json"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -26,6 +26,7 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "^2.0.5",
     "@nestjs/platform-express": "^10.4.1",
+    "@nestjs/schedule": "^4.1.1",
     "@nestjs/swagger": "^7.3.0",
     "@prisma/client": "^5.20.0",
     "axios": "^1.7.4",

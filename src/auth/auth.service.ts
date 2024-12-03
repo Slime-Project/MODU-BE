@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Auth, UserRole } from '@prisma/client';
+import { Auth, PrismaClient, UserRole } from '@prisma/client';
+import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
 import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
@@ -64,7 +65,13 @@ export class AuthService {
     return { refreshToken, refreshTokenExp: expDate };
   }
 
-  async create(code: string): Promise<{ user: CreateAuthResDto; token: TokensInfo }> {
+  async create(data: CreateAuth, prisma?: Omit<PrismaClient, ITXClientDenyList>): Promise<Auth> {
+    return (prisma || this.prismaService).auth.create({
+      data
+    });
+  }
+
+  async login(code: string): Promise<{ user: CreateAuthResDto; token: TokensInfo }> {
     const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
     const { accessToken, exp } = await this.createAccessToken(kakaoUser.id, kakaoToken.expiresIn);
     const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
@@ -84,16 +91,12 @@ export class AuthService {
       user = await this.prismaService.$transaction(async prisma => {
         const [createdUser] = await Promise.all([
           this.userService.create({ id: BigInt(kakaoUser.id), role: UserRole.USER }, prisma),
-          prisma.auth.create({
-            data: createAuth
-          })
+          this.create(createAuth, prisma)
         ]);
         return createdUser;
       });
     } else {
-      await this.prismaService.auth.create({
-        data: createAuth
-      });
+      this.create(createAuth);
     }
 
     return {
@@ -117,6 +120,14 @@ export class AuthService {
   async remove(id: number): Promise<Auth> {
     return this.prismaService.auth.delete({
       where: { id }
+    });
+  }
+
+  async removeExpiredAuthRecords() {
+    return this.prismaService.auth.deleteMany({
+      where: {
+        refreshTokenExp: { lte: new Date() }
+      }
     });
   }
 
