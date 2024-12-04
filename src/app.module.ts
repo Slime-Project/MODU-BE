@@ -13,8 +13,8 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), // 필요한지?
-    ScheduleModule.forRoot(), // forRoot 필요한지?
+    ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
     AuthModule,
     PrismaModule,
     UserModule,
