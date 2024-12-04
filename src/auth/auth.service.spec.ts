@@ -68,6 +68,18 @@ describe('AuthService', () => {
     return refreshTokenInfo;
   };
 
+  const getMockAuth = () => {
+    const auth: Auth = {
+      id: 1,
+      userId: BigInt(1234567890),
+      refreshToken: 'refreshToken',
+      kakaoAccessToken: 'kakaoAccessToken',
+      kakaoRefreshToken: 'kakaoRefreshToken',
+      refreshTokenExp: AuthService.getExpDate(604800000)
+    };
+    return auth;
+  };
+
   describe('login', () => {
     const setupKakaoLoginMock = () => {
       const kakaoToken = {
@@ -255,14 +267,7 @@ describe('AuthService', () => {
     };
 
     const setupFindOneAuthMock = () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000)
-      };
+      const auth = getMockAuth();
       authService.findOne = jest.fn().mockResolvedValue(auth);
       return auth;
     };
@@ -312,6 +317,18 @@ describe('AuthService', () => {
       authService.update = jest.fn().mockResolvedValue(updateAuthDto);
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
+    });
+  });
+
+  describe('logout', () => {
+    it('should remove auth and log out from Kakao', async () => {
+      const auth = getMockAuth();
+      authService.findOne = jest.fn().mockResolvedValue(auth);
+      KakaoLoginService.logout = jest.fn().mockResolvedValue({ id: auth.userId });
+      authService.remove = jest.fn().mockResolvedValue(auth);
+      await authService.logout(auth.userId, auth.kakaoAccessToken);
+      expect(authService.remove).toHaveBeenCalled();
+      expect(KakaoLoginService.logout).toHaveBeenCalledWith(auth.kakaoAccessToken);
     });
   });
 });

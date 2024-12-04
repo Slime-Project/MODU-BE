@@ -172,4 +172,10 @@ export class AuthService {
     await this.update(auth.id, updateAuthDto);
     return reissuedToken;
   }
+
+  async logout(id: bigint, refreshToken: string) {
+    const auth = await this.findOne(id, refreshToken);
+    await KakaoLoginService.logout(auth.kakaoAccessToken);
+    await this.remove(auth.id); // 카카오 로그아웃 성공 시
+  }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
@@ -29,7 +29,15 @@ export class KakaoLoginService {
       });
       return plainToInstance(GetTokenDto, data, { excludeExtraneousValues: true });
     } catch (error) {
-      throw new BadRequestException('Invalid code');
+      if (
+        axios.isAxiosError(error) &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
+        throw new BadRequestException('Invalid code');
+      }
+
+      throw new InternalServerErrorException();
     }
   }
 
@@ -64,10 +72,19 @@ export class KakaoLoginService {
   async login(code: string) {
     const token = await this.getToken(code);
     const user = await KakaoLoginService.getUserInfo(token.accessToken);
-
     return {
       token,
       user
     };
+  }
+
+  static async logout(accessToken: string) {
+    const logoutUrl = 'https://kapi.kakao.com/v1/user/logout';
+    const { data } = await axios.post(logoutUrl, null, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    return data;
   }
 }

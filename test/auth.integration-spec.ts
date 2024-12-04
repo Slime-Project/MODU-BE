@@ -107,6 +107,55 @@ describe('AuthController (integration)', () => {
     });
   });
 
+  describe('/api/auth/logout (POST)', () => {
+    it('201', async () => {
+      const { refreshTokenCookie } = await createUser();
+
+      KakaoLoginService.logout = jest.fn().mockResolvedValue({
+        id: Number(id)
+      });
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/logout')
+        .set('Cookie', [refreshTokenCookie])
+        .expect(204);
+      const cookies = res.get('Set-Cookie');
+      const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
+      expect(accessTokenCookie).toBeDefined();
+      expect(accessTokenCookie).toContain('HttpOnly');
+      expect(accessTokenCookie).toContain('Secure');
+      expect(accessTokenCookie).toContain('SameSite=Strict');
+      const expires = accessTokenCookie.match(/expires=([^;]+);?/);
+      expect(expires).toBeDefined();
+
+      if (expires) {
+        const expiresDate = new Date(expires[1]);
+        expect(expiresDate.getTime()).toBeLessThan(Date.now());
+      }
+
+      const resRefreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
+      expect(resRefreshTokenCookie).toBeDefined();
+      expect(resRefreshTokenCookie).toContain('HttpOnly');
+      expect(resRefreshTokenCookie).toContain('Secure');
+      expect(resRefreshTokenCookie).toContain('SameSite=Strict');
+      const refreshTokenExpires = resRefreshTokenCookie.match(/expires=([^;]+);?/);
+      expect(refreshTokenExpires).toBeDefined();
+
+      if (refreshTokenExpires) {
+        const expiresDate = new Date(refreshTokenExpires[1]);
+        expect(expiresDate.getTime()).toBeLessThan(Date.now());
+      }
+
+      await deleteUser();
+    });
+
+    it('400', () => {
+      return request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ code: 'invalidCode' })
+        .expect(400);
+    });
+  });
+
   describe('/api/auth/token/reissue (POST)', () => {
     it('204', async () => {
       const { refreshTokenCookie } = await createUser();
@@ -121,7 +170,6 @@ describe('AuthController (integration)', () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/token/reissue')
         .set('Cookie', [refreshTokenCookie])
-        .send({ id: Number(id) })
         .expect(204);
 
       const cookies = res.get('Set-Cookie');
@@ -136,10 +184,7 @@ describe('AuthController (integration)', () => {
     });
 
     it('401', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/token/reissue')
-        .send({ id: Number(id) })
-        .expect(401);
+      return request(app.getHttpServer()).post('/api/auth/token/reissue').expect(401);
     });
   });
 });

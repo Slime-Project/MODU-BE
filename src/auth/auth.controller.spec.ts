@@ -37,7 +37,7 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
+  describe('login', () => {
     it('should set cookies', async () => {
       const code = 'test-code';
       const user = { id: BigInt(1234567890), role: UserRole.USER };
@@ -112,6 +112,31 @@ describe('AuthController', () => {
         secure: true,
         sameSite: 'strict',
         expires: token.refreshTokenExp
+      });
+    });
+  });
+
+  describe('logout', () => {
+    it('should set cookies for clear', async () => {
+      const refreshToken = 'refreshToken';
+      const req = {
+        id: 1234567890
+      } as ReissueTokenReq;
+      req.cookies = {
+        refresh_token: refreshToken
+      };
+      await controller.logout(req, response);
+      expect(response.cookie).toHaveBeenCalledWith('access_token', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: new Date(0)
+      });
+      expect(response.cookie).toHaveBeenCalledWith('refresh_token', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: new Date(0)
       });
     });
   });
