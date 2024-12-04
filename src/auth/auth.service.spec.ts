@@ -68,7 +68,19 @@ describe('AuthService', () => {
     return refreshTokenInfo;
   };
 
-  describe('create', () => {
+  const getMockAuth = () => {
+    const auth: Auth = {
+      id: 1,
+      userId: BigInt(1234567890),
+      refreshToken: 'refreshToken',
+      kakaoAccessToken: 'kakaoAccessToken',
+      kakaoRefreshToken: 'kakaoRefreshToken',
+      refreshTokenExp: AuthService.getExpDate(604800000)
+    };
+    return auth;
+  };
+
+  describe('login', () => {
     const setupKakaoLoginMock = () => {
       const kakaoToken = {
         accessToken: 'kakaoAccessToken',
@@ -114,7 +126,7 @@ describe('AuthService', () => {
       const { user, token } = await setupCreateAuthMocks();
       userService.findOne.mockResolvedValue({ id: user.id, role: UserRole.USER });
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
-      const result = await authService.create('mockCode');
+      const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
         token
@@ -126,11 +138,28 @@ describe('AuthService', () => {
       userService.findOne.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
-      const result = await authService.create('mockCode');
+      const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
         token
       });
+    });
+  });
+
+  describe('create', () => {
+    it('should return an auth record', async () => {
+      const auth: Auth = {
+        id: 1,
+        userId: BigInt(1234567890),
+        refreshToken: 'refreshToken',
+        refreshTokenExp: AuthService.getExpDate(604800000),
+        kakaoAccessToken: 'kakaoAccessToken',
+        kakaoRefreshToken: 'kakaoRefreshToken'
+      };
+
+      prismaService.auth.create.mockResolvedValue(auth);
+      const result = await authService.create(auth);
+      expect(result).toEqual(auth);
     });
   });
 
@@ -171,6 +200,15 @@ describe('AuthService', () => {
       prismaService.auth.delete.mockResolvedValue(auth);
       const result = await authService.remove(auth.id);
       expect(result).toEqual(auth);
+    });
+  });
+
+  describe('removeExpiredAuthRecords', () => {
+    it('should return the count of deleted auth records', async () => {
+      const count = 5;
+      prismaService.auth.deleteMany.mockResolvedValue({ count });
+      const result = await authService.removeExpiredAuthRecords();
+      expect(result).toEqual({ count });
     });
   });
 
@@ -229,14 +267,7 @@ describe('AuthService', () => {
     };
 
     const setupFindOneAuthMock = () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000)
-      };
+      const auth = getMockAuth();
       authService.findOne = jest.fn().mockResolvedValue(auth);
       return auth;
     };
@@ -286,6 +317,18 @@ describe('AuthService', () => {
       authService.update = jest.fn().mockResolvedValue(updateAuthDto);
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
+    });
+  });
+
+  describe('logout', () => {
+    it('should remove auth and log out from Kakao', async () => {
+      const auth = getMockAuth();
+      authService.findOne = jest.fn().mockResolvedValue(auth);
+      KakaoLoginService.logout = jest.fn().mockResolvedValue({ id: auth.userId });
+      authService.remove = jest.fn().mockResolvedValue(auth);
+      await authService.logout(auth.userId, auth.kakaoAccessToken);
+      expect(authService.remove).toHaveBeenCalled();
+      expect(KakaoLoginService.logout).toHaveBeenCalledWith(auth.kakaoAccessToken);
     });
   });
 });

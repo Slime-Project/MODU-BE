@@ -11,7 +11,7 @@ import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
-describe('AuthController (e2e)', () => {
+describe('AuthController (integration)', () => {
   let app: INestApplication;
   let kakaoLoginService: KakaoLoginService;
   let prismaService: PrismaService;
@@ -55,7 +55,7 @@ describe('AuthController (e2e)', () => {
     const req: CreateAuthReqDto = { code: 'testCode' };
 
     mockKakaoLogin();
-    const { header } = await request(app.getHttpServer()).post('/api/auth').send(req);
+    const { header } = await request(app.getHttpServer()).post('/api/auth/login').send(req);
 
     const cookies = header['set-cookie'] as unknown as string[];
     const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
@@ -73,12 +73,12 @@ describe('AuthController (e2e)', () => {
     });
   };
 
-  describe('/api/auth (POST)', () => {
+  describe('/api/auth/login (POST)', () => {
     it('201', async () => {
       const req: CreateAuthReqDto = { code: 'testCode' };
 
       mockKakaoLogin();
-      const res = await request(app.getHttpServer()).post('/api/auth').send(req).expect(201);
+      const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
       expect(res.body).toHaveProperty('id');
       expect(typeof res.body.id).toBe('number');
@@ -101,7 +101,56 @@ describe('AuthController (e2e)', () => {
 
     it('400', () => {
       return request(app.getHttpServer())
-        .post('/api/auth')
+        .post('/api/auth/login')
+        .send({ code: 'invalidCode' })
+        .expect(400);
+    });
+  });
+
+  describe('/api/auth/logout (POST)', () => {
+    it('201', async () => {
+      const { refreshTokenCookie } = await createUser();
+
+      KakaoLoginService.logout = jest.fn().mockResolvedValue({
+        id: Number(id)
+      });
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/logout')
+        .set('Cookie', [refreshTokenCookie])
+        .expect(204);
+      const cookies = res.get('Set-Cookie');
+      const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
+      expect(accessTokenCookie).toBeDefined();
+      expect(accessTokenCookie).toContain('HttpOnly');
+      expect(accessTokenCookie).toContain('Secure');
+      expect(accessTokenCookie).toContain('SameSite=Strict');
+      const expires = accessTokenCookie.match(/expires=([^;]+);?/);
+      expect(expires).toBeDefined();
+
+      if (expires) {
+        const expiresDate = new Date(expires[1]);
+        expect(expiresDate.getTime()).toBeLessThan(Date.now());
+      }
+
+      const resRefreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
+      expect(resRefreshTokenCookie).toBeDefined();
+      expect(resRefreshTokenCookie).toContain('HttpOnly');
+      expect(resRefreshTokenCookie).toContain('Secure');
+      expect(resRefreshTokenCookie).toContain('SameSite=Strict');
+      const refreshTokenExpires = resRefreshTokenCookie.match(/expires=([^;]+);?/);
+      expect(refreshTokenExpires).toBeDefined();
+
+      if (refreshTokenExpires) {
+        const expiresDate = new Date(refreshTokenExpires[1]);
+        expect(expiresDate.getTime()).toBeLessThan(Date.now());
+      }
+
+      await deleteUser();
+    });
+
+    it('400', () => {
+      return request(app.getHttpServer())
+        .post('/api/auth/login')
         .send({ code: 'invalidCode' })
         .expect(400);
     });
@@ -121,7 +170,6 @@ describe('AuthController (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/token/reissue')
         .set('Cookie', [refreshTokenCookie])
-        .send({ id: Number(id) })
         .expect(204);
 
       const cookies = res.get('Set-Cookie');
@@ -136,10 +184,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('401', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/token/reissue')
-        .send({ id: Number(id) })
-        .expect(401);
+      return request(app.getHttpServer()).post('/api/auth/token/reissue').expect(401);
     });
   });
 });

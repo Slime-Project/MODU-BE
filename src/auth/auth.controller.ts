@@ -27,9 +27,9 @@ export class AuthController {
     status: 400,
     description: 'Invalid code'
   })
-  @Post('')
-  async create(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.create(code);
+  @Post('/login')
+  async login(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.login(code);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,
@@ -80,5 +80,37 @@ export class AuthController {
         expires: data.refreshTokenExp
       });
     }
+  }
+
+  @ApiOperation({
+    summary: 'Logout'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'success'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token, or login required'
+  })
+  @HttpCode(204)
+  @UseGuards(RefreshTokenGuard)
+  @Post('logout')
+  async logout(@Req() req: ReissueTokenReq, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies.refresh_token;
+    await this.authService.logout(BigInt(req.id), refreshToken);
+
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: new Date(0)
+    });
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: new Date(0)
+    });
   }
 }

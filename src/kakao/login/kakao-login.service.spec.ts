@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { mockDeep } from 'jest-mock-extended';
 
@@ -48,8 +48,14 @@ describe('KakaoLoginService', () => {
     });
     it('should throw BadRequestException when code is invalid', async () => {
       const code = 'test-code';
+      const errorResponse = {
+        isAxiosError: true,
+        response: {
+          status: 400
+        }
+      } as AxiosError;
 
-      axios.post = jest.fn().mockRejectedValue(new BadRequestException('Invalid code'));
+      axios.post = jest.fn().mockRejectedValue(errorResponse);
       expect(kakaoLoginService.getToken(code)).rejects.toThrow(
         new BadRequestException('Invalid code')
       );
@@ -126,6 +132,15 @@ describe('KakaoLoginService', () => {
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(user);
       const result = await kakaoLoginService.login(code);
       expect(result).toEqual({ user, token });
+    });
+  });
+
+  describe('logout', () => {
+    it('should return an object containing an id', async () => {
+      const data = { id: 1234567890 };
+      axios.post = jest.fn().mockResolvedValue({ data });
+      const result = await KakaoLoginService.logout('kakaoAccessToken');
+      expect(result).toEqual(data);
     });
   });
 });
