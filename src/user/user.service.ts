@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaClient, User } from '@prisma/client';
 import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -24,5 +25,18 @@ export class UserService {
     return this.prismaService.user.findUnique({
       where: { id }
     });
+  }
+
+  async deleteAccount(id: bigint, refreshToken: string) {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId: id,
+          refreshToken
+        }
+      }
+    });
+    await KakaoLoginService.unlink(auth.kakaoAccessToken);
+    await this.remove(id);
   }
 }

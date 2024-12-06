@@ -21,7 +21,7 @@ model User {
 model Auth {
   id                     Int       @id @default(autoincrement())
   userId                 BigInt
-  user                   User      @relation(fields: [userId], references: [id])
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshToken           String
   refreshTokenExp        DateTime
   kakaoAccessToken       String
