@@ -6,6 +6,9 @@ type CreateAuth = Omit<Auth, 'id'>;
 interface ReissueTokenReq extends Request {
   id: number;
 }
+interface LogoutReq extends Request {
+  id: number;
+}
 
 type JwtPayload = {
   id: number;
@@ -25,5 +28,6 @@ export {
   TokensInfo,
   AccessTokenInfo,
   RefreshTokenInfo,
-  ReissuedToken
+  ReissuedToken,
+  LogoutReq
 };

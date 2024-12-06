@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 import { CreateAuthReqDto } from './dto/create-auth-req.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
-import { ReissueTokenReq } from '@/types/auth.type';
+import { LogoutReq, ReissueTokenReq } from '@/types/auth.type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -52,7 +52,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 204,
-    description: 'success'
+    description: 'No Content'
   })
   @ApiResponse({
     status: 401,
@@ -87,7 +87,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 204,
-    description: 'success'
+    description: 'No Content'
   })
   @ApiResponse({
     status: 401,
@@ -96,7 +96,7 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(RefreshTokenGuard)
   @Post('logout')
-  async logout(@Req() req: ReissueTokenReq, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: LogoutReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     await this.authService.logout(BigInt(req.id), refreshToken);
 
