@@ -1,14 +1,6 @@
 import { Auth } from '@prisma/client';
-import { Request } from 'express';
 
 type CreateAuth = Omit<Auth, 'id'>;
-
-interface ReissueTokenReq extends Request {
-  id: number;
-}
-interface LogoutReq extends Request {
-  id: number;
-}
 
 type JwtPayload = {
   id: number;
@@ -22,12 +14,10 @@ type ReissuedToken = AccessTokenInfo & Partial<RefreshTokenInfo>;
 
 export {
   CreateAuth,
-  ReissueTokenReq,
   JwtPayload,
   VerifyedJWT,
   TokensInfo,
   AccessTokenInfo,
   RefreshTokenInfo,
-  ReissuedToken,
-  LogoutReq
+  ReissuedToken
 };
