@@ -143,4 +143,13 @@ describe('KakaoLoginService', () => {
       expect(result).toEqual(data);
     });
   });
+
+  describe('unlink', () => {
+    it('should return an object containing an id', async () => {
+      const data = { id: 1234567890 };
+      axios.post = jest.fn().mockResolvedValue({ data });
+      const result = await KakaoLoginService.unlink('kakaoAccessToken');
+      expect(result).toEqual(data);
+    });
+  });
 });
