@@ -22,8 +22,6 @@ import { UserModule } from './user/user.module';
     OpenAiModule,
     CrawlerModule,
     TasksModule
-  ],
-  controllers: [],
-  providers: []
+  ]
 })
 export class AppModule {}
