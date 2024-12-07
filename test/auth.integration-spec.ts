@@ -1,15 +1,12 @@
 import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
-import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
-import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { createTestingApp, createUser, mockKakaoLogin } from '@/utils/integration-test';
 
 describe('AuthController (integration)', () => {
   let app: INestApplication;
@@ -18,49 +15,10 @@ describe('AuthController (integration)', () => {
   const id = BigInt(1234567890);
 
   beforeEach(async () => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [AuthModule]
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    await app.init();
-    kakaoLoginService = moduleFixture.get(KakaoLoginService);
-    prismaService = moduleFixture.get(PrismaService);
+    app = await createTestingApp([AuthModule]);
+    kakaoLoginService = app.get(KakaoLoginService);
+    prismaService = app.get(PrismaService);
   });
-
-  const mockKakaoLogin = () => {
-    const kakaoToken = {
-      accessToken: 'kakaoAccessToken',
-      refreshToken: 'kakaoRefreshToken',
-      expiresIn: 3600,
-      refreshTokenExpiresIn: 604800
-    } as GetTokenDto;
-    const kakaoUser = {
-      id: Number(id),
-      properties: {
-        nickname: 'nickname',
-        profileImage: 'url'
-      }
-    } as UserInfoDto;
-
-    kakaoLoginService.login = jest.fn().mockResolvedValue({
-      user: kakaoUser,
-      token: kakaoToken
-    });
-  };
-
-  const createUser = async () => {
-    const req: CreateAuthReqDto = { code: 'testCode' };
-
-    mockKakaoLogin();
-    const { header } = await request(app.getHttpServer()).post('/api/auth/login').send(req);
-
-    const cookies = header['set-cookie'] as unknown as string[];
-    const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
-    return { refreshTokenCookie };
-  };
 
   const deleteUser = async () => {
     await prismaService.auth.deleteMany({
@@ -77,7 +35,7 @@ describe('AuthController (integration)', () => {
     it('201', async () => {
       const req: CreateAuthReqDto = { code: 'testCode' };
 
-      mockKakaoLogin();
+      mockKakaoLogin(kakaoLoginService, id);
       const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
       expect(res.body).toHaveProperty('id');
@@ -108,8 +66,8 @@ describe('AuthController (integration)', () => {
   });
 
   describe('/api/auth/logout (POST)', () => {
-    it('201', async () => {
-      const { refreshTokenCookie } = await createUser();
+    it('204', async () => {
+      const { refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.logout = jest.fn().mockResolvedValue({
         id: Number(id)
@@ -158,7 +116,7 @@ describe('AuthController (integration)', () => {
 
   describe('/api/auth/token/reissue (POST)', () => {
     it('204', async () => {
-      const { refreshTokenCookie } = await createUser();
+      const { refreshTokenCookie } = await createUser(app, id);
       const kakaoReissuedToken = {
         accessToken: 'newKakaoAccessToken',
         refreshToken: 'newKkakaoRefreshToken',

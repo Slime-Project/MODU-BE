@@ -2,7 +2,9 @@ import { Test } from '@nestjs/testing';
 import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { getMockAuth } from '@/utils/unit-test';
 
 import { UserService } from './user.service';
 
@@ -58,6 +60,20 @@ describe('UserService', () => {
       prismaService.user.findUnique.mockResolvedValue(null);
       const result = await userService.findOne(id);
       expect(result).toEqual(null);
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('should remove user and unlink from Kakao', async () => {
+      const auth = getMockAuth();
+      const user: User = { id: auth.userId, role: UserRole.USER };
+
+      prismaService.auth.findUnique.mockResolvedValue(auth);
+      KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
+      userService.remove = jest.fn().mockResolvedValue(user);
+      await userService.deleteAccount(auth.userId, auth.refreshToken);
+      expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
+      expect(userService.remove).toHaveBeenCalled();
     });
   });
 });
