@@ -4,16 +4,17 @@ import { Test } from '@nestjs/testing';
 import { Auth, User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
-import { UpdateAuthDto } from '@/auth/dto/update-auth.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
 import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
+import { getMockAuth } from '@/utils/unit-test';
 
 import { AuthService } from './auth.service';
+import { CreateAuthResDto } from './dto/create-auth-res.dto';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
 import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/types/auth.type';
 
@@ -66,18 +67,6 @@ describe('AuthService', () => {
     };
     authService.createRefreshToken = jest.fn().mockResolvedValue(refreshTokenInfo);
     return refreshTokenInfo;
-  };
-
-  const getMockAuth = () => {
-    const auth: Auth = {
-      id: 1,
-      userId: BigInt(1234567890),
-      refreshToken: 'refreshToken',
-      kakaoAccessToken: 'kakaoAccessToken',
-      kakaoRefreshToken: 'kakaoRefreshToken',
-      refreshTokenExp: AuthService.getExpDate(604800000)
-    };
-    return auth;
   };
 
   describe('login', () => {
@@ -326,7 +315,7 @@ describe('AuthService', () => {
       authService.findOne = jest.fn().mockResolvedValue(auth);
       KakaoLoginService.logout = jest.fn().mockResolvedValue({ id: auth.userId });
       authService.remove = jest.fn().mockResolvedValue(auth);
-      await authService.logout(auth.userId, auth.kakaoAccessToken);
+      await authService.logout(auth.userId, auth.refreshToken);
       expect(authService.remove).toHaveBeenCalled();
       expect(KakaoLoginService.logout).toHaveBeenCalledWith(auth.kakaoAccessToken);
     });

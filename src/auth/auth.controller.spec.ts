@@ -11,7 +11,8 @@ import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 
 import { AuthController } from './auth.controller';
 
-import { ReissuedToken, ReissueTokenReq } from '@/types/auth.type';
+import { ReissuedToken } from '@/types/auth.type';
+import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -94,7 +95,7 @@ describe('AuthController', () => {
       };
       const req = {
         id: 1234567890
-      } as ReissueTokenReq;
+      } as RefreshTokenGuardReq;
       req.cookies = {
         refresh_token: 'refreshToken'
       };
@@ -117,11 +118,11 @@ describe('AuthController', () => {
   });
 
   describe('logout', () => {
-    it('should set cookies for clear', async () => {
+    it('should clear cookies', async () => {
       const refreshToken = 'refreshToken';
       const req = {
         id: 1234567890
-      } as ReissueTokenReq;
+      } as RefreshTokenGuardReq;
       req.cookies = {
         refresh_token: refreshToken
       };
