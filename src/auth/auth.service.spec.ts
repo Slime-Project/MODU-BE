@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { Auth, User, UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
@@ -20,7 +20,6 @@ import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let userService: DeepMockProxy<UserService>;
   let kakaoLoginService: DeepMockProxy<KakaoLoginService>;
   let prismaService: DeepMockProxy<PrismaService>;
   let jwtService: DeepMockProxy<JwtService>;
@@ -38,7 +37,6 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get(AuthService);
-    userService = module.get(UserService);
     kakaoLoginService = module.get(KakaoLoginService);
     prismaService = module.get(PrismaService);
     jwtService = module.get(JwtService);
@@ -113,7 +111,7 @@ describe('AuthService', () => {
 
     it('should return a user and an auth record if the user already exists', async () => {
       const { user, token } = await setupCreateAuthMocks();
-      userService.findOne.mockResolvedValue({ id: user.id, role: UserRole.USER });
+      prismaService.user.findUnique.mockResolvedValue({ id: user.id, role: UserRole.USER });
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.login('mockCode');
       expect(result).toEqual({
@@ -124,7 +122,7 @@ describe('AuthService', () => {
 
     it('should return a user and an auth record if the user is new', async () => {
       const { user, token } = await setupCreateAuthMocks();
-      userService.findOne.mockResolvedValue(null);
+      prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
       const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
       const result = await authService.login('mockCode');
@@ -135,86 +133,12 @@ describe('AuthService', () => {
     });
   });
 
-  describe('create', () => {
-    it('should return an auth record', async () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000),
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken'
-      };
-
-      prismaService.auth.create.mockResolvedValue(auth);
-      const result = await authService.create(auth);
-      expect(result).toEqual(auth);
-    });
-  });
-
-  describe('update', () => {
-    it('should return an auth record', async () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000),
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken'
-      };
-      const updateAuthDto: UpdateAuthDto = {
-        refreshToken: 'newRefreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000),
-        kakaoAccessToken: 'newKakaoAccessToken',
-        kakaoRefreshToken: 'newKakaoRefreshToken'
-      };
-
-      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuthDto });
-      const result = await authService.update(auth.id, updateAuthDto);
-      expect(result).toEqual({ ...auth, ...updateAuthDto });
-    });
-  });
-
-  describe('remove', () => {
-    it('should return an auth record', async () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000),
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken'
-      };
-
-      prismaService.auth.delete.mockResolvedValue(auth);
-      const result = await authService.remove(auth.id);
-      expect(result).toEqual(auth);
-    });
-  });
-
   describe('removeExpiredAuthRecords', () => {
     it('should return the count of deleted auth records', async () => {
       const count = 5;
       prismaService.auth.deleteMany.mockResolvedValue({ count });
       const result = await authService.removeExpiredAuthRecords();
       expect(result).toEqual({ count });
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return an auth record', async () => {
-      const auth: Auth = {
-        id: 1,
-        userId: BigInt(1234567890),
-        refreshToken: 'refreshToken',
-        refreshTokenExp: AuthService.getExpDate(604800000),
-        kakaoAccessToken: 'kakaoAccessToken',
-        kakaoRefreshToken: 'kakaoRefreshToken'
-      };
-
-      prismaService.auth.findUnique.mockResolvedValue(auth);
-      const result = await authService.findOne(auth.userId, auth.refreshToken);
-      expect(result).toEqual(auth);
     });
   });
 
@@ -257,7 +181,7 @@ describe('AuthService', () => {
 
     const setupFindOneAuthMock = () => {
       const auth = getMockAuth();
-      authService.findOne = jest.fn().mockResolvedValue(auth);
+      prismaService.auth.findUnique.mockResolvedValue(auth);
       return auth;
     };
 
@@ -276,7 +200,7 @@ describe('AuthService', () => {
       const reissuedToken: ReissuedToken = accessTokenInfo;
 
       kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
-      authService.update = jest.fn().mockResolvedValue(updateAuthDto);
+      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuthDto });
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });
@@ -303,7 +227,7 @@ describe('AuthService', () => {
       const reissuedToken: ReissuedToken = { ...accessTokenInfo, ...refreshTokenInfo };
 
       kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
-      authService.update = jest.fn().mockResolvedValue(updateAuthDto);
+      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuthDto });
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });
@@ -312,11 +236,11 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('should remove auth and log out from Kakao', async () => {
       const auth = getMockAuth();
-      authService.findOne = jest.fn().mockResolvedValue(auth);
+      prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.logout = jest.fn().mockResolvedValue({ id: auth.userId });
-      authService.remove = jest.fn().mockResolvedValue(auth);
+      prismaService.auth.delete.mockResolvedValue(auth);
       await authService.logout(auth.userId, auth.refreshToken);
-      expect(authService.remove).toHaveBeenCalled();
+      expect(prismaService.auth.delete).toHaveBeenCalled();
       expect(KakaoLoginService.logout).toHaveBeenCalledWith(auth.kakaoAccessToken);
     });
   });

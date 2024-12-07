@@ -25,44 +25,6 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should return a user record', async () => {
-      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
-
-      prismaService.user.create.mockResolvedValue(user);
-      const result = await userService.create(user);
-      expect(result).toEqual(user);
-    });
-  });
-
-  describe('remove', () => {
-    it('should return a user record', async () => {
-      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
-
-      prismaService.user.delete.mockResolvedValue(user);
-      const result = await userService.remove(user.id);
-      expect(result).toEqual(user);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a user record if the user exists', async () => {
-      const user: User = { id: BigInt(1234567890), role: UserRole.USER };
-
-      prismaService.user.findUnique.mockResolvedValue(user);
-      const result = await userService.findOne(user.id);
-      expect(result).toEqual(user);
-    });
-
-    it('should return a null if the user does not exist', async () => {
-      const id = BigInt(1234567890);
-
-      prismaService.user.findUnique.mockResolvedValue(null);
-      const result = await userService.findOne(id);
-      expect(result).toEqual(null);
-    });
-  });
-
   describe('deleteAccount', () => {
     it('should remove user and unlink from Kakao', async () => {
       const auth = getMockAuth();
@@ -70,10 +32,10 @@ describe('UserService', () => {
 
       prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
-      userService.remove = jest.fn().mockResolvedValue(user);
+      prismaService.user.delete.mockResolvedValue(user);
       await userService.deleteAccount(auth.userId, auth.refreshToken);
       expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
-      expect(userService.remove).toHaveBeenCalled();
+      expect(prismaService.user.delete).toHaveBeenCalled();
     });
   });
 });
