@@ -16,6 +16,7 @@ model User {
   id                     BigInt    @id
   auths                  Auth[]
   role                   UserRole  @default(USER)
+  reviews                Review[]  @relation("UserReviews")
 }
 
 model Auth {
@@ -40,4 +41,18 @@ model Product {
   seller                 String
   createdAt              DateTime @default(now())
   likedCount             Int @default(0)
+
+  reviews                Review[]  @relation("ProductReviews")
+}
+
+model Review {
+  id                     Int     @id @default(autoincrement())
+  productId              Int
+  userId                 BigInt
+  rating                 Int        @db.SmallInt
+  comment                String?
+  createdAt              DateTime   @default(now())
+
+  user                   User       @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  product                Product    @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
 }
