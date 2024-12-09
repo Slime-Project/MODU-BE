@@ -160,7 +160,7 @@ export class ReviewController {
   })
   @UseGuards(RefreshTokenGuard)
   @Patch(':id')
-  async put(
+  async patch(
     @Req() req: RefreshTokenGuardReq,
     @Body() data: PutReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number,

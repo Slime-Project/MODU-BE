@@ -104,7 +104,7 @@ describe('ReviewController', () => {
         createdAt: review.createdAt
       };
       service.update.mockResolvedValue(review);
-      const result = await controller.put(req, reqBody, review.productId, review.id);
+      const result = await controller.patch(req, reqBody, review.productId, review.id);
       expect(result).toEqual(res);
     });
   });
