@@ -28,7 +28,7 @@ describe('ReviewService', () => {
       const review: Review = {
         id: 1,
         productId: 1,
-        userId: BigInt(1234567890),
+        userId: '1234567890',
         text: '',
         rating: 2,
         createdAt: new Date()

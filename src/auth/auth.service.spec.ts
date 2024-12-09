@@ -101,7 +101,7 @@ describe('AuthService', () => {
         ...accessTokenInfo,
         ...refreshTokenInfo
       };
-      const user: User = { id: BigInt(kakaoUser.id), role: UserRole.USER };
+      const user: User = { id: kakaoUser.id.toString(), role: UserRole.USER };
 
       return {
         user,
@@ -112,7 +112,7 @@ describe('AuthService', () => {
     it('should return a user and an auth record if the user already exists', async () => {
       const { user, token } = await setupCreateAuthMocks();
       prismaService.user.findUnique.mockResolvedValue({ id: user.id, role: UserRole.USER });
-      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
+      const createAuthResDto: CreateAuthResDto = { id: user.id };
       const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
@@ -124,7 +124,7 @@ describe('AuthService', () => {
       const { user, token } = await setupCreateAuthMocks();
       prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
-      const createAuthResDto: CreateAuthResDto = { id: Number(user.id) };
+      const createAuthResDto: CreateAuthResDto = { id: user.id };
       const result = await authService.login('mockCode');
       expect(result).toEqual({
         user: createAuthResDto,
@@ -148,7 +148,7 @@ describe('AuthService', () => {
       const accessToken = 'accessToken';
 
       jwtService.signAsync.mockResolvedValue(accessToken);
-      const result = await authService.createAccessToken(1234567890, expSec);
+      const result = await authService.createAccessToken('1234567890', expSec);
       expect(result).toEqual({
         accessToken,
         exp: expect.any(Date)
@@ -162,7 +162,7 @@ describe('AuthService', () => {
       const refreshToken = 'refreshToken';
 
       jwtService.signAsync.mockResolvedValue(refreshToken);
-      const result = await authService.createRefreshToken(1234567890, refreshTokenExpSec);
+      const result = await authService.createRefreshToken('1234567890', refreshTokenExpSec);
       expect(result).toEqual({
         refreshToken,
         refreshTokenExp: expect.any(Date)

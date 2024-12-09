@@ -10,7 +10,7 @@ import { createTestingApp, createUser, deleteUser } from '@/utils/integration-te
 describe('ReviewController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
-  const id = BigInt(3456789012);
+  const id = '3456789012';
 
   beforeEach(async () => {
     app = await createTestingApp([ReviewModule, AuthModule]);
@@ -30,7 +30,7 @@ describe('ReviewController (integration)', () => {
         productId: product.id,
         text: 'Great product!',
         rating: 5,
-        createdAt: expect.any(Date)
+        createdAt: new Date()
       };
       const res = await request(app.getHttpServer())
         .post(`/api/products/${review.productId}/reviews`)
@@ -39,7 +39,6 @@ describe('ReviewController (integration)', () => {
         .expect(201);
       expect(res.body).toEqual({
         ...review,
-        userId: Number(review.userId),
         createdAt: expect.any(String),
         id: expect.any(Number)
       });

@@ -13,7 +13,7 @@ enum UserRole {
 }
 
 model User {
-  id                     BigInt    @id
+  id                     String    @id
   auths                  Auth[]
   role                   UserRole  @default(USER)
   reviews                Review[]  @relation("UserReviews")
@@ -21,7 +21,7 @@ model User {
 
 model Auth {
   id                     Int       @id @default(autoincrement())
-  userId                 BigInt
+  userId                 String
   user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshToken           String
   refreshTokenExp        DateTime
@@ -48,7 +48,7 @@ model Product {
 model Review {
   id                     Int     @id @default(autoincrement())
   productId              Int
-  userId                 BigInt
+  userId                 String
   rating                 Int        @db.SmallInt
   text                   String
   createdAt              DateTime   @default(now())

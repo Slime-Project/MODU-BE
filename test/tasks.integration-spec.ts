@@ -22,7 +22,7 @@ describe('TasksService (integration)', () => {
   });
 
   describe('removeExpiredAuthRecords', () => {
-    const id = BigInt(2345678901);
+    const id = '2345678901';
 
     beforeAll(async () => {
       const auth: CreateAuth = {

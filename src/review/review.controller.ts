@@ -32,7 +32,7 @@ export class ReviewController {
     @Body() { text, rating }: CreateReviewReqDto,
     @Param('id', ParseIntPipe) productId: number
   ) {
-    const review = await this.reviewService.create({ userId: BigInt(id), text, rating, productId });
-    return { ...review, userId: Number(review.userId) };
+    const review = await this.reviewService.create({ userId: id, text, rating, productId });
+    return review;
   }
 }

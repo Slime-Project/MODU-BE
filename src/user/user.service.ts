@@ -7,7 +7,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async deleteAccount(id: bigint, refreshToken: string) {
+  async deleteAccount(id: string, refreshToken: string) {
     const auth = await this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {

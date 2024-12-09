@@ -8,7 +8,7 @@ import { createTestingApp, createUser } from '@/utils/integration-test';
 
 describe('UserController (integration)', () => {
   let app: INestApplication;
-  const id = BigInt(9876543210);
+  const id = '9876543210';
 
   beforeEach(async () => {
     app = await createTestingApp([UserModule, AuthModule]);
@@ -19,7 +19,7 @@ describe('UserController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.unlink = jest.fn().mockResolvedValue({
-        id: Number(id)
+        id
       });
       const res = await request(app.getHttpServer())
         .delete('/api/user')
