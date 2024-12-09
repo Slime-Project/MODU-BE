@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CrawlerModule } from './crawler/crawler.module';
 import { OpenAiModule } from './open-ai/open-ai.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReviewModule } from './review/review.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
 
@@ -21,7 +22,8 @@ import { UserModule } from './user/user.module';
     KakaoLoginModule,
     OpenAiModule,
     CrawlerModule,
-    TasksModule
+    TasksModule,
+    ReviewModule
   ]
 })
 export class AppModule {}

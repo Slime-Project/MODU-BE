@@ -50,7 +50,7 @@ model Review {
   productId              Int
   userId                 BigInt
   rating                 Int        @db.SmallInt
-  comment                String?
+  text                   String
   createdAt              DateTime   @default(now())
 
   user                   User       @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
