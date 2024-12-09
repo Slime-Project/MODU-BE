@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -14,6 +15,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -84,5 +86,45 @@ export class ReviewController {
     @Param('id', ParseIntPipe) reviewId: number
   ) {
     await this.reviewService.delete(id, productId, reviewId);
+  }
+
+  @ApiOperation({
+    summary: 'Get a product review'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token, or login required'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'You are not authorized to delete this review'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Review not found'
+  })
+  @UseGuards(RefreshTokenGuard)
+  @Get(':id')
+  async get(
+    @Req() req: RefreshTokenGuardReq,
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('id', ParseIntPipe) reviewId: number
+  ) {
+    const { id, text, rating, createdAt } = await this.reviewService.get(
+      req.id,
+      productId,
+      reviewId
+    );
+    const res: GetReviewResDto = {
+      id,
+      text,
+      rating,
+      createdAt
+    };
+    return res;
   }
 }

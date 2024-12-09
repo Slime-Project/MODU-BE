@@ -36,4 +36,25 @@ export class ReviewService {
       }
     });
   }
+
+  async get(userId: string, productId: number, id: number) {
+    const review = await this.prismaService.review.findUnique({
+      where: {
+        id_productId: {
+          id,
+          productId
+        }
+      }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this review');
+    }
+
+    return review;
+  }
 }

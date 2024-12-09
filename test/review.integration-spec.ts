@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { ReviewModule } from '@/review/review.module';
 import { createTestingApp, createUser, deleteUser } from '@/utils/integration-test';
 
@@ -81,7 +82,7 @@ describe('ReviewController (integration)', () => {
     });
 
     it('401', async () => {
-      return request(app.getHttpServer()).delete('/api/products/1/reviews/1').expect(401);
+      return request(app.getHttpServer()).delete('/api/products/0/reviews/0').expect(401);
     });
 
     it('403', async () => {
@@ -108,6 +109,65 @@ describe('ReviewController (integration)', () => {
 
       await request(app.getHttpServer())
         .delete('/api/products/0/reviews/0')
+        .set('Cookie', [refreshTokenCookie])
+        .expect(404);
+
+      await deleteUser(prismaService, userId);
+    });
+  });
+
+  describe('/api/products/:productId/reviews/:id (GET)', () => {
+    it('200', async () => {
+      const userId = '3456789012';
+      const { refreshTokenCookie } = await createUser(app, userId);
+      const product = await createProduct();
+      const review = await createReview(userId, product.id);
+
+      const expectedRes: GetReviewResDto = {
+        id: expect.any(Number),
+        text: review.text,
+        rating: review.rating,
+        createdAt: expect.any(String)
+      };
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/products/${review.productId}/reviews/${review.id}`)
+        .set('Cookie', [refreshTokenCookie])
+        .expect(200);
+      expect(res.body).toEqual(expectedRes);
+
+      await deleteUser(prismaService, userId);
+      await deleteProduct(product.id);
+    });
+
+    it('401', async () => {
+      return request(app.getHttpServer()).delete('/api/products/0/reviews/0').expect(401);
+    });
+
+    it('403', async () => {
+      const userId = '3456789012';
+      const anotherUserId = '4567890123';
+      const { refreshTokenCookie } = await createUser(app, userId);
+      await createUser(app, anotherUserId);
+      const product = await createProduct();
+      const review = await createReview(anotherUserId, product.id);
+
+      await request(app.getHttpServer())
+        .get(`/api/products/${review.productId}/reviews/${review.id}`)
+        .set('Cookie', [refreshTokenCookie])
+        .expect(403);
+
+      await deleteUser(prismaService, userId);
+      await deleteUser(prismaService, anotherUserId);
+      await deleteProduct(product.id);
+    });
+
+    it('404', async () => {
+      const userId = '3456789012';
+      const { refreshTokenCookie } = await createUser(app, userId);
+
+      await request(app.getHttpServer())
+        .get('/api/products/0/reviews/0')
         .set('Cookie', [refreshTokenCookie])
         .expect(404);
 
