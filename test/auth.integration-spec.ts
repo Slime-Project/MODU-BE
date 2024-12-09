@@ -6,7 +6,7 @@ import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { createTestingApp, createUser, mockKakaoLogin } from '@/utils/integration-test';
+import { createTestingApp, createUser, deleteUser, mockKakaoLogin } from '@/utils/integration-test';
 
 describe('AuthController (integration)', () => {
   let app: INestApplication;
@@ -19,17 +19,6 @@ describe('AuthController (integration)', () => {
     kakaoLoginService = app.get(KakaoLoginService);
     prismaService = app.get(PrismaService);
   });
-
-  const deleteUser = async () => {
-    await prismaService.auth.deleteMany({
-      where: { userId: id }
-    });
-    await prismaService.user.delete({
-      where: {
-        id
-      }
-    });
-  };
 
   describe('/api/auth/login (POST)', () => {
     it('201', async () => {
@@ -54,7 +43,7 @@ describe('AuthController (integration)', () => {
       expect(refreshTokenCookie).toContain('Secure');
       expect(refreshTokenCookie).toContain('SameSite=Strict');
 
-      await deleteUser();
+      await deleteUser(prismaService, id);
     });
 
     it('400', () => {
@@ -103,7 +92,7 @@ describe('AuthController (integration)', () => {
         expect(expiresDate.getTime()).toBeLessThan(Date.now());
       }
 
-      await deleteUser();
+      await deleteUser(prismaService, id);
     });
 
     it('400', () => {
@@ -138,7 +127,7 @@ describe('AuthController (integration)', () => {
       expect(accessTokenCookie).toContain('Secure');
       expect(accessTokenCookie).toContain('SameSite=Strict');
 
-      await deleteUser();
+      await deleteUser(prismaService, id);
     });
 
     it('401', () => {

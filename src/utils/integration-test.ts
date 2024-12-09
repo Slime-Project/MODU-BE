@@ -7,6 +7,7 @@ import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 const createTestingApp = async <T>(modules: Type<T>[]) => {
   const moduleFixture = await Test.createTestingModule({ imports: modules }).compile();
@@ -47,4 +48,12 @@ const createUser = async (app: INestApplication, id: bigint) => {
   return { refreshTokenCookie };
 };
 
-export { createTestingApp, mockKakaoLogin, createUser };
+const deleteUser = async (prismaService: PrismaService, id: bigint) => {
+  await prismaService.user.delete({
+    where: {
+      id
+    }
+  });
+};
+
+export { createTestingApp, mockKakaoLogin, createUser, deleteUser };
