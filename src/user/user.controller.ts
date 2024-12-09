@@ -1,5 +1,5 @@
 import { Controller, Delete, HttpCode, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
@@ -8,6 +8,7 @@ import { UserService } from '@/user/user.service';
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('user')
+@ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
