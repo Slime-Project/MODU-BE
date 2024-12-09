@@ -13,7 +13,8 @@ describe('TasksService (integration)', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TasksModule]
+      imports: [TasksModule],
+      providers: [PrismaService]
     }).compile();
 
     tasksService = module.get(TasksService);
@@ -42,8 +43,8 @@ describe('TasksService (integration)', () => {
       expect(auths.length).toEqual(0);
     });
 
-    afterAll(() => {
-      prismaService.user.delete({
+    afterAll(async () => {
+      return prismaService.user.delete({
         where: {
           id
         }
