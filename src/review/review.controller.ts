@@ -1,4 +1,14 @@
-import { Body, Controller, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
@@ -8,7 +18,7 @@ import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
 
-@Controller('products/:id/reviews')
+@Controller('products/:productId/reviews')
 @ApiTags('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
@@ -28,11 +38,51 @@ export class ReviewController {
   @UseGuards(RefreshTokenGuard)
   @Post('')
   async create(
-    @Req() { id }: RefreshTokenGuardReq,
-    @Body() { text, rating }: CreateReviewReqDto,
-    @Param('id', ParseIntPipe) productId: number
+    @Req() req: RefreshTokenGuardReq,
+    @Body() body: CreateReviewReqDto,
+    @Param('productId', ParseIntPipe) productId: number
   ) {
-    const review = await this.reviewService.create({ userId: id, text, rating, productId });
-    return review;
+    const { id, text, rating, createdAt } = await this.reviewService.create({
+      userId: req.id,
+      ...body,
+      productId
+    });
+    const res: CreateReviewResDto = {
+      id,
+      text,
+      rating,
+      createdAt
+    };
+    return res;
+  }
+
+  @ApiOperation({
+    summary: 'Delete a product review'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'No Content'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token, or login required'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'You are not authorized to delete this review'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Review not found'
+  })
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(204)
+  @Delete(':id')
+  async delete(
+    @Req() { id }: RefreshTokenGuardReq,
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('id', ParseIntPipe) reviewId: number
+  ) {
+    await this.reviewService.delete(id, productId, reviewId);
   }
 }

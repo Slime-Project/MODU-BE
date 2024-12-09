@@ -55,4 +55,24 @@ describe('ReviewController', () => {
       expect(result).toEqual(review);
     });
   });
+
+  describe('delete', () => {
+    it('should call delete method of reviewService', async () => {
+      const id = '1234567890';
+      const review: Review = {
+        id: 1,
+        productId: 1,
+        userId: id,
+        text: '',
+        rating: 2,
+        createdAt: new Date()
+      };
+      const req = {
+        id
+      } as RefreshTokenGuardReq;
+      service.delete.mockResolvedValue(review);
+      await controller.delete(req, review.productId, review.id);
+      expect(service.delete).toHaveBeenCalled();
+    });
+  });
 });
