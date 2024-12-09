@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   UseGuards
@@ -16,6 +17,8 @@ import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
+import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PutReviewResDto } from '@/review/dto/put-review-res.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -34,8 +37,12 @@ export class ReviewController {
     type: CreateReviewResDto
   })
   @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing fields in the request body'
+  })
+  @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
   @UseGuards(RefreshTokenGuard)
   @Post('')
@@ -67,15 +74,15 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
   @ApiResponse({
     status: 403,
-    description: 'You are not authorized to delete this review'
+    description: 'Forbidden - You are not authorized to delete this review'
   })
   @ApiResponse({
     status: 404,
-    description: 'Review not found'
+    description: 'Not Found'
   })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
@@ -97,7 +104,51 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - You are not authorized to delete this review'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found'
+  })
+  @UseGuards(RefreshTokenGuard)
+  @Get(':id')
+  async get(
+    @Req() req: RefreshTokenGuardReq,
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('id', ParseIntPipe) reviewId: number
+  ) {
+    const { id, text, rating, createdAt } = await this.reviewService.findOne(
+      req.id,
+      productId,
+      reviewId
+    );
+    const res: GetReviewResDto = {
+      id,
+      text,
+      rating,
+      createdAt
+    };
+    return res;
+  }
+
+  @ApiOperation({
+    summary: 'Update a product review'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing fields in the request body'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
   @ApiResponse({
     status: 403,
@@ -108,18 +159,20 @@ export class ReviewController {
     description: 'Review not found'
   })
   @UseGuards(RefreshTokenGuard)
-  @Get(':id')
-  async get(
+  @Patch(':id')
+  async put(
     @Req() req: RefreshTokenGuardReq,
+    @Body() data: PutReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const { id, text, rating, createdAt } = await this.reviewService.get(
-      req.id,
+    const { id, text, rating, createdAt } = await this.reviewService.update({
+      userId: req.id,
       productId,
-      reviewId
-    );
-    const res: GetReviewResDto = {
+      id: reviewId,
+      data
+    });
+    const res: PutReviewResDto = {
       id,
       text,
       rating,

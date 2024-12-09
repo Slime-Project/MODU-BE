@@ -6,6 +6,8 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PutReviewResDto } from '@/review/dto/put-review-res.dto';
 import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
 
@@ -79,8 +81,30 @@ describe('ReviewController', () => {
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      service.get.mockResolvedValue(review);
+      service.findOne.mockResolvedValue(review);
       const result = await controller.get(req, review.productId, review.id);
+      expect(result).toEqual(res);
+    });
+  });
+
+  describe('put', () => {
+    it('should return a review', async () => {
+      const review = getMockReview();
+      const req = {
+        id: review.userId
+      } as RefreshTokenGuardReq;
+      const reqBody: PutReviewReqDto = {
+        text: review.text,
+        rating: review.rating
+      };
+      const res: PutReviewResDto = {
+        id: review.id,
+        text: review.text,
+        rating: review.rating,
+        createdAt: review.createdAt
+      };
+      service.update.mockResolvedValue(review);
+      const result = await controller.put(req, reqBody, review.productId, review.id);
       expect(result).toEqual(res);
     });
   });

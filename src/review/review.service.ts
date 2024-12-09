@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 
 import { PrismaService } from '@/prisma/prisma.service';
 
-import { CreateReview } from '@/types/review.type';
+import { CreateReview, UpdateReview } from '@/types/review.type';
 
 @Injectable()
 export class ReviewService {
@@ -37,7 +37,7 @@ export class ReviewService {
     });
   }
 
-  async get(userId: string, productId: number, id: number) {
+  async findOne(userId: string, productId: number, id: number) {
     const review = await this.prismaService.review.findUnique({
       where: {
         id_productId: {
@@ -56,5 +56,43 @@ export class ReviewService {
     }
 
     return review;
+  }
+
+  async update({
+    userId,
+    productId,
+    id,
+    data
+  }: {
+    userId: string;
+    productId: number;
+    id: number;
+    data: UpdateReview;
+  }) {
+    const review = await this.prismaService.review.findUnique({
+      where: {
+        id_productId: {
+          id,
+          productId
+        }
+      }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this review');
+    }
+
+    const updatedReview = await this.prismaService.review.update({
+      where: {
+        id
+      },
+      data
+    });
+
+    return updatedReview;
   }
 }

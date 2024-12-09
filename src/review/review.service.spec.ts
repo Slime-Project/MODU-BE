@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { PrismaService } from '@/prisma/prisma.service';
+import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
 import { getMockReview } from '@/utils/unit-test';
 
 import { ReviewService } from './review.service';
@@ -60,7 +61,7 @@ describe('ReviewService', () => {
     it('should return a review', async () => {
       const review = getMockReview();
       prismaService.review.findUnique.mockResolvedValue(review);
-      const result = await reviewService.get(review.userId, review.productId, review.id);
+      const result = await reviewService.findOne(review.userId, review.productId, review.id);
       expect(result).toEqual(review);
     });
 
@@ -72,9 +73,47 @@ describe('ReviewService', () => {
     it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
       const review = getMockReview();
       prismaService.review.findUnique.mockResolvedValue(review);
-      return expect(reviewService.get('another-user', review.productId, review.id)).rejects.toThrow(
-        ForbiddenException
-      );
+      return expect(
+        reviewService.findOne('another-user', review.productId, review.id)
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('update', () => {
+    it('should return a review', async () => {
+      const review = getMockReview();
+      const data: PutReviewReqDto = { text: 'new-text', rating: 5 };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.review.update.mockResolvedValue(review);
+      const result = await reviewService.update({
+        userId: review.userId,
+        data,
+        productId: review.productId,
+        id: review.id
+      });
+      expect(result).toEqual(review);
+    });
+
+    it('should throw NotFoundException when review is not found', async () => {
+      const data: PutReviewReqDto = { text: 'new-text', rating: 5 };
+      prismaService.review.findUnique.mockResolvedValue(null);
+      return expect(
+        reviewService.update({ userId: '1234567890', data, productId: 1, id: 1 })
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
+      const review = getMockReview();
+      const data: PutReviewReqDto = { text: 'new-text', rating: 5 };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      return expect(
+        reviewService.update({
+          userId: 'another-user',
+          data,
+          productId: review.productId,
+          id: review.id
+        })
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });
