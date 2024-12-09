@@ -18,7 +18,7 @@ const createTestingApp = async <T>(modules: Type<T>[]) => {
   return app;
 };
 
-const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: bigint) => {
+const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
   const kakaoToken = {
     accessToken: 'kakaoAccessToken',
     refreshToken: 'kakaoRefreshToken',
@@ -39,7 +39,7 @@ const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: bigint) => {
   });
 };
 
-const createUser = async (app: INestApplication, id: bigint) => {
+const createUser = async (app: INestApplication, id: string) => {
   const req: CreateAuthReqDto = { code: 'testCode' };
   mockKakaoLogin(app.get(KakaoLoginService), id);
   const res = await request(app.getHttpServer()).post('/api/auth/login').send(req);
@@ -48,7 +48,7 @@ const createUser = async (app: INestApplication, id: bigint) => {
   return { refreshTokenCookie };
 };
 
-const deleteUser = async (prismaService: PrismaService, id: bigint) => {
+const deleteUser = async (prismaService: PrismaService, id: string) => {
   await prismaService.user.delete({
     where: {
       id

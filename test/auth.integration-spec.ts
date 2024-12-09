@@ -12,7 +12,7 @@ describe('AuthController (integration)', () => {
   let app: INestApplication;
   let kakaoLoginService: KakaoLoginService;
   let prismaService: PrismaService;
-  const id = BigInt(1234567890);
+  const id = '1234567890';
 
   beforeEach(async () => {
     app = await createTestingApp([AuthModule]);
@@ -28,7 +28,7 @@ describe('AuthController (integration)', () => {
       const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
       expect(res.body).toHaveProperty('id');
-      expect(typeof res.body.id).toBe('number');
+      expect(typeof res.body.id).toBe('string');
 
       const cookies = res.get('Set-Cookie');
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
@@ -59,7 +59,7 @@ describe('AuthController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.logout = jest.fn().mockResolvedValue({
-        id: Number(id)
+        id
       });
       const res = await request(app.getHttpServer())
         .post('/api/auth/logout')

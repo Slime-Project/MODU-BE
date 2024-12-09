@@ -38,7 +38,7 @@ describe('RefreshTokenGuard', () => {
         })
       } as ExecutionContext;
 
-      jwtService.verify.mockResolvedValue({ id: 1234567890 } as never);
+      jwtService.verify.mockResolvedValue({ id: '1234567890' } as never);
       const result = await guard.canActivate(context);
       expect(result).toBe(true);
     });

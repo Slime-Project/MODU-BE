@@ -37,11 +37,11 @@ describe('ReviewController', () => {
 
   describe('create', () => {
     it('should return a review', async () => {
-      const id = 1234567890;
+      const id = '1234567890';
       const review: Review = {
         id: 1,
         productId: 1,
-        userId: BigInt(id),
+        userId: id,
         text: '',
         rating: 2,
         createdAt: new Date()
@@ -52,7 +52,7 @@ describe('ReviewController', () => {
       const body: CreateReviewReqDto = { text: review.text, rating: review.rating };
       service.create.mockResolvedValue(review);
       const result = await controller.create(req, body, review.productId);
-      expect(result).toEqual({ ...review, userId: Number(review.userId) });
+      expect(result).toEqual(review);
     });
   });
 });

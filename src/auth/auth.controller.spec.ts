@@ -41,7 +41,7 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should set cookies', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890), role: UserRole.USER };
+      const user = { id: '1234567890', role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
@@ -49,7 +49,7 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const resBody: CreateAuthResDto = { id: Number(user.id) };
+      const resBody: CreateAuthResDto = { id: user.id };
 
       service.login.mockResolvedValue({ user: resBody, token });
       await controller.login(reqBody, response);
@@ -69,7 +69,7 @@ describe('AuthController', () => {
 
     it('should return the body with user', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890), role: UserRole.USER };
+      const user = { id: '1234567890', role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
@@ -77,7 +77,7 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const resBody: CreateAuthResDto = { id: Number(user.id) };
+      const resBody: CreateAuthResDto = { id: user.id };
 
       service.login.mockResolvedValue({ user: resBody, token });
       const result: CreateAuthResDto = await controller.login(reqBody, response);
@@ -94,7 +94,7 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const req = {
-        id: 1234567890
+        id: '1234567890'
       } as RefreshTokenGuardReq;
       req.cookies = {
         refresh_token: 'refreshToken'
@@ -121,7 +121,7 @@ describe('AuthController', () => {
     it('should clear cookies', async () => {
       const refreshToken = 'refreshToken';
       const req = {
-        id: 1234567890
+        id: '1234567890'
       } as RefreshTokenGuardReq;
       req.cookies = {
         refresh_token: refreshToken

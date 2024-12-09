@@ -1,7 +1,7 @@
 import { Request } from 'express';
 
 interface RefreshTokenGuardReq extends Request {
-  id: number;
+  id: string;
 }
 
 export { RefreshTokenGuardReq };

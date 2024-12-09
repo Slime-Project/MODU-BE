@@ -36,7 +36,7 @@ describe('UserController', () => {
     it('should clear cookies', async () => {
       const refreshToken = 'refreshToken';
       const req = {
-        id: 1234567890
+        id: '1234567890'
       } as RefreshTokenGuardReq;
       req.cookies = {
         refresh_token: refreshToken

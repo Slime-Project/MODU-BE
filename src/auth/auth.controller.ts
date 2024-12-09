@@ -63,7 +63,7 @@ export class AuthController {
   @Post('token/reissue')
   async reissueToken(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    const data = await this.authService.reissueToken(refreshToken, BigInt(req.id));
+    const data = await this.authService.reissueToken(refreshToken, req.id);
 
     res.cookie('access_token', data.accessToken, {
       httpOnly: true,
@@ -98,7 +98,7 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    await this.authService.logout(BigInt(req.id), refreshToken);
+    await this.authService.logout(req.id, refreshToken);
 
     res.cookie('access_token', '', {
       httpOnly: true,

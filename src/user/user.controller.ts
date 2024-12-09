@@ -28,7 +28,7 @@ export class UserController {
   @Delete('')
   async deleteAccount(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    await this.userService.deleteAccount(BigInt(req.id), refreshToken);
+    await this.userService.deleteAccount(req.id, refreshToken);
 
     res.cookie('access_token', '', {
       httpOnly: true,
