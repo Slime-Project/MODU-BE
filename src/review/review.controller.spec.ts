@@ -87,7 +87,7 @@ describe('ReviewController', () => {
     });
   });
 
-  describe('put', () => {
+  describe('patch', () => {
     it('should return a review', async () => {
       const review = getMockReview();
       const req = {
