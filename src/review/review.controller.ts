@@ -42,6 +42,10 @@ export class ReviewController {
     status: 401,
     description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict - User has already submitted a review for this product'
+  })
   @UseGuards(RefreshTokenGuard)
   @Post('')
   async create(
