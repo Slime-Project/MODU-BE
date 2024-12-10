@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Product, Review, UserRole } from '@prisma/client';
+import { Product, Review } from '@prisma/client';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { ReviewService } from '@/review/review.service';
-import { createProduct, createReview, deleteProduct, deleteUser } from '@/utils/integration-test';
+import { createProduct, createReview, deleteProduct } from '@/utils/integration-test';
 import { sanitizeReviews } from '@/utils/review';
 
 import { SanitizedReview } from '@/types/review.type';
@@ -30,33 +30,19 @@ describe('ReviewService (integration)', () => {
 
     beforeAll(async () => {
       await prismaService.user.createMany({
-        data: [
-          { id: userId1, role: UserRole.USER },
-          { id: userId2, role: UserRole.USER },
-          { id: userId3, role: UserRole.USER }
-        ]
+        data: [{ id: userId1 }, { id: userId2 }, { id: userId3 }]
       });
       product = await createProduct(prismaService);
-      reviews = await Promise.all([
-        createReview(prismaService, {
-          userId: userId1,
-          productId: product.id,
-          rating: 1,
-          createdAt: new Date(new Date().getTime() + 1000)
-        }),
-        createReview(prismaService, {
-          userId: userId2,
-          productId: product.id,
-          rating: 3,
-          createdAt: new Date(new Date().getTime() + 2000)
-        }),
-        createReview(prismaService, {
-          userId: userId3,
-          productId: product.id,
-          rating: 2,
-          createdAt: new Date()
-        })
-      ]);
+      reviews = await Promise.all(
+        [userId1, userId2, userId3].map((userId, i) =>
+          createReview(prismaService, {
+            userId,
+            productId: product.id,
+            rating: i + (1 % 5),
+            createdAt: new Date(new Date().getTime() + i * 1000)
+          })
+        )
+      );
     });
 
     it('should return reviews sorted by rating desc', async () => {
@@ -103,9 +89,13 @@ describe('ReviewService (integration)', () => {
 
     afterAll(async () => {
       return Promise.allSettled([
-        deleteUser(prismaService, userId1),
-        deleteUser(prismaService, userId2),
-        deleteUser(prismaService, userId3),
+        prismaService.user.deleteMany({
+          where: {
+            id: {
+              in: [userId1, userId2, userId3]
+            }
+          }
+        }),
         deleteProduct(prismaService, product.id)
       ]);
     });
