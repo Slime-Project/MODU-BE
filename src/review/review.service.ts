@@ -1,8 +1,17 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
+import { sanitizeReviews } from '@/utils/review';
 
-import { CreateReview, UpdateReview } from '@/types/review.type';
+import {
+  CreateReview,
+  OrderBy,
+  ReviewsData,
+  SortBy,
+  SortingOpts,
+  UpdateReview
+} from '@/types/review.type';
 
 @Injectable()
 export class ReviewService {
@@ -56,6 +65,78 @@ export class ReviewService {
     }
 
     return review;
+  }
+
+  async findSortedAndPaginatedReviews({
+    productId,
+    sortBy,
+    orderBy,
+    page
+  }: {
+    productId: number;
+    sortBy: SortBy;
+    orderBy: OrderBy;
+    page: number;
+  }) {
+    const sortingOpts: SortingOpts = {
+      createdAt: {
+        desc: [{ createdAt: 'desc' }, { id: 'desc' }],
+        asc: [{ createdAt: 'asc' }, { id: 'desc' }]
+      },
+      rating: {
+        desc: [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
+        asc: [{ rating: 'asc' }, { createdAt: 'desc' }, { id: 'desc' }]
+      }
+    };
+    const reviews = await this.prismaService.review.findMany({
+      where: {
+        productId
+      },
+      take: REVIEW_PAGE_SIZE,
+      skip: (page - 1) * REVIEW_PAGE_SIZE,
+      orderBy: sortingOpts[sortBy][orderBy]
+    });
+    return sanitizeReviews(reviews);
+  }
+
+  async findMany({
+    productId,
+    sortBy = 'rating',
+    orderBy = 'desc',
+    page
+  }: {
+    productId: number;
+    sortBy?: SortBy;
+    orderBy?: OrderBy;
+    page: number;
+  }) {
+    const product = await this.prismaService.product.findUnique({
+      where: {
+        id: productId
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const reviews = await this.findSortedAndPaginatedReviews({
+      productId,
+      sortBy,
+      orderBy,
+      page
+    });
+    const totalReviews = await this.prismaService.review.count({
+      where: {
+        productId
+      }
+    });
+    const totalPages = Math.ceil(totalReviews / REVIEW_PAGE_SIZE);
+    const reviewsData: ReviewsData = {
+      reviews,
+      meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages }
+    };
+    return reviewsData;
   }
 
   async update({

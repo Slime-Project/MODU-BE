@@ -1,13 +1,24 @@
 import { INestApplication } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
+import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
 import { ReviewModule } from '@/review/review.module';
-import { createTestingApp, createUser, deleteUser } from '@/utils/integration-test';
+import {
+  createProduct,
+  createTestingApp,
+  createUser,
+  deleteProduct,
+  deleteUser
+} from '@/utils/integration-test';
+import { sanitizeReviews } from '@/utils/review';
+
+import { ReviewsData } from '@/types/review.type';
 
 describe('ReviewController (integration)', () => {
   let app: INestApplication;
@@ -18,23 +29,9 @@ describe('ReviewController (integration)', () => {
     prismaService = app.get(PrismaService);
   });
 
-  const createProduct = async () => {
-    return prismaService.product.create({
-      data: { title: '', link: '', price: 1, seller: '' }
-    });
-  };
-
-  const deleteProduct = async (id: number) => {
-    return prismaService.product.delete({
-      where: {
-        id
-      }
-    });
-  };
-
-  const createReview = async (userId: string, productId: number) => {
+  const createReview = async (userId: string, productId: number, rating?: number) => {
     return prismaService.review.create({
-      data: { userId, productId, text: '', rating: 1 }
+      data: { userId, productId, text: '', rating: rating || 1 }
     });
   };
 
@@ -42,7 +39,7 @@ describe('ReviewController (integration)', () => {
     it('201', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
 
       const review: CreateReviewResDto = {
         id: expect.any(Number),
@@ -58,7 +55,7 @@ describe('ReviewController (integration)', () => {
       expect(res.body).toEqual(review);
 
       await deleteUser(prismaService, userId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('401', async () => {
@@ -70,7 +67,7 @@ describe('ReviewController (integration)', () => {
     it('201', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
 
       await request(app.getHttpServer())
@@ -79,7 +76,7 @@ describe('ReviewController (integration)', () => {
         .expect(204);
 
       await deleteUser(prismaService, userId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('401', async () => {
@@ -91,7 +88,7 @@ describe('ReviewController (integration)', () => {
       const anotherUserId = '4567890123';
       const { refreshTokenCookie } = await createUser(app, userId);
       await createUser(app, anotherUserId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
 
       await request(app.getHttpServer())
@@ -101,7 +98,7 @@ describe('ReviewController (integration)', () => {
 
       await deleteUser(prismaService, userId);
       await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('404', async () => {
@@ -121,7 +118,7 @@ describe('ReviewController (integration)', () => {
     it('200', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
 
       const expectedRes: GetReviewResDto = {
@@ -138,7 +135,7 @@ describe('ReviewController (integration)', () => {
       expect(res.body).toEqual(expectedRes);
 
       await deleteUser(prismaService, userId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('401', async () => {
@@ -150,7 +147,7 @@ describe('ReviewController (integration)', () => {
       const anotherUserId = '4567890123';
       const { refreshTokenCookie } = await createUser(app, userId);
       await createUser(app, anotherUserId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
 
       await request(app.getHttpServer())
@@ -160,7 +157,7 @@ describe('ReviewController (integration)', () => {
 
       await deleteUser(prismaService, userId);
       await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('404', async () => {
@@ -176,11 +173,56 @@ describe('ReviewController (integration)', () => {
     });
   });
 
+  describe('/api/products/:productId/reviews (GET)', () => {
+    it('200', async () => {
+      const userId1 = '3456789012';
+      const userId2 = '4567890123';
+      await prismaService.user.createMany({
+        data: [
+          { id: userId1, role: UserRole.USER },
+          { id: userId2, role: UserRole.USER }
+        ]
+      });
+      const product = await createProduct(prismaService);
+      const reviews = await Promise.all([
+        createReview(userId1, product.id, 1),
+        createReview(userId2, product.id, 3)
+      ]);
+      const page = 1;
+      const reviewsData: ReviewsData = {
+        reviews: sanitizeReviews(reviews).sort((a, b) => b.rating - a.rating),
+        meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews: reviews.length, totalPages: 1 }
+      };
+      const body = {
+        reviews: reviewsData.reviews.map(review => ({
+          ...review,
+          createdAt: review.createdAt.toISOString()
+        })),
+        meta: reviewsData.meta
+      };
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/products/${product.id}/reviews?page=${page}`)
+        .expect(200);
+      expect(res.body).toEqual(body);
+
+      await Promise.allSettled([
+        deleteUser(prismaService, userId1),
+        deleteUser(prismaService, userId2),
+        deleteProduct(prismaService, product.id)
+      ]);
+    });
+
+    it('404', async () => {
+      await request(app.getHttpServer()).get('/api/products/0/reviews?page=1').expect(404);
+    });
+  });
+
   describe('/api/products/:productId/reviews/:id (PUT)', () => {
     it('200', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
       const reqBody: PutReviewReqDto = {
         text: 'new-text',
@@ -201,7 +243,7 @@ describe('ReviewController (integration)', () => {
       expect(res.body).toEqual(expectedRes);
 
       await deleteUser(prismaService, userId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('401', async () => {
@@ -213,7 +255,7 @@ describe('ReviewController (integration)', () => {
       const anotherUserId = '4567890123';
       const { refreshTokenCookie } = await createUser(app, userId);
       await createUser(app, anotherUserId);
-      const product = await createProduct();
+      const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
       const reqBody: PutReviewReqDto = {
         text: 'new-text',
@@ -228,7 +270,7 @@ describe('ReviewController (integration)', () => {
 
       await deleteUser(prismaService, userId);
       await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(product.id);
+      await deleteProduct(prismaService, product.id);
     });
 
     it('404', async () => {

@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
+import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
 import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
 import { PutReviewResDto } from '@/review/dto/put-review-res.dto';
 import { ReviewService } from '@/review/review.service';
@@ -133,6 +135,34 @@ export class ReviewController {
       createdAt
     };
     return res;
+  }
+
+  @ApiOperation({
+    summary: 'Get product reviews'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query fields'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found'
+  })
+  @Get('')
+  async getMany(
+    @Param('productId', ParseIntPipe) productId: number,
+    @Query() query: GetReviewsReqQueryDto
+  ) {
+    return this.reviewService.findMany({
+      productId,
+      sortBy: query.sortBy,
+      orderBy: query.orderBy,
+      page: query.page
+    });
   }
 
   @ApiOperation({
