@@ -216,7 +216,7 @@ describe('ReviewController (integration)', () => {
     });
   });
 
-  describe('/api/products/:productId/reviews/:id (PUT)', () => {
+  describe('/api/products/:productId/reviews/:id (PATCH)', () => {
     it('200', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
