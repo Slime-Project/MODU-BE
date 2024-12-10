@@ -5,8 +5,6 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
-import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
@@ -18,7 +16,7 @@ import {
 } from '@/utils/integration-test';
 import { sanitizeReviews } from '@/utils/review';
 
-import { ReviewsData } from '@/types/review.type';
+import { ReviewsData, SanitizedReview } from '@/types/review.type';
 
 describe('ReviewController (integration)', () => {
   let app: INestApplication;
@@ -41,7 +39,7 @@ describe('ReviewController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
 
-      const review: CreateReviewResDto = {
+      const review: SanitizedReview = {
         id: expect.any(Number),
         text: 'Great product!',
         rating: 5,
@@ -121,7 +119,7 @@ describe('ReviewController (integration)', () => {
       const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
 
-      const expectedRes: GetReviewResDto = {
+      const expectedRes: SanitizedReview = {
         id: expect.any(Number),
         text: review.text,
         rating: review.rating,
@@ -228,7 +226,7 @@ describe('ReviewController (integration)', () => {
         text: 'new-text',
         rating: 5
       };
-      const expectedRes: GetReviewResDto = {
+      const expectedRes: SanitizedReview = {
         id: expect.any(Number),
         createdAt: expect.any(String),
         text: reqBody.text,

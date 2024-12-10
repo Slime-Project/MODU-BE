@@ -16,11 +16,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
-import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
-import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
 import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
-import { PutReviewResDto } from '@/review/dto/put-review-res.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -35,8 +32,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 201,
-    description: 'created',
-    type: CreateReviewResDto
+    description: 'created'
   })
   @ApiResponse({
     status: 400,
@@ -53,18 +49,11 @@ export class ReviewController {
     @Body() body: CreateReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    const { id, text, rating, createdAt } = await this.reviewService.create({
+    return this.reviewService.create({
       userId: req.id,
       ...body,
       productId
     });
-    const res: CreateReviewResDto = {
-      id,
-      text,
-      rating,
-      createdAt
-    };
-    return res;
   }
 
   @ApiOperation({
@@ -123,18 +112,7 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const { id, text, rating, createdAt } = await this.reviewService.findOne(
-      req.id,
-      productId,
-      reviewId
-    );
-    const res: GetReviewResDto = {
-      id,
-      text,
-      rating,
-      createdAt
-    };
-    return res;
+    return this.reviewService.findOne(req.id, productId, reviewId);
   }
 
   @ApiOperation({
@@ -196,18 +174,11 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const { id, text, rating, createdAt } = await this.reviewService.update({
+    return this.reviewService.update({
       userId: req.id,
       productId,
       id: reviewId,
       data
     });
-    const res: PutReviewResDto = {
-      id,
-      text,
-      rating,
-      createdAt
-    };
-    return res;
   }
 }

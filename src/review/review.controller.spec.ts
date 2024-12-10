@@ -6,12 +6,10 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
-import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
 import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
-import { PutReviewResDto } from '@/review/dto/put-review-res.dto';
 import { ReviewService } from '@/review/review.service';
-import { sanitizeReviews } from '@/utils/review';
+import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 import { getMockReview } from '@/utils/unit-test';
 
 import { ReviewController } from './review.controller';
@@ -43,51 +41,42 @@ describe('ReviewController', () => {
   });
 
   describe('create', () => {
-    it('should return a review', async () => {
+    it('should return a sanitized review', async () => {
       const review = getMockReview();
-      const res: CreateReviewResDto = {
-        id: review.id,
-        text: review.text,
-        rating: review.rating,
-        createdAt: review.createdAt
-      };
+      const sanitizedReview = sanitizeReview(review);
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
       const body: CreateReviewReqDto = { text: review.text, rating: review.rating };
-      service.create.mockResolvedValue(review);
+      service.create.mockResolvedValue(sanitizedReview);
       const result = await controller.create(req, body, review.productId);
-      expect(result).toEqual(res);
+      expect(result).toEqual(sanitizedReview);
     });
   });
 
   describe('delete', () => {
     it('should call delete method of reviewService', async () => {
       const review = getMockReview();
+      const sanitizedReview = sanitizeReview(review);
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      service.delete.mockResolvedValue(review);
+      service.delete.mockResolvedValue(sanitizedReview);
       await controller.delete(req, review.productId, review.id);
       expect(service.delete).toHaveBeenCalled();
     });
   });
 
   describe('get', () => {
-    it('should return a review', async () => {
+    it('should return a sanitized review', async () => {
       const review = getMockReview();
-      const res: CreateReviewResDto = {
-        id: review.id,
-        text: review.text,
-        rating: review.rating,
-        createdAt: review.createdAt
-      };
+      const sanitizedReview = sanitizeReview(review);
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      service.findOne.mockResolvedValue(review);
+      service.findOne.mockResolvedValue(sanitizedReview);
       const result = await controller.get(req, review.productId, review.id);
-      expect(result).toEqual(res);
+      expect(result).toEqual(sanitizedReview);
     });
   });
 
@@ -110,7 +99,7 @@ describe('ReviewController', () => {
   });
 
   describe('patch', () => {
-    it('should return a review', async () => {
+    it('should return a sanitized review', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
@@ -119,15 +108,10 @@ describe('ReviewController', () => {
         text: review.text,
         rating: review.rating
       };
-      const res: PutReviewResDto = {
-        id: review.id,
-        text: review.text,
-        rating: review.rating,
-        createdAt: review.createdAt
-      };
-      service.update.mockResolvedValue(review);
+      const sanitizedReview = sanitizeReview(review);
+      service.update.mockResolvedValue(sanitizedReview);
       const result = await controller.patch(req, reqBody, review.productId, review.id);
-      expect(result).toEqual(res);
+      expect(result).toEqual(sanitizedReview);
     });
   });
 });

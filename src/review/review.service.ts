@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { sanitizeReviews } from '@/utils/review';
+import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 
 import {
   CreateReview,
@@ -18,7 +18,8 @@ export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(data: CreateReview) {
-    return this.prismaService.review.create({ data });
+    const review = await this.prismaService.review.create({ data });
+    return sanitizeReview(review);
   }
 
   async delete(userId: string, productId: number, id: number) {
@@ -39,11 +40,12 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    return this.prismaService.review.delete({
+    const deletedReview = await this.prismaService.review.delete({
       where: {
         id
       }
     });
+    return sanitizeReview(deletedReview);
   }
 
   async findOne(userId: string, productId: number, id: number) {
@@ -64,7 +66,7 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    return review;
+    return sanitizeReview(review);
   }
 
   async findSortedAndPaginatedReviews({
@@ -174,6 +176,6 @@ export class ReviewService {
       data
     });
 
-    return updatedReview;
+    return sanitizeReview(updatedReview);
   }
 }
