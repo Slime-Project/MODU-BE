@@ -1,4 +1,4 @@
-import { INestApplication, Type } from '@nestjs/common';
+import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
@@ -14,6 +14,13 @@ const createTestingApp = async <T>(modules: Type<T>[]) => {
   const app = moduleFixture.createNestApplication();
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true
+    })
+  );
   await app.init();
   return app;
 };
@@ -56,4 +63,40 @@ const deleteUser = async (prismaService: PrismaService, id: string) => {
   });
 };
 
-export { createTestingApp, mockKakaoLogin, createUser, deleteUser };
+const createProduct = async (prismaService: PrismaService) => {
+  return prismaService.product.create({
+    data: { title: '', link: '', price: 1, seller: '' }
+  });
+};
+
+const deleteProduct = async (prismaService: PrismaService, id: number) => {
+  return prismaService.product.delete({
+    where: {
+      id
+    }
+  });
+};
+
+const createReview = async (
+  prismaService: PrismaService,
+  {
+    userId,
+    productId,
+    rating,
+    createdAt
+  }: { userId: string; productId: number; rating?: number; createdAt?: Date }
+) => {
+  return prismaService.review.create({
+    data: { userId, productId, text: '', rating: rating || 1, createdAt }
+  });
+};
+
+export {
+  createTestingApp,
+  mockKakaoLogin,
+  createUser,
+  deleteUser,
+  createProduct,
+  deleteProduct,
+  createReview
+};

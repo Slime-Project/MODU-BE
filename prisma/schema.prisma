@@ -55,4 +55,6 @@ model Review {
 
   user                   User       @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
   product                Product    @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([id, productId]) 
 }
