@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Product } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
@@ -34,9 +34,16 @@ describe('ReviewService', () => {
     it('should return a sanitized review', async () => {
       const review = getMockReview();
       const sanitizedReview = sanitizeReview(review);
+      prismaService.review.findUnique.mockResolvedValue(null);
       prismaService.review.create.mockResolvedValue(review);
       const result = await reviewService.create(review);
       expect(result).toEqual(sanitizedReview);
+    });
+
+    it('should throw ConflictException when user has already submitted a review for this product', async () => {
+      const review = getMockReview();
+      prismaService.review.findUnique.mockResolvedValue(review);
+      return expect(reviewService.create(review)).rejects.toThrow(ConflictException);
     });
   });
 

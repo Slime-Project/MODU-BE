@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -18,8 +23,21 @@ export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(data: CreateReview) {
-    const review = await this.prismaService.review.create({ data });
-    return sanitizeReview(review);
+    const review = await this.prismaService.review.findUnique({
+      where: {
+        productId_userId: {
+          userId: data.userId,
+          productId: data.productId
+        }
+      }
+    });
+
+    if (review) {
+      throw new ConflictException('User has already submitted a review for this product');
+    }
+
+    const createdReview = await this.prismaService.review.create({ data });
+    return sanitizeReview(createdReview);
   }
 
   async delete(userId: string, productId: number, id: number) {
