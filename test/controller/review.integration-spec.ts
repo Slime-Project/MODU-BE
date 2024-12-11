@@ -5,7 +5,7 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
   createProduct,
@@ -238,7 +238,7 @@ describe('ReviewController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
-      const reqBody: PutReviewReqDto = {
+      const reqBody: PatchReviewReqDto = {
         text: 'new-text',
         rating: 5
       };
@@ -271,7 +271,7 @@ describe('ReviewController (integration)', () => {
       await createUser(app, anotherUserId);
       const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
-      const reqBody: PutReviewReqDto = {
+      const reqBody: PatchReviewReqDto = {
         text: 'new-text',
         rating: 5
       };
@@ -290,7 +290,7 @@ describe('ReviewController (integration)', () => {
     it('404', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const reqBody: PutReviewReqDto = {
+      const reqBody: PatchReviewReqDto = {
         text: 'new-text',
         rating: 5
       };
