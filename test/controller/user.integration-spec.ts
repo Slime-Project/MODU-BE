@@ -6,12 +6,36 @@ import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { UserModule } from '@/user/user.module';
 import { createTestingApp, createUser } from '@/utils/integration-test';
 
+import { UserInfo } from '@/types/user.type';
+
 describe('UserController (integration)', () => {
   let app: INestApplication;
   const id = '9876543210';
 
   beforeEach(async () => {
     app = await createTestingApp([UserModule, AuthModule]);
+  });
+
+  describe('/api/user (GET)', () => {
+    it('200', async () => {
+      const { refreshTokenCookie, kakaoUser } = await createUser(app, id);
+      const userInfo: UserInfo = {
+        id,
+        nickname: kakaoUser.properties.nickname,
+        profileImage: kakaoUser.properties.profileImage
+      };
+
+      KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
+      const { body } = await request(app.getHttpServer())
+        .get('/api/user')
+        .set('Cookie', [refreshTokenCookie])
+        .expect(200);
+      expect(body).toEqual(userInfo);
+    });
+
+    it('401', async () => {
+      return request(app.getHttpServer()).get('/api/user').expect(401);
+    });
   });
 
   describe('/api/user (DELETE)', () => {
@@ -53,7 +77,7 @@ describe('UserController (integration)', () => {
       }
     });
 
-    it('401', () => {
+    it('401', async () => {
       return request(app.getHttpServer()).delete('/api/user').expect(401);
     });
   });

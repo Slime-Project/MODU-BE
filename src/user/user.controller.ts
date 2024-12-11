@@ -1,8 +1,9 @@
-import { Controller, Delete, HttpCode, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
+import { GetUserResDto } from '@/user/dto/get-user-res.dto';
 import { UserService } from '@/user/user.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -11,6 +12,26 @@ import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
 @ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @ApiOperation({
+    summary: 'Get Profile'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: GetUserResDto
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token, or login required'
+  })
+  @HttpCode(200)
+  @UseGuards(RefreshTokenGuard)
+  @Get('')
+  async get(@Req() req: RefreshTokenGuardReq) {
+    const user: GetUserResDto = await this.userService.get(req.id, req.cookies.refresh_token);
+    return user;
+  }
 
   @ApiOperation({
     summary: 'Delete Account'

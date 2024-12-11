@@ -4,8 +4,8 @@ import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 
 import { GetTokenDto } from './dto/get-token.dto';
+import { KaKaoUserInfoDto } from './dto/kakao-user-info.dto';
 import { ReissueTokenDto } from './dto/reissue-token.dto';
-import { UserInfoDto } from './dto/user-info.dto';
 
 @Injectable()
 export class KakaoLoginService {
@@ -66,7 +66,7 @@ export class KakaoLoginService {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
-    return plainToInstance(UserInfoDto, data, { excludeExtraneousValues: true });
+    return plainToInstance(KaKaoUserInfoDto, data, { excludeExtraneousValues: true });
   }
 
   async login(code: string) {

@@ -5,8 +5,8 @@ import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
+import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
-import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
@@ -81,7 +81,7 @@ describe('AuthService', () => {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as UserInfoDto;
+      } as KaKaoUserInfoDto;
       kakaoLoginService.login.mockResolvedValue({
         user: kakaoUser,
         token: kakaoToken

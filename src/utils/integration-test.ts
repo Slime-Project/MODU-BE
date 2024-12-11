@@ -5,7 +5,7 @@ import * as request from 'supertest';
 
 import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
-import { UserInfoDto } from '@/kakao/login/dto/user-info.dto';
+import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -38,21 +38,23 @@ const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
       nickname: 'nickname',
       profileImage: 'url'
     }
-  } as UserInfoDto;
+  } as KaKaoUserInfoDto;
 
   jest.spyOn(kakaoLoginService, 'login').mockResolvedValue({
     user: kakaoUser,
     token: kakaoToken
   });
+
+  return kakaoUser;
 };
 
 const createUser = async (app: INestApplication, id: string) => {
   const req: CreateAuthReqDto = { code: 'testCode' };
-  mockKakaoLogin(app.get(KakaoLoginService), id);
+  const kakaoUser = mockKakaoLogin(app.get(KakaoLoginService), id);
   const res = await request(app.getHttpServer()).post('/api/auth/login').send(req);
   const cookies = res.get('Set-Cookie');
   const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
-  return { refreshTokenCookie };
+  return { refreshTokenCookie, kakaoUser };
 };
 
 const deleteUser = async (prismaService: PrismaService, id: string) => {
