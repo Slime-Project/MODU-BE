@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -62,7 +61,7 @@ export class AuthService {
     return { refreshToken, refreshTokenExp: expDate };
   }
 
-  async login(code: string): Promise<{ user: CreateAuthResDto; token: TokensInfo }> {
+  async login(code: string): Promise<{ user: User; token: TokensInfo }> {
     const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
     const id = kakaoUser.id.toString();
     const { accessToken, exp } = await this.createAccessToken(id, kakaoToken.expiresIn);
@@ -94,13 +93,13 @@ export class AuthService {
         return createdUser;
       });
     } else {
-      this.prismaService.auth.create({
+      await this.prismaService.auth.create({
         data: createAuth
       });
     }
 
     return {
-      user: { id: user.id },
+      user,
       token: {
         accessToken,
         exp,

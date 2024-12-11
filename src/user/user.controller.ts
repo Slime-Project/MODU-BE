@@ -1,5 +1,6 @@
 import { Controller, Delete, Get, HttpCode, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
@@ -29,8 +30,8 @@ export class UserController {
   @UseGuards(RefreshTokenGuard)
   @Get('')
   async get(@Req() req: RefreshTokenGuardReq) {
-    const user: GetUserResDto = await this.userService.get(req.id, req.cookies.refresh_token);
-    return user;
+    const user = await this.userService.get(req.id, req.cookies.refresh_token);
+    return plainToInstance(GetUserResDto, user);
   }
 
   @ApiOperation({

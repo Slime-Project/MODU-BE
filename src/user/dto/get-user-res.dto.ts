@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class GetUserResDto {
@@ -8,6 +9,7 @@ export class GetUserResDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   readonly id: string;
 
   @ApiProperty({
@@ -15,6 +17,7 @@ export class GetUserResDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   readonly profileImage: string;
 
   @ApiProperty({
@@ -22,5 +25,6 @@ export class GetUserResDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   readonly nickname: string;
 }

@@ -1,22 +1,23 @@
 import { INestApplication } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
 import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
+import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
+import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
+import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
 import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
+import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
   createProduct,
   createTestingApp,
   createUser,
   deleteProduct,
-  deleteUser
+  deleteUser,
+  validateResDto
 } from '@/utils/integration-test';
-import { sanitizeReviews } from '@/utils/review';
-
-import { ReviewsData, SanitizedReview } from '@/types/review.type';
 
 describe('ReviewController (integration)', () => {
   let app: INestApplication;
@@ -38,19 +39,16 @@ describe('ReviewController (integration)', () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
-
-      const review: SanitizedReview = {
-        id: expect.any(Number),
+      const req: CreateReviewReqDto = {
         text: 'Great product!',
-        rating: 5,
-        createdAt: expect.any(String)
+        rating: 5
       };
-      const res = await request(app.getHttpServer())
+      const { body } = await request(app.getHttpServer())
         .post(`/api/products/${product.id}/reviews`)
         .set('Cookie', [refreshTokenCookie])
-        .send({ text: review.text, rating: review.rating })
+        .send(req)
         .expect(201);
-      expect(res.body).toEqual(review);
+      validateResDto(CreateReviewResDto, body);
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);
@@ -78,7 +76,7 @@ describe('ReviewController (integration)', () => {
   });
 
   describe('/api/products/:productId/reviews/:id (DELETE)', () => {
-    it('201', async () => {
+    it('204', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
@@ -135,18 +133,11 @@ describe('ReviewController (integration)', () => {
       const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
 
-      const expectedRes: SanitizedReview = {
-        id: expect.any(Number),
-        text: review.text,
-        rating: review.rating,
-        createdAt: expect.any(String)
-      };
-
-      const res = await request(app.getHttpServer())
+      const { body } = await request(app.getHttpServer())
         .get(`/api/products/${review.productId}/reviews/${review.id}`)
         .set('Cookie', [refreshTokenCookie])
         .expect(200);
-      expect(res.body).toEqual(expectedRes);
+      validateResDto(GetReviewResDto, body);
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);
@@ -192,33 +183,18 @@ describe('ReviewController (integration)', () => {
       const userId1 = '3456789012';
       const userId2 = '4567890123';
       await prismaService.user.createMany({
-        data: [
-          { id: userId1, role: UserRole.USER },
-          { id: userId2, role: UserRole.USER }
-        ]
+        data: [{ id: userId1 }, { id: userId2 }]
       });
       const product = await createProduct(prismaService);
-      const reviews = await Promise.all([
+      await Promise.all([
         createReview(userId1, product.id, 1),
         createReview(userId2, product.id, 3)
       ]);
       const page = 1;
-      const reviewsData: ReviewsData = {
-        reviews: sanitizeReviews(reviews).sort((a, b) => b.rating - a.rating),
-        meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews: reviews.length, totalPages: 1 }
-      };
-      const body = {
-        reviews: reviewsData.reviews.map(review => ({
-          ...review,
-          createdAt: review.createdAt.toISOString()
-        })),
-        meta: reviewsData.meta
-      };
-
-      const res = await request(app.getHttpServer())
+      const { body } = await request(app.getHttpServer())
         .get(`/api/products/${product.id}/reviews?page=${page}`)
         .expect(200);
-      expect(res.body).toEqual(body);
+      validateResDto(GetReviewsResDto, body);
 
       await Promise.allSettled([
         deleteUser(prismaService, userId1),
@@ -242,19 +218,12 @@ describe('ReviewController (integration)', () => {
         text: 'new-text',
         rating: 5
       };
-      const expectedRes: SanitizedReview = {
-        id: expect.any(Number),
-        createdAt: expect.any(String),
-        text: reqBody.text,
-        rating: reqBody.rating
-      };
-
-      const res = await request(app.getHttpServer())
+      const { body } = await request(app.getHttpServer())
         .patch(`/api/products/${review.productId}/reviews/${review.id}`)
         .set('Cookie', [refreshTokenCookie])
         .send(reqBody)
         .expect(200);
-      expect(res.body).toEqual(expectedRes);
+      validateResDto(PatchReviewResDto, body);
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);

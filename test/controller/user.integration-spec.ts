@@ -3,34 +3,33 @@ import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { GetUserResDto } from '@/user/dto/get-user-res.dto';
 import { UserModule } from '@/user/user.module';
-import { createTestingApp, createUser } from '@/utils/integration-test';
-
-import { UserInfo } from '@/types/user.type';
+import { createTestingApp, createUser, deleteUser, validateResDto } from '@/utils/integration-test';
 
 describe('UserController (integration)', () => {
   let app: INestApplication;
+  let prismaService: PrismaService;
   const id = '9876543210';
 
   beforeEach(async () => {
     app = await createTestingApp([UserModule, AuthModule]);
+    prismaService = app.get(PrismaService);
   });
 
   describe('/api/user (GET)', () => {
     it('200', async () => {
       const { refreshTokenCookie, kakaoUser } = await createUser(app, id);
-      const userInfo: UserInfo = {
-        id,
-        nickname: kakaoUser.properties.nickname,
-        profileImage: kakaoUser.properties.profileImage
-      };
 
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
       const { body } = await request(app.getHttpServer())
         .get('/api/user')
         .set('Cookie', [refreshTokenCookie])
         .expect(200);
-      expect(body).toEqual(userInfo);
+      validateResDto(GetUserResDto, body);
+
+      await deleteUser(prismaService, id);
     });
 
     it('401', async () => {

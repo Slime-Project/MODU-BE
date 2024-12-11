@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
 import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
@@ -44,7 +45,7 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    return user;
+    return plainToInstance(CreateAuthResDto, user);
   }
 
   @ApiOperation({

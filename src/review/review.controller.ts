@@ -13,12 +13,14 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
+import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
 import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
 import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
 import { ReviewService } from '@/review/review.service';
@@ -57,12 +59,12 @@ export class ReviewController {
     @Body() body: CreateReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    const review: CreateReviewResDto = await this.reviewService.create({
+    const review = await this.reviewService.create({
       userId: req.id,
       ...body,
       productId
     });
-    return review;
+    return plainToInstance(CreateReviewResDto, review);
   }
 
   @ApiOperation({
@@ -122,8 +124,8 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const review: GetReviewResDto = await this.reviewService.findOne(req.id, productId, reviewId);
-    return review;
+    const review = await this.reviewService.findOne(req.id, productId, reviewId);
+    return plainToInstance(GetReviewResDto, review);
   }
 
   @ApiOperation({
@@ -131,7 +133,8 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success'
+    description: 'Success',
+    type: GetReviewsResDto
   })
   @ApiResponse({
     status: 400,
@@ -146,12 +149,13 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Query() query: GetReviewsReqQueryDto
   ) {
-    return this.reviewService.findMany({
+    const reviews = await this.reviewService.findMany({
       productId,
       sortBy: query.sortBy,
       orderBy: query.orderBy,
       page: query.page
     });
+    return plainToInstance(GetReviewsResDto, reviews);
   }
 
   @ApiOperation({
@@ -186,12 +190,12 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const review: PatchReviewResDto = await this.reviewService.update({
+    const review = await this.reviewService.update({
       userId: req.id,
       productId,
       id: reviewId,
       data
     });
-    return review;
+    return plainToInstance(PatchReviewResDto, review);
   }
 }
