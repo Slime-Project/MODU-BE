@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { GetUserResDto } from '@/user/dto/get-user-res.dto';
 import { UserService } from '@/user/user.service';
 
 import { UserController } from './user.controller';
@@ -36,13 +37,12 @@ describe('UserController', () => {
   });
 
   describe('get', () => {
-    it('should return a profile', async () => {
-      const refreshToken = 'refreshToken';
+    it('should return an instance of GetUserResDto', async () => {
       const req = {
         id: '1234567890'
       } as RefreshTokenGuardReq;
       req.cookies = {
-        refresh_token: refreshToken
+        refresh_token: 'refreshToken'
       };
       const userInfo: UserInfo = {
         id: req.id,
@@ -51,7 +51,7 @@ describe('UserController', () => {
       };
       service.get.mockResolvedValue(userInfo);
       const result = await controller.get(req);
-      expect(result).toEqual(userInfo);
+      expect(result).toBeInstanceOf(GetUserResDto);
     });
   });
 

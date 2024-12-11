@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAuthResDto {
@@ -8,5 +9,6 @@ export class CreateAuthResDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Expose()
   readonly id: string;
 }

@@ -7,7 +7,6 @@ import {
 
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 
 import {
   CreateReview,
@@ -36,8 +35,7 @@ export class ReviewService {
       throw new ConflictException('User has already submitted a review for this product');
     }
 
-    const createdReview = await this.prismaService.review.create({ data });
-    return sanitizeReview(createdReview);
+    return this.prismaService.review.create({ data });
   }
 
   async delete(userId: string, productId: number, id: number) {
@@ -58,12 +56,11 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    const deletedReview = await this.prismaService.review.delete({
+    return this.prismaService.review.delete({
       where: {
         id
       }
     });
-    return sanitizeReview(deletedReview);
   }
 
   async findOne(userId: string, productId: number, id: number) {
@@ -84,7 +81,7 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    return sanitizeReview(review);
+    return review;
   }
 
   async findSortedAndPaginatedReviews({
@@ -108,7 +105,7 @@ export class ReviewService {
         asc: [{ rating: 'asc' }, { createdAt: 'desc' }, { id: 'desc' }]
       }
     };
-    const reviews = await this.prismaService.review.findMany({
+    return this.prismaService.review.findMany({
       where: {
         productId
       },
@@ -116,7 +113,6 @@ export class ReviewService {
       skip: (page - 1) * REVIEW_PAGE_SIZE,
       orderBy: sortingOpts[sortBy][orderBy]
     });
-    return sanitizeReviews(reviews);
   }
 
   async findMany({
@@ -187,13 +183,11 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    const updatedReview = await this.prismaService.review.update({
+    return this.prismaService.review.update({
       where: {
         id
       },
       data
     });
-
-    return sanitizeReview(updatedReview);
   }
 }

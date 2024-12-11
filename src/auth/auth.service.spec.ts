@@ -13,7 +13,6 @@ import { UserService } from '@/user/user.service';
 import { getMockAuth } from '@/utils/unit-test';
 
 import { AuthService } from './auth.service';
-import { CreateAuthResDto } from './dto/create-auth-res.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 
 import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/types/auth.type';
@@ -112,10 +111,9 @@ describe('AuthService', () => {
     it('should return a user and an auth record if the user already exists', async () => {
       const { user, token } = await setupCreateAuthMocks();
       prismaService.user.findUnique.mockResolvedValue({ id: user.id, role: UserRole.USER });
-      const createAuthResDto: CreateAuthResDto = { id: user.id };
       const result = await authService.login('mockCode');
       expect(result).toEqual({
-        user: createAuthResDto,
+        user,
         token
       });
     });
@@ -124,10 +122,9 @@ describe('AuthService', () => {
       const { user, token } = await setupCreateAuthMocks();
       prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
-      const createAuthResDto: CreateAuthResDto = { id: user.id };
       const result = await authService.login('mockCode');
       expect(result).toEqual({
-        user: createAuthResDto,
+        user,
         token
       });
     });

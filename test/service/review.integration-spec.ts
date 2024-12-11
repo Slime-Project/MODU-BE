@@ -1,19 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Product, Review } from '@prisma/client';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { ReviewService } from '@/review/review.service';
 import { createProduct, createReview, deleteProduct } from '@/utils/integration-test';
-import { sanitizeReviews } from '@/utils/review';
-
-import { SanitizedReview } from '@/types/review.type';
 
 describe('ReviewService (integration)', () => {
   let reviewService: ReviewService;
   let prismaService: PrismaService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [ReviewService, PrismaService]
     }).compile();
 
@@ -47,35 +44,31 @@ describe('ReviewService (integration)', () => {
 
     it('should return reviews sorted by rating desc', async () => {
       const page = 1;
-      const sanitizedReviews: SanitizedReview[] = sanitizeReviews(reviews).sort(
-        (a, b) => b.rating - a.rating
-      );
+      const sortedReviews = [...reviews].sort((a, b) => b.rating - a.rating);
       const result = await reviewService.findSortedAndPaginatedReviews({
         productId: product.id,
         sortBy: 'rating',
         orderBy: 'desc',
         page
       });
-      expect(result).toEqual(sanitizedReviews);
+      expect(result).toEqual(sortedReviews);
     });
 
     it('should return reviews sorted by rating asc', async () => {
       const page = 1;
-      const sanitizedReviews: SanitizedReview[] = sanitizeReviews(reviews).sort(
-        (a, b) => a.rating - b.rating
-      );
+      const sortedReviews = [...reviews].sort((a, b) => a.rating - b.rating);
       const result = await reviewService.findSortedAndPaginatedReviews({
         productId: product.id,
         sortBy: 'rating',
         orderBy: 'asc',
         page
       });
-      expect(result).toEqual(sanitizedReviews);
+      expect(result).toEqual(sortedReviews);
     });
 
     it('should return reviews sorted by newest', async () => {
       const page = 1;
-      const sanitizedReviews: SanitizedReview[] = sanitizeReviews(reviews).sort(
+      const sortedReviews = reviews.sort(
         (a, b) => b.createdAt.getSeconds() - a.createdAt.getSeconds()
       );
       const result = await reviewService.findSortedAndPaginatedReviews({
@@ -84,7 +77,7 @@ describe('ReviewService (integration)', () => {
         orderBy: 'desc',
         page
       });
-      expect(result).toEqual(sanitizedReviews);
+      expect(result).toEqual(sortedReviews);
     });
 
     afterAll(async () => {

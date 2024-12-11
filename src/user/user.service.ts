@@ -43,12 +43,12 @@ export class UserService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const userInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
-    const profile: UserInfo = {
+    const kakaoUserInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
+    const userInfo: UserInfo = {
       id,
-      nickname: userInfo.properties.nickname,
-      profileImage: userInfo.properties.profileImage
+      nickname: kakaoUserInfo.properties.nickname,
+      profileImage: kakaoUserInfo.properties.profileImage
     };
-    return profile;
+    return userInfo;
   }
 }

@@ -3,10 +3,17 @@ import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
+import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { createTestingApp, createUser, deleteUser, mockKakaoLogin } from '@/utils/integration-test';
+import {
+  createTestingApp,
+  createUser,
+  deleteUser,
+  mockKakaoLogin,
+  validateResDto
+} from '@/utils/integration-test';
 
 describe('AuthController (integration)', () => {
   let app: INestApplication;
@@ -27,8 +34,7 @@ describe('AuthController (integration)', () => {
       mockKakaoLogin(kakaoLoginService, id);
       const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
-      expect(res.body).toHaveProperty('id');
-      expect(typeof res.body.id).toBe('string');
+      validateResDto(CreateAuthResDto, res.body);
 
       const cookies = res.get('Set-Cookie');
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));

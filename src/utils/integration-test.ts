@@ -1,5 +1,8 @@
-import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, INestApplication, Type, ValidationPipe } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 
@@ -21,8 +24,22 @@ const createTestingApp = async <T>(modules: Type<T>[]) => {
       transform: true
     })
   );
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector), {
+      excludeExtraneousValues: true
+    })
+  );
   await app.init();
   return app;
+};
+
+const validateResDto = async (ResDto: ClassConstructor<object>, body: object) => {
+  const dto = plainToInstance(ResDto, body);
+  const errors = await validate(dto, {
+    whitelist: true,
+    forbidNonWhitelisted: true
+  });
+  expect(errors).toHaveLength(0);
 };
 
 const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
@@ -95,6 +112,7 @@ const createReview = async (
 
 export {
   createTestingApp,
+  validateResDto,
   mockKakaoLogin,
   createUser,
   deleteUser,

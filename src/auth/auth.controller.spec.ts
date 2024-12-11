@@ -49,9 +49,8 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const resBody: CreateAuthResDto = { id: user.id };
 
-      service.login.mockResolvedValue({ user: resBody, token });
+      service.login.mockResolvedValue({ user, token });
       await controller.login(reqBody, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
         httpOnly: true,
@@ -67,7 +66,7 @@ describe('AuthController', () => {
       });
     });
 
-    it('should return the body with user', async () => {
+    it('should return an instance of CreateAuthResDto', async () => {
       const code = 'test-code';
       const user = { id: '1234567890', role: UserRole.USER };
       const token = {
@@ -77,11 +76,10 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const reqBody: CreateAuthReqDto = { code };
-      const resBody: CreateAuthResDto = { id: user.id };
 
-      service.login.mockResolvedValue({ user: resBody, token });
-      const result: CreateAuthResDto = await controller.login(reqBody, response);
-      expect(result).toEqual(resBody);
+      service.login.mockResolvedValue({ user, token });
+      const result = await controller.login(reqBody, response);
+      expect(result).toBeInstanceOf(CreateAuthResDto);
     });
   });
 

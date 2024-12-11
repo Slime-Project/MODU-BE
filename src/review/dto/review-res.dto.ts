@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsNumber, IsDate } from 'class-validator';
 
 export class ReviewResDto {
@@ -8,6 +9,7 @@ export class ReviewResDto {
   })
   @IsNumber()
   @IsNotEmpty()
+  @Expose()
   readonly id: number;
 
   @ApiProperty({
@@ -16,13 +18,14 @@ export class ReviewResDto {
   })
   @IsNumber()
   @IsNotEmpty()
+  @Expose()
   readonly rating: number;
 
   @ApiProperty({
     example: 'Great product, would recommend!'
   })
   @IsString()
-  @IsNotEmpty()
+  @Expose()
   readonly text: string;
 
   @ApiProperty({
@@ -30,5 +33,7 @@ export class ReviewResDto {
   })
   @IsDate()
   @IsNotEmpty()
+  @Expose()
+  @Type(() => Date)
   readonly createdAt: Date;
 }

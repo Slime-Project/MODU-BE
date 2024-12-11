@@ -7,8 +7,6 @@ type UpdateReview = Partial<
   Pick<Review, Exclude<keyof Review, 'id' | 'createdAt' | 'productId' | 'userId'>>
 >;
 
-type SanitizedReview = Pick<Review, Exclude<keyof Review, 'userId' | 'productId'>>;
-
 type SortBy = 'rating' | 'createdAt';
 type OrderBy = Prisma.SortOrder;
 type OrderByOpt = {
@@ -20,7 +18,7 @@ type SortingOpts = {
 };
 
 type ReviewsData = {
-  reviews: SanitizedReview[];
+  reviews: Review[];
   meta: {
     page: number;
     pageSize: typeof REVIEW_PAGE_SIZE;
@@ -29,4 +27,4 @@ type ReviewsData = {
   };
 };
 
-export { CreateReview, UpdateReview, SanitizedReview, SortBy, OrderBy, SortingOpts, ReviewsData };
+export { CreateReview, UpdateReview, SortBy, OrderBy, SortingOpts, ReviewsData };

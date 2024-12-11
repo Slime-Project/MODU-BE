@@ -6,7 +6,6 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
-import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 import { getMockReview } from '@/utils/unit-test';
 
 import { ReviewService } from './review.service';
@@ -31,13 +30,12 @@ describe('ReviewService', () => {
   });
 
   describe('create', () => {
-    it('should return a sanitized review', async () => {
+    it('should return a review', async () => {
       const review = getMockReview();
-      const sanitizedReview = sanitizeReview(review);
       prismaService.review.findUnique.mockResolvedValue(null);
       prismaService.review.create.mockResolvedValue(review);
       const result = await reviewService.create(review);
-      expect(result).toEqual(sanitizedReview);
+      expect(result).toEqual(review);
     });
 
     it('should throw ConflictException when user has already submitted a review for this product', async () => {
@@ -48,13 +46,12 @@ describe('ReviewService', () => {
   });
 
   describe('delete', () => {
-    it('should return a sanitized review', async () => {
+    it('should return a review', async () => {
       const review = getMockReview();
-      const sanitizedReview = sanitizeReview(review);
       prismaService.review.findUnique.mockResolvedValue(review);
       prismaService.review.delete.mockResolvedValue(review);
       const result = await reviewService.delete(review.userId, review.productId, review.id);
-      expect(result).toEqual(sanitizedReview);
+      expect(result).toEqual(review);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
@@ -72,12 +69,11 @@ describe('ReviewService', () => {
   });
 
   describe('findOne', () => {
-    it('should return a sanitized review', async () => {
+    it('should return a review', async () => {
       const review = getMockReview();
-      const sanitizedReview = sanitizeReview(review);
       prismaService.review.findUnique.mockResolvedValue(review);
       const result = await reviewService.findOne(review.userId, review.productId, review.id);
-      expect(result).toEqual(sanitizedReview);
+      expect(result).toEqual(review);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
@@ -113,9 +109,8 @@ describe('ReviewService', () => {
       );
     });
 
-    it('should return sanitized reviews', async () => {
+    it('should return reviews', async () => {
       const review = getMockReview();
-      const sanitizedReviews = sanitizeReviews([review]);
       prismaService.review.findMany.mockResolvedValue([review]);
       const result = await reviewService.findSortedAndPaginatedReviews({
         productId: review.productId,
@@ -123,7 +118,7 @@ describe('ReviewService', () => {
         orderBy: 'desc',
         page: 1
       });
-      expect(result).toEqual(sanitizedReviews);
+      expect(result).toEqual([review]);
     });
 
     it.each([
@@ -158,17 +153,16 @@ describe('ReviewService', () => {
   describe('findMany', () => {
     it('should return reviews data', async () => {
       const review = getMockReview();
-      const sanitizedReviews = sanitizeReviews([review]);
       const sortBy: SortBy = 'createdAt';
       const orderBy: OrderBy = 'desc';
       const page = 1;
       const totalReviews = 1;
       const reviewsData: ReviewsData = {
-        reviews: sanitizedReviews,
+        reviews: [review],
         meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages: 1 }
       };
       prismaService.product.findUnique.mockResolvedValue({ id: review.productId } as Product);
-      reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue(sanitizedReviews);
+      reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([review]);
       prismaService.review.count.mockResolvedValue(totalReviews);
       const result = await reviewService.findMany({
         productId: review.productId,
@@ -181,11 +175,10 @@ describe('ReviewService', () => {
 
     it('should use default values for sortBy and orderBy', async () => {
       const review = getMockReview();
-      const sanitizedReviews = sanitizeReviews([review]);
       const page = 1;
       const totalReviews = 1;
       prismaService.product.findUnique.mockResolvedValue({ id: review.productId } as Product);
-      reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue(sanitizedReviews);
+      reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue(review);
       prismaService.review.count.mockResolvedValue(totalReviews);
       await reviewService.findMany({
         productId: review.productId,
@@ -210,9 +203,8 @@ describe('ReviewService', () => {
   });
 
   describe('update', () => {
-    it('should return a sanitized review', async () => {
+    it('should return a review', async () => {
       const review = getMockReview();
-      const sanitizedReview = sanitizeReview(review);
       const data: PatchReviewReqDto = { text: review.text, rating: review.rating };
       prismaService.review.findUnique.mockResolvedValue(review);
       prismaService.review.update.mockResolvedValue(review);
@@ -222,11 +214,11 @@ describe('ReviewService', () => {
         productId: review.productId,
         id: review.id
       });
-      expect(result).toEqual(sanitizedReview);
+      expect(result).toEqual(review);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
-      const data: PutReviewReqDto = { text: 'new-text', rating: 5 };
+      const data: PatchReviewReqDto = { text: 'new-text', rating: 5 };
       prismaService.review.findUnique.mockResolvedValue(null);
       return expect(
         reviewService.update({ userId: '1234567890', data, productId: 1, id: 1 })
@@ -235,7 +227,7 @@ describe('ReviewService', () => {
 
     it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
       const review = getMockReview();
-      const data: PutReviewReqDto = { text: 'new-text', rating: 5 };
+      const data: PatchReviewReqDto = { text: 'new-text', rating: 5 };
       prismaService.review.findUnique.mockResolvedValue(review);
       return expect(
         reviewService.update({
