@@ -4,7 +4,7 @@ import { IsNotEmpty, IsDate, ValidateNested, IsOptional, IsNumber } from 'class-
 import { KakaoAccountDto } from '@/kakao/login/dto/kakao-account.dto';
 import { PropertiesDto } from '@/kakao/login/dto/properties.dto';
 
-export class UserInfoDto {
+export class KaKaoUserInfoDto {
   @IsNumber()
   @IsNotEmpty()
   @Expose({ name: 'id' })

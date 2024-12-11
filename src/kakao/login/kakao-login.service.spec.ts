@@ -6,8 +6,8 @@ import { plainToInstance } from 'class-transformer';
 import { mockDeep } from 'jest-mock-extended';
 
 import { GetTokenDto } from './dto/get-token.dto';
+import { KaKaoUserInfoDto } from './dto/kakao-user-info.dto';
 import { ReissueTokenDto } from './dto/reissue-token.dto';
-import { UserInfoDto } from './dto/user-info.dto';
 import { KakaoLoginService } from './kakao-login.service';
 
 import { GetTokenRes, ReissueTokenRes, UserInfoRes } from '@/types/kakao.type';
@@ -103,7 +103,7 @@ describe('KakaoLoginService', () => {
           }
         }
       };
-      const user = plainToInstance(UserInfoDto, res, { excludeExtraneousValues: true });
+      const user = plainToInstance(KaKaoUserInfoDto, res, { excludeExtraneousValues: true });
 
       axios.get = jest.fn().mockResolvedValue({ data: res });
       const result = await KakaoLoginService.getUserInfo(accessToken);
@@ -126,7 +126,7 @@ describe('KakaoLoginService', () => {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as UserInfoDto;
+      } as KaKaoUserInfoDto;
 
       kakaoLoginService.getToken = jest.fn().mockResolvedValue(token);
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(user);
