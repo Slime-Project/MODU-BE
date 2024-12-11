@@ -5,7 +5,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
 import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 import { getMockReview } from '@/utils/unit-test';
 
@@ -213,7 +213,7 @@ describe('ReviewService', () => {
     it('should return a sanitized review', async () => {
       const review = getMockReview();
       const sanitizedReview = sanitizeReview(review);
-      const data: PutReviewReqDto = { text: review.text, rating: review.rating };
+      const data: PatchReviewReqDto = { text: review.text, rating: review.rating };
       prismaService.review.findUnique.mockResolvedValue(review);
       prismaService.review.update.mockResolvedValue(review);
       const result = await reviewService.update({

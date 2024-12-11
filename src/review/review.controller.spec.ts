@@ -7,7 +7,7 @@ import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
-import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
 import { ReviewService } from '@/review/review.service';
 import { sanitizeReview, sanitizeReviews } from '@/utils/review';
 import { getMockReview } from '@/utils/unit-test';
@@ -104,7 +104,7 @@ describe('ReviewController', () => {
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      const reqBody: PutReviewReqDto = {
+      const reqBody: PatchReviewReqDto = {
         text: review.text,
         rating: review.rating
       };
