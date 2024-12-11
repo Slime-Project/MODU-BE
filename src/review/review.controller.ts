@@ -16,8 +16,11 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
 import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
+import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
-import { PutReviewReqDto } from '@/review/dto/put-review-req.dto';
+import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
+import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -32,7 +35,8 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 201,
-    description: 'created'
+    description: 'created',
+    type: CreateReviewResDto
   })
   @ApiResponse({
     status: 400,
@@ -53,11 +57,12 @@ export class ReviewController {
     @Body() body: CreateReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    return this.reviewService.create({
+    const review: CreateReviewResDto = await this.reviewService.create({
       userId: req.id,
       ...body,
       productId
     });
+    return review;
   }
 
   @ApiOperation({
@@ -95,7 +100,8 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success'
+    description: 'Success',
+    type: GetReviewResDto
   })
   @ApiResponse({
     status: 401,
@@ -116,7 +122,8 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    return this.reviewService.findOne(req.id, productId, reviewId);
+    const review: GetReviewResDto = await this.reviewService.findOne(req.id, productId, reviewId);
+    return review;
   }
 
   @ApiOperation({
@@ -152,7 +159,8 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success'
+    description: 'Success',
+    type: PatchReviewResDto
   })
   @ApiResponse({
     status: 400,
@@ -174,15 +182,16 @@ export class ReviewController {
   @Patch(':id')
   async patch(
     @Req() req: RefreshTokenGuardReq,
-    @Body() data: PutReviewReqDto,
+    @Body() data: PatchReviewReqDto,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    return this.reviewService.update({
+    const review: PatchReviewResDto = await this.reviewService.update({
       userId: req.id,
       productId,
       id: reviewId,
       data
     });
+    return review;
   }
 }
