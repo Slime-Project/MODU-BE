@@ -46,7 +46,7 @@ describe('AuthController (integration)', () => {
       await deleteUser(prismaService, id);
     });
 
-    it('400', () => {
+    it('400', async () => {
       return request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ code: 'invalidCode' })
@@ -95,7 +95,7 @@ describe('AuthController (integration)', () => {
       await deleteUser(prismaService, id);
     });
 
-    it('400', () => {
+    it('400', async () => {
       return request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ code: 'invalidCode' })
@@ -130,7 +130,7 @@ describe('AuthController (integration)', () => {
       await deleteUser(prismaService, id);
     });
 
-    it('401', () => {
+    it('401', async () => {
       return request(app.getHttpServer()).post('/api/auth/token/reissue').expect(401);
     });
   });
