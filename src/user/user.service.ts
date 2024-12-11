@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+
+import { UserInfo } from '@/types/user.type';
 
 @Injectable()
 export class UserService {
@@ -16,9 +18,37 @@ export class UserService {
         }
       }
     });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
     await KakaoLoginService.unlink(auth.kakaoAccessToken);
     await this.prismaService.user.delete({
       where: { id }
     });
+  }
+
+  async get(id: string, refreshToken: string) {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId: id,
+          refreshToken
+        }
+      }
+    });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const userInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
+    const profile: UserInfo = {
+      id,
+      nickname: userInfo.properties.nickname,
+      profileImage: userInfo.properties.profileImage
+    };
+    return profile;
   }
 }

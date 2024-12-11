@@ -9,9 +9,11 @@ import { UserService } from '@/user/user.service';
 import { UserController } from './user.controller';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { UserInfo } from '@/types/user.type';
 
 describe('UserController', () => {
   let controller: UserController;
+  let service: DeepMockProxy<UserService>;
   let response: DeepMockProxy<Response>;
 
   beforeEach(async () => {
@@ -24,12 +26,33 @@ describe('UserController', () => {
       ]
     }).compile();
 
-    controller = module.get<UserController>(UserController);
+    controller = module.get(UserController);
+    service = module.get(UserService);
     response = mockDeep<Response>();
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('get', () => {
+    it('should return a profile', async () => {
+      const refreshToken = 'refreshToken';
+      const req = {
+        id: '1234567890'
+      } as RefreshTokenGuardReq;
+      req.cookies = {
+        refresh_token: refreshToken
+      };
+      const userInfo: UserInfo = {
+        id: req.id,
+        nickname: 'nickname',
+        profileImage: 'url'
+      };
+      service.get.mockResolvedValue(userInfo);
+      const result = await controller.get(req);
+      expect(result).toEqual(userInfo);
+    });
   });
 
   describe('deleteAccount', () => {
