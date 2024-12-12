@@ -24,7 +24,7 @@ describe('ReviewService', () => {
     }).compile();
 
     prismaService = module.get(PrismaService);
-    reviewService = module.get<ReviewService>(ReviewService);
+    reviewService = module.get(ReviewService);
   });
 
   it('should be defined', () => {
