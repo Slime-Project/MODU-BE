@@ -16,13 +16,13 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
-import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
-import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
-import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
-import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
-import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
+import { CreateReviewDto } from '@/review/dto/create-review.dto';
+import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
+import { FindReviewsResDto } from '@/review/dto/find-reviews-res.dto';
+import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
+import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
+import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -55,15 +55,11 @@ export class ReviewController {
   @UseGuards(RefreshTokenGuard)
   @Post('')
   async create(
-    @Req() req: RefreshTokenGuardReq,
-    @Body() body: CreateReviewReqDto,
+    @Req() { id }: RefreshTokenGuardReq,
+    @Body() createReviewDto: CreateReviewDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    const review = await this.reviewService.create({
-      userId: req.id,
-      ...body,
-      productId
-    });
+    const review = await this.reviewService.create(createReviewDto, id, productId);
     return plainToInstance(CreateReviewResDto, review);
   }
 
@@ -103,7 +99,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: GetReviewResDto
+    type: FindReviewResDto
   })
   @ApiResponse({
     status: 401,
@@ -119,13 +115,13 @@ export class ReviewController {
   })
   @UseGuards(RefreshTokenGuard)
   @Get(':id')
-  async get(
+  async findOne(
     @Req() req: RefreshTokenGuardReq,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
     const review = await this.reviewService.findOne(req.id, productId, reviewId);
-    return plainToInstance(GetReviewResDto, review);
+    return plainToInstance(FindReviewResDto, review);
   }
 
   @ApiOperation({
@@ -134,7 +130,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: GetReviewsResDto
+    type: FindReviewsResDto
   })
   @ApiResponse({
     status: 400,
@@ -145,17 +141,12 @@ export class ReviewController {
     description: 'Not Found'
   })
   @Get('')
-  async getMany(
+  async findMany(
     @Param('productId', ParseIntPipe) productId: number,
-    @Query() query: GetReviewsReqQueryDto
+    @Query() getReviewsDto: FindReviewsDto
   ) {
-    const reviews = await this.reviewService.findMany({
-      productId,
-      sortBy: query.sortBy,
-      orderBy: query.orderBy,
-      page: query.page
-    });
-    return plainToInstance(GetReviewsResDto, reviews);
+    const reviews = await this.reviewService.findMany(getReviewsDto, productId);
+    return plainToInstance(FindReviewsResDto, reviews);
   }
 
   @ApiOperation({
@@ -164,7 +155,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: PatchReviewResDto
+    type: UpdateReviewResDto
   })
   @ApiResponse({
     status: 400,
@@ -184,9 +175,9 @@ export class ReviewController {
   })
   @UseGuards(RefreshTokenGuard)
   @Patch(':id')
-  async patch(
+  async update(
     @Req() req: RefreshTokenGuardReq,
-    @Body() data: PatchReviewReqDto,
+    @Body() updateReviewDto: UpdateReviewDto,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
@@ -194,8 +185,8 @@ export class ReviewController {
       userId: req.id,
       productId,
       id: reviewId,
-      data
+      updateReviewDto
     });
-    return plainToInstance(PatchReviewResDto, review);
+    return plainToInstance(UpdateReviewResDto, review);
   }
 }

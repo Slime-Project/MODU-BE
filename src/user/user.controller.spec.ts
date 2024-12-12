@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { GetUserResDto } from '@/user/dto/get-user-res.dto';
+import { FindUserResDto } from '@/user/dto/find-user-res.dto';
 import { UserService } from '@/user/user.service';
 
 import { UserController } from './user.controller';
@@ -36,8 +36,8 @@ describe('UserController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('get', () => {
-    it('should return an instance of GetUserResDto', async () => {
+  describe('findOne', () => {
+    it('should return an instance of FindUserResDto', async () => {
       const req = {
         id: '1234567890'
       } as RefreshTokenGuardReq;
@@ -49,13 +49,13 @@ describe('UserController', () => {
         nickname: 'nickname',
         profileImage: 'url'
       };
-      service.get.mockResolvedValue(userInfo);
-      const result = await controller.get(req);
-      expect(result).toBeInstanceOf(GetUserResDto);
+      service.findOne.mockResolvedValue(userInfo);
+      const result = await controller.findOne(req);
+      expect(result).toBeInstanceOf(FindUserResDto);
     });
   });
 
-  describe('deleteAccount', () => {
+  describe('delete', () => {
     it('should clear cookies', async () => {
       const refreshToken = 'refreshToken';
       const req = {
@@ -64,7 +64,7 @@ describe('UserController', () => {
       req.cookies = {
         refresh_token: refreshToken
       };
-      await controller.deleteAccount(req, response);
+      await controller.delete(req, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', '', {
         httpOnly: true,
         secure: true,

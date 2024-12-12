@@ -1,6 +1,12 @@
 import { Auth } from '@prisma/client';
 
 type CreateAuth = Omit<Auth, 'id'>;
+type UpdateAuth = {
+  refreshToken?: string;
+  refreshTokenExp?: Date;
+  kakaoAccessToken: string;
+  kakaoRefreshToken?: string;
+};
 
 type JwtPayload = {
   id: string;
@@ -14,6 +20,7 @@ type ReissuedToken = AccessTokenInfo & Partial<RefreshTokenInfo>;
 
 export {
   CreateAuth,
+  UpdateAuth,
   JwtPayload,
   VerifyedJWT,
   TokensInfo,

@@ -29,8 +29,8 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('get', () => {
-    it('should return a profile', async () => {
+  describe('findOne', () => {
+    it('should return user information', async () => {
       const auth = getMockAuth();
       const kakaoUser = {
         id: Number(auth.id),
@@ -47,19 +47,19 @@ describe('UserService', () => {
 
       prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
-      const result = await userService.get(auth.userId, auth.refreshToken);
+      const result = await userService.findOne(auth.userId, auth.refreshToken);
       expect(result).toEqual(userInfo);
     });
 
     it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
       prismaService.auth.findUnique.mockResolvedValue(null);
-      return expect(userService.get('1234567890', 'expired-token')).rejects.toThrow(
+      return expect(userService.findOne('1234567890', 'expired-token')).rejects.toThrow(
         UnauthorizedException
       );
     });
   });
 
-  describe('deleteAccount', () => {
+  describe('delete', () => {
     it('should remove user and unlink from Kakao', async () => {
       const auth = getMockAuth();
       const user: User = { id: auth.userId, role: UserRole.USER };
@@ -67,14 +67,14 @@ describe('UserService', () => {
       prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
       prismaService.user.delete.mockResolvedValue(user);
-      await userService.deleteAccount(auth.userId, auth.refreshToken);
+      await userService.delete(auth.userId, auth.refreshToken);
       expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
       expect(prismaService.user.delete).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
       prismaService.auth.findUnique.mockResolvedValue(null);
-      return expect(userService.deleteAccount('1234567890', 'expired-token')).rejects.toThrow(
+      return expect(userService.delete('1234567890', 'expired-token')).rejects.toThrow(
         UnauthorizedException
       );
     });

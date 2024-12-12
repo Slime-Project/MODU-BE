@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { GetUserResDto } from '@/user/dto/get-user-res.dto';
+import { FindUserResDto } from '@/user/dto/find-user-res.dto';
 import { UserModule } from '@/user/user.module';
 import { createTestingApp, createUser, deleteUser, validateResDto } from '@/utils/integration-test';
 
@@ -27,7 +27,7 @@ describe('UserController (integration)', () => {
         .get('/api/user')
         .set('Cookie', [refreshTokenCookie])
         .expect(200);
-      validateResDto(GetUserResDto, body);
+      validateResDto(FindUserResDto, body);
 
       await deleteUser(prismaService, id);
     });

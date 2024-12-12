@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
-import { GetUserResDto } from '@/user/dto/get-user-res.dto';
+import { FindUserResDto } from '@/user/dto/find-user-res.dto';
 import { UserService } from '@/user/user.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -20,7 +20,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: GetUserResDto
+    type: FindUserResDto
   })
   @ApiResponse({
     status: 401,
@@ -29,9 +29,9 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(RefreshTokenGuard)
   @Get('')
-  async get(@Req() req: RefreshTokenGuardReq) {
-    const user = await this.userService.get(req.id, req.cookies.refresh_token);
-    return plainToInstance(GetUserResDto, user);
+  async findOne(@Req() req: RefreshTokenGuardReq) {
+    const user = await this.userService.findOne(req.id, req.cookies.refresh_token);
+    return plainToInstance(FindUserResDto, user);
   }
 
   @ApiOperation({
@@ -48,9 +48,9 @@ export class UserController {
   @HttpCode(204)
   @UseGuards(RefreshTokenGuard)
   @Delete('')
-  async deleteAccount(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
+  async delete(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    await this.userService.deleteAccount(req.id, refreshToken);
+    await this.userService.delete(req.id, refreshToken);
 
     res.cookie('access_token', '', {
       httpOnly: true,

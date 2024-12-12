@@ -4,7 +4,7 @@ import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
 
 import { OrderBy, SortBy } from '@/types/review.type';
 
-export class GetReviewsReqQueryDto {
+export class FindReviewsDto {
   @ApiProperty({
     description: 'Must be an integer greater than or equal to 1',
     example: 1

@@ -9,7 +9,7 @@ import { UserInfo } from '@/types/user.type';
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async deleteAccount(id: string, refreshToken: string) {
+  async delete(id: string, refreshToken: string) {
     const auth = await this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {
@@ -29,7 +29,7 @@ export class UserService {
     });
   }
 
-  async get(id: string, refreshToken: string) {
+  async findOne(id: string, refreshToken: string) {
     const auth = await this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {

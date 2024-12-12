@@ -5,7 +5,7 @@ import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { ReviewResDto } from '@/review/dto/review-res.dto';
 import { ReviewMetaDto } from '@/review/dto/reviews-meta.dto';
 
-export class GetReviewsResDto {
+export class FindReviewsResDto {
   @ApiProperty({
     type: [ReviewResDto]
   })
