@@ -10,6 +10,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
+import { calculateTotalPages } from '@/utils/page';
 
 import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
 
@@ -119,7 +120,7 @@ export class ReviewService {
         productId
       }
     });
-    const totalPages = Math.ceil(totalReviews / REVIEW_PAGE_SIZE);
+    const totalPages = calculateTotalPages(totalReviews, REVIEW_PAGE_SIZE);
     const reviewsData: ReviewsData = {
       reviews,
       meta: { page: findReviewsDto.page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages }
