@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { Product } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
@@ -24,7 +24,7 @@ describe('ReviewService', () => {
     }).compile();
 
     prismaService = module.get(PrismaService);
-    reviewService = module.get<ReviewService>(ReviewService);
+    reviewService = module.get(ReviewService);
   });
 
   it('should be defined', () => {
@@ -111,8 +111,8 @@ describe('ReviewService', () => {
       );
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          take: REVIEW_PAGE_SIZE,
-          skip: (page - 1) * REVIEW_PAGE_SIZE
+          take: REVIEWS_PAGE_SIZE,
+          skip: (page - 1) * REVIEWS_PAGE_SIZE
         })
       );
     });
@@ -187,7 +187,12 @@ describe('ReviewService', () => {
       const totalReviews = 1;
       const reviewsData: ReviewsData = {
         reviews: [review],
-        meta: { page: findReviewsDto.page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages: 1 }
+        meta: {
+          page: findReviewsDto.page,
+          pageSize: REVIEWS_PAGE_SIZE,
+          totalReviews,
+          totalPages: 1
+        }
       };
       prismaService.product.findUnique.mockResolvedValue({ id: review.productId } as Product);
       reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([review]);

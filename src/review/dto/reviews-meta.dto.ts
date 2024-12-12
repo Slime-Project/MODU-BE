@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsNumber } from 'class-validator';
 
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 
 export class ReviewMetaDto {
   @ApiProperty()
@@ -12,10 +12,10 @@ export class ReviewMetaDto {
   readonly page: number;
 
   @ApiProperty({ example: 10 })
-  @IsIn([REVIEW_PAGE_SIZE])
+  @IsIn([REVIEWS_PAGE_SIZE])
   @IsNotEmpty()
   @Expose()
-  readonly pageSize: typeof REVIEW_PAGE_SIZE;
+  readonly pageSize: typeof REVIEWS_PAGE_SIZE;
 
   @ApiProperty()
   @IsNumber()

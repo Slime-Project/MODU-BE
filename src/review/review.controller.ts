@@ -143,9 +143,9 @@ export class ReviewController {
   @Get('')
   async findMany(
     @Param('productId', ParseIntPipe) productId: number,
-    @Query() getReviewsDto: FindReviewsDto
+    @Query() findReviewsDto: FindReviewsDto
   ) {
-    const reviews = await this.reviewService.findMany(getReviewsDto, productId);
+    const reviews = await this.reviewService.findMany(findReviewsDto, productId);
     return plainToInstance(FindReviewsResDto, reviews);
   }
 

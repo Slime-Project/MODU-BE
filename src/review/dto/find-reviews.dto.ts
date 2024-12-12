@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 import { OrderBy, SortBy } from '@/types/review.type';
 
@@ -10,6 +10,7 @@ export class FindReviewsDto {
     example: 1
   })
   @Transform(({ value }) => parseInt(value, 10))
+  @IsNotEmpty()
   @IsInt()
   @Min(1)
   readonly page: number;

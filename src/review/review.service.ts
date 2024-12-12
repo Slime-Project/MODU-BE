@@ -5,11 +5,12 @@ import {
   NotFoundException
 } from '@nestjs/common';
 
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
+import { calculateTotalPages } from '@/utils/page';
 
 import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
 
@@ -96,8 +97,8 @@ export class ReviewService {
       where: {
         productId
       },
-      take: REVIEW_PAGE_SIZE,
-      skip: (findReviewsDto.page - 1) * REVIEW_PAGE_SIZE,
+      take: REVIEWS_PAGE_SIZE,
+      skip: (findReviewsDto.page - 1) * REVIEWS_PAGE_SIZE,
       orderBy: sortingOpts[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc']
     });
   }
@@ -119,10 +120,10 @@ export class ReviewService {
         productId
       }
     });
-    const totalPages = Math.ceil(totalReviews / REVIEW_PAGE_SIZE);
+    const totalPages = calculateTotalPages(totalReviews, REVIEWS_PAGE_SIZE);
     const reviewsData: ReviewsData = {
       reviews,
-      meta: { page: findReviewsDto.page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages }
+      meta: { page: findReviewsDto.page, pageSize: REVIEWS_PAGE_SIZE, totalReviews, totalPages }
     };
     return reviewsData;
   }

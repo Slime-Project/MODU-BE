@@ -84,7 +84,14 @@ const deleteUser = async (prismaService: PrismaService, id: string) => {
 
 const createProduct = async (prismaService: PrismaService) => {
   return prismaService.product.create({
-    data: { title: '', link: '', price: 1, seller: '' }
+    data: {
+      title: 'title',
+      link: 'url',
+      price: 20000,
+      seller: '네이버',
+      naverProductId: '1',
+      img: 'url'
+    }
   });
 };
 

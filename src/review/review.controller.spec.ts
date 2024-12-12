@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
@@ -88,7 +88,7 @@ describe('ReviewController', () => {
       const page = 1;
       const reviewsData: ReviewsData = {
         reviews: [review],
-        meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews: 1, totalPages: 1 }
+        meta: { page, pageSize: REVIEWS_PAGE_SIZE, totalReviews: 1, totalPages: 1 }
       };
       service.findMany.mockResolvedValue(reviewsData);
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };

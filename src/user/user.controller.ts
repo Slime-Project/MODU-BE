@@ -15,7 +15,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({
-    summary: 'Get Profile'
+    summary: 'Get User Information'
   })
   @ApiResponse({
     status: 200,
