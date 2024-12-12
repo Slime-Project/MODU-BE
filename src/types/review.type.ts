@@ -1,6 +1,6 @@
 import { Prisma, Review } from '@prisma/client';
 
-import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 
 type CreateReview = Pick<Review, Exclude<keyof Review, 'id' | 'createdAt'>>;
 
@@ -18,7 +18,7 @@ type ReviewsData = {
   reviews: Review[];
   meta: {
     page: number;
-    pageSize: typeof REVIEW_PAGE_SIZE;
+    pageSize: typeof REVIEWS_PAGE_SIZE;
     totalReviews: number;
     totalPages: number;
   };
