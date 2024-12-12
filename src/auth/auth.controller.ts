@@ -3,10 +3,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
+import { LoginResDto } from '@/auth/dto/login-res.dto';
 
 import { AuthService } from './auth.service';
-import { CreateAuthReqDto } from './dto/create-auth-req.dto';
+import { LoginDto } from './dto/login.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -22,15 +22,15 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'created',
-    type: CreateAuthResDto
+    type: LoginResDto
   })
   @ApiResponse({
     status: 400,
     description: 'Invalid code'
   })
   @Post('/login')
-  async login(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.login(code);
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.login(loginDto);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,
@@ -45,7 +45,7 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    return plainToInstance(CreateAuthResDto, user);
+    return plainToInstance(LoginResDto, user);
   }
 
   @ApiOperation({

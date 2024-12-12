@@ -16,13 +16,13 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
-import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
-import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
 import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
+import { GetReviewsDto } from '@/review/dto/get-reviews.dto';
 import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
+import { PatchReviewDto } from '@/review/dto/patch-review.dto';
 import { ReviewService } from '@/review/review.service';
 
 import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -55,15 +55,11 @@ export class ReviewController {
   @UseGuards(RefreshTokenGuard)
   @Post('')
   async create(
-    @Req() req: RefreshTokenGuardReq,
-    @Body() body: CreateReviewReqDto,
+    @Req() { id }: RefreshTokenGuardReq,
+    @Body() createReviewDto: CreateReviewDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    const review = await this.reviewService.create({
-      userId: req.id,
-      ...body,
-      productId
-    });
+    const review = await this.reviewService.create(createReviewDto, id, productId);
     return plainToInstance(CreateReviewResDto, review);
   }
 
@@ -147,14 +143,9 @@ export class ReviewController {
   @Get('')
   async getMany(
     @Param('productId', ParseIntPipe) productId: number,
-    @Query() query: GetReviewsReqQueryDto
+    @Query() getReviewsDto: GetReviewsDto
   ) {
-    const reviews = await this.reviewService.findMany({
-      productId,
-      sortBy: query.sortBy,
-      orderBy: query.orderBy,
-      page: query.page
-    });
+    const reviews = await this.reviewService.findMany(getReviewsDto, productId);
     return plainToInstance(GetReviewsResDto, reviews);
   }
 
@@ -186,7 +177,7 @@ export class ReviewController {
   @Patch(':id')
   async patch(
     @Req() req: RefreshTokenGuardReq,
-    @Body() data: PatchReviewReqDto,
+    @Body() patchReviewDto: PatchReviewDto,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
@@ -194,7 +185,7 @@ export class ReviewController {
       userId: req.id,
       productId,
       id: reviewId,
-      data
+      patchReviewDto
     });
     return plainToInstance(PatchReviewResDto, review);
   }

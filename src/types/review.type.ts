@@ -3,9 +3,6 @@ import { Prisma, Review } from '@prisma/client';
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 
 type CreateReview = Pick<Review, Exclude<keyof Review, 'id' | 'createdAt'>>;
-type UpdateReview = Partial<
-  Pick<Review, Exclude<keyof Review, 'id' | 'createdAt' | 'productId' | 'userId'>>
->;
 
 type SortBy = 'rating' | 'createdAt';
 type OrderBy = Prisma.SortOrder;
@@ -27,4 +24,4 @@ type ReviewsData = {
   };
 };
 
-export { CreateReview, UpdateReview, SortBy, OrderBy, SortingOpts, ReviewsData };
+export { CreateReview, SortBy, OrderBy, SortingOpts, ReviewsData };

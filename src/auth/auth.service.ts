@@ -3,11 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '@prisma/client';
 
+import { LoginDto } from '@/auth/dto/login.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { convertSecondsToMillis } from '@/utils/date';
-
-import { UpdateAuthDto } from './dto/update-auth.dto';
 
 import {
   JwtPayload,
@@ -15,7 +14,8 @@ import {
   RefreshTokenInfo,
   TokensInfo,
   ReissuedToken,
-  CreateAuth
+  CreateAuth,
+  UpdateAuth
 } from '@/types/auth.type';
 
 @Injectable()
@@ -58,8 +58,10 @@ export class AuthService {
     return { refreshToken, refreshTokenExp: expDate };
   }
 
-  async login(code: string): Promise<{ user: User; token: TokensInfo }> {
-    const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
+  async login(loginDto: LoginDto): Promise<{ user: User; token: TokensInfo }> {
+    const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(
+      loginDto.code
+    );
     const id = kakaoUser.id.toString();
     const { accessToken, exp } = await this.createAccessToken(id, kakaoToken.expiresIn);
     const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
@@ -126,7 +128,7 @@ export class AuthService {
     const newKakaoToken = await this.kakaoLoginService.reissueToken(auth.kakaoRefreshToken);
     const { accessToken, exp } = await this.createAccessToken(id, newKakaoToken.expiresIn);
 
-    const updateAuthDto: UpdateAuthDto = {
+    const updateAuth: UpdateAuth = {
       kakaoAccessToken: newKakaoToken.accessToken
     };
     const reissuedToken: ReissuedToken = {
@@ -140,9 +142,9 @@ export class AuthService {
         newKakaoToken.expiresIn
       );
 
-      updateAuthDto.kakaoRefreshToken = newKakaoToken.refreshToken;
-      updateAuthDto.refreshToken = newRefreshToken;
-      updateAuthDto.refreshTokenExp = refreshTokenExp;
+      updateAuth.kakaoRefreshToken = newKakaoToken.refreshToken;
+      updateAuth.refreshToken = newRefreshToken;
+      updateAuth.refreshTokenExp = refreshTokenExp;
 
       reissuedToken.refreshToken = newRefreshToken;
       reissuedToken.refreshTokenExp = refreshTokenExp;
@@ -150,7 +152,7 @@ export class AuthService {
 
     await this.prismaService.auth.update({
       where: { id: auth.id },
-      data: updateAuthDto
+      data: updateAuth
     });
     return reissuedToken;
   }

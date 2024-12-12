@@ -45,24 +45,28 @@ describe('ReviewService (integration)', () => {
     it('should return reviews sorted by rating desc', async () => {
       const page = 1;
       const sortedReviews = [...reviews].sort((a, b) => b.rating - a.rating);
-      const result = await reviewService.findSortedAndPaginatedReviews({
-        productId: product.id,
-        sortBy: 'rating',
-        orderBy: 'desc',
-        page
-      });
+      const result = await reviewService.findSortedAndPaginatedReviews(
+        {
+          sortBy: 'rating',
+          orderBy: 'desc',
+          page
+        },
+        product.id
+      );
       expect(result).toEqual(sortedReviews);
     });
 
     it('should return reviews sorted by rating asc', async () => {
       const page = 1;
       const sortedReviews = [...reviews].sort((a, b) => a.rating - b.rating);
-      const result = await reviewService.findSortedAndPaginatedReviews({
-        productId: product.id,
-        sortBy: 'rating',
-        orderBy: 'asc',
-        page
-      });
+      const result = await reviewService.findSortedAndPaginatedReviews(
+        {
+          sortBy: 'rating',
+          orderBy: 'asc',
+          page
+        },
+        product.id
+      );
       expect(result).toEqual(sortedReviews);
     });
 
@@ -71,12 +75,14 @@ describe('ReviewService (integration)', () => {
       const sortedReviews = reviews.sort(
         (a, b) => b.createdAt.getSeconds() - a.createdAt.getSeconds()
       );
-      const result = await reviewService.findSortedAndPaginatedReviews({
-        productId: product.id,
-        sortBy: 'createdAt',
-        orderBy: 'desc',
-        page
-      });
+      const result = await reviewService.findSortedAndPaginatedReviews(
+        {
+          sortBy: 'createdAt',
+          orderBy: 'desc',
+          page
+        },
+        product.id
+      );
       expect(result).toEqual(sortedReviews);
     });
 

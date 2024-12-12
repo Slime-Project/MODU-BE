@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { LoginDto } from '@/auth/dto/login.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
@@ -14,9 +15,14 @@ import { convertSecondsToMillis } from '@/utils/date';
 import { getMockAuth } from '@/utils/unit-test';
 
 import { AuthService } from './auth.service';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 
-import { AccessTokenInfo, RefreshTokenInfo, ReissuedToken, TokensInfo } from '@/types/auth.type';
+import {
+  AccessTokenInfo,
+  RefreshTokenInfo,
+  ReissuedToken,
+  TokensInfo,
+  UpdateAuth
+} from '@/types/auth.type';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -109,10 +115,16 @@ describe('AuthService', () => {
       };
     };
 
+    const getMockLoginDto = () => {
+      const loginDto: LoginDto = { code: 'code' };
+      return loginDto;
+    };
+
     it('should return a user and an auth record if the user already exists', async () => {
       const { user, token } = await setupCreateAuthMocks();
+      const loginDto = getMockLoginDto();
       prismaService.user.findUnique.mockResolvedValue({ id: user.id, role: UserRole.USER });
-      const result = await authService.login('mockCode');
+      const result = await authService.login(loginDto);
       expect(result).toEqual({
         user,
         token
@@ -121,9 +133,10 @@ describe('AuthService', () => {
 
     it('should return a user and an auth record if the user is new', async () => {
       const { user, token } = await setupCreateAuthMocks();
+      const loginDto = getMockLoginDto();
       prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue(user);
-      const result = await authService.login('mockCode');
+      const result = await authService.login(loginDto);
       expect(result).toEqual({
         user,
         token
@@ -192,13 +205,13 @@ describe('AuthService', () => {
       };
       const expMillis = convertSecondsToMillis(newKakaoToken.expiresIn);
       const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
-      const updateAuthDto: UpdateAuthDto = {
+      const updateAuth: UpdateAuth = {
         kakaoAccessToken: newKakaoToken.accessToken
       };
       const reissuedToken: ReissuedToken = accessTokenInfo;
 
       kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
-      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuthDto });
+      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuth });
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });
@@ -216,14 +229,14 @@ describe('AuthService', () => {
       const refreshExpMillis = convertSecondsToMillis(newKakaoToken.refreshTokenExpiresIn);
       const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
       const refreshTokenInfo = setupCreateNewRefreshTokenMock(refreshExpMillis);
-      const updateAuthDto: UpdateAuthDto = {
+      const updateAuth: UpdateAuth = {
         kakaoAccessToken: newKakaoToken.accessToken,
         kakaoRefreshToken: newKakaoToken.refreshToken
       };
       const reissuedToken: ReissuedToken = { ...accessTokenInfo, ...refreshTokenInfo };
 
       kakaoLoginService.reissueToken.mockResolvedValue(newKakaoToken);
-      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuthDto });
+      prismaService.auth.update.mockResolvedValue({ ...auth, ...updateAuth });
       const result = await authService.reissueToken(auth.refreshToken, auth.userId);
       expect(result).toEqual(reissuedToken);
     });

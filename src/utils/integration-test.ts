@@ -6,7 +6,7 @@ import { validate } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 
-import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
+import { LoginDto } from '@/auth/dto/login.dto';
 import { GetTokenDto } from '@/kakao/login/dto/get-token.dto';
 import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
@@ -66,9 +66,9 @@ const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
 };
 
 const createUser = async (app: INestApplication, id: string) => {
-  const req: CreateAuthReqDto = { code: 'testCode' };
+  const loginDto: LoginDto = { code: 'testCode' };
   const kakaoUser = mockKakaoLogin(app.get(KakaoLoginService), id);
-  const res = await request(app.getHttpServer()).post('/api/auth/login').send(req);
+  const res = await request(app.getHttpServer()).post('/api/auth/login').send(loginDto);
   const cookies = res.get('Set-Cookie');
   const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
   return { refreshTokenCookie, kakaoUser };

@@ -5,13 +5,13 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
-import { GetReviewsReqQueryDto } from '@/review/dto/get-reviews-req-query.dto';
 import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
+import { GetReviewsDto } from '@/review/dto/get-reviews.dto';
 import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
+import { PatchReviewDto } from '@/review/dto/patch-review.dto';
 import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
 
@@ -49,7 +49,7 @@ describe('ReviewController', () => {
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      const body: CreateReviewReqDto = { text: review.text, rating: review.rating };
+      const body: CreateReviewDto = { text: review.text, rating: review.rating };
       service.create.mockResolvedValue(review);
       const result = await controller.create(req, body, review.productId);
       expect(result).toBeInstanceOf(CreateReviewResDto);
@@ -91,8 +91,8 @@ describe('ReviewController', () => {
         meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews: 1, totalPages: 1 }
       };
       service.findMany.mockResolvedValue(reviewsData);
-      const query: GetReviewsReqQueryDto = { sortBy, orderBy, page };
-      const result = await controller.getMany(review.productId, query);
+      const getReviewsDto: GetReviewsDto = { sortBy, orderBy, page };
+      const result = await controller.getMany(review.productId, getReviewsDto);
       expect(result).toBeInstanceOf(GetReviewsResDto);
     });
   });
@@ -103,12 +103,12 @@ describe('ReviewController', () => {
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      const reqBody: PatchReviewReqDto = {
+      const patchReviewDto: PatchReviewDto = {
         text: review.text,
         rating: review.rating
       };
       service.update.mockResolvedValue(review);
-      const result = await controller.patch(req, reqBody, review.productId, review.id);
+      const result = await controller.patch(req, patchReviewDto, review.productId, review.id);
       expect(result).toBeInstanceOf(PatchReviewResDto);
     });
   });

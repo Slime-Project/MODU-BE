@@ -2,8 +2,8 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
-import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
+import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { LoginDto } from '@/auth/dto/login.dto';
 import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -29,12 +29,12 @@ describe('AuthController (integration)', () => {
 
   describe('/api/auth/login (POST)', () => {
     it('201', async () => {
-      const req: CreateAuthReqDto = { code: 'testCode' };
+      const req: LoginDto = { code: 'testCode' };
 
       mockKakaoLogin(kakaoLoginService, id);
       const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
-      validateResDto(CreateAuthResDto, res.body);
+      validateResDto(LoginResDto, res.body);
 
       const cookies = res.get('Set-Cookie');
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));

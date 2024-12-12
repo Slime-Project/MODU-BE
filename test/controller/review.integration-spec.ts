@@ -3,12 +3,12 @@ import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewReqDto } from '@/review/dto/create-review-req.dto';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
+import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
 import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { PatchReviewReqDto } from '@/review/dto/patch-review-req.dto';
 import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
+import { PatchReviewDto } from '@/review/dto/patch-review.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
   createProduct,
@@ -39,7 +39,7 @@ describe('ReviewController (integration)', () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
-      const req: CreateReviewReqDto = {
+      const req: CreateReviewDto = {
         text: 'Great product!',
         rating: 5
       };
@@ -214,14 +214,14 @@ describe('ReviewController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
-      const reqBody: PatchReviewReqDto = {
+      const patchReviewDto: PatchReviewDto = {
         text: 'new-text',
         rating: 5
       };
       const { body } = await request(app.getHttpServer())
         .patch(`/api/products/${review.productId}/reviews/${review.id}`)
         .set('Cookie', [refreshTokenCookie])
-        .send(reqBody)
+        .send(patchReviewDto)
         .expect(200);
       validateResDto(PatchReviewResDto, body);
 
@@ -240,14 +240,14 @@ describe('ReviewController (integration)', () => {
       await createUser(app, anotherUserId);
       const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
-      const reqBody: PatchReviewReqDto = {
+      const patchReviewDto: PatchReviewDto = {
         text: 'new-text',
         rating: 5
       };
 
       await request(app.getHttpServer())
         .patch(`/api/products/${review.productId}/reviews/${review.id}`)
-        .send(reqBody)
+        .send(patchReviewDto)
         .set('Cookie', [refreshTokenCookie])
         .expect(403);
 
@@ -259,14 +259,14 @@ describe('ReviewController (integration)', () => {
     it('404', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const reqBody: PatchReviewReqDto = {
+      const patchReviewDto: PatchReviewDto = {
         text: 'new-text',
         rating: 5
       };
 
       await request(app.getHttpServer())
         .patch('/api/products/0/reviews/0')
-        .send(reqBody)
+        .send(patchReviewDto)
         .set('Cookie', [refreshTokenCookie])
         .expect(404);
 

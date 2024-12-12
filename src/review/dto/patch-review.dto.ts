@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, Length, IsNumber } from 'class-validator';
+import { IsString, Length, IsNumber, ValidateIf } from 'class-validator';
 
-export class CreateReviewReqDto {
+export class PatchReviewDto {
   @ApiProperty({
     description: 'The rating score for the product, typically between 1 and 5',
     example: 4
   })
   @IsNumber()
-  @IsNotEmpty()
-  readonly rating: number;
+  @ValidateIf(o => o.text === undefined)
+  readonly rating?: number;
 
   @ApiProperty({
     example: 'Great product, would recommend!',
@@ -16,5 +16,6 @@ export class CreateReviewReqDto {
   })
   @IsString()
   @Length(0, 500)
-  readonly text: string;
+  @ValidateIf(o => o.rating === undefined)
+  readonly text?: string;
 }
