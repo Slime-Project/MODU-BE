@@ -5,6 +5,7 @@ import { User, UserRole } from '@prisma/client';
 
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { convertSecondsToMillis } from '@/utils/date';
 
 import { UpdateAuthDto } from './dto/update-auth.dto';
 
@@ -26,10 +27,6 @@ export class AuthService {
     private readonly prismaService: PrismaService
   ) {}
 
-  static convertSecondsToMillis(seconds: number) {
-    return seconds * 1000;
-  }
-
   static getExpDate(expMillis: number) {
     return new Date(Date.now() + expMillis);
   }
@@ -43,7 +40,7 @@ export class AuthService {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: expSec
     });
-    const expMillis = AuthService.convertSecondsToMillis(expSec);
+    const expMillis = convertSecondsToMillis(expSec);
     const expDate = AuthService.getExpDate(expMillis);
     return { accessToken, exp: expDate };
   }
@@ -56,7 +53,7 @@ export class AuthService {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: expSec
     });
-    const expMillis = AuthService.convertSecondsToMillis(expSec);
+    const expMillis = convertSecondsToMillis(expSec);
     const expDate = AuthService.getExpDate(expMillis);
     return { refreshToken, refreshTokenExp: expDate };
   }
