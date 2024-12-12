@@ -10,6 +10,7 @@ import { ReissueTokenDto } from '@/kakao/login/dto/reissue-token.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
+import { convertSecondsToMillis } from '@/utils/date';
 import { getMockAuth } from '@/utils/unit-test';
 
 import { AuthService } from './auth.service';
@@ -91,8 +92,8 @@ describe('AuthService', () => {
     const setupCreateAuthMocks = async () => {
       const { kakaoToken, kakaoUser } = setupKakaoLoginMock();
 
-      const refreshExpMillis = AuthService.convertSecondsToMillis(kakaoToken.refreshTokenExpiresIn);
-      const expMillis = AuthService.convertSecondsToMillis(kakaoToken.expiresIn);
+      const refreshExpMillis = convertSecondsToMillis(kakaoToken.refreshTokenExpiresIn);
+      const expMillis = convertSecondsToMillis(kakaoToken.expiresIn);
       const accessTokenInfo = setupCreateAccessTokenMock(expMillis);
       const refreshTokenInfo = setupCreateRefreshTokenMock(refreshExpMillis);
 
@@ -189,7 +190,7 @@ describe('AuthService', () => {
         accessToken: 'newKakaoAccessToken',
         expiresIn: 3600
       };
-      const expMillis = AuthService.convertSecondsToMillis(newKakaoToken.expiresIn);
+      const expMillis = convertSecondsToMillis(newKakaoToken.expiresIn);
       const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
       const updateAuthDto: UpdateAuthDto = {
         kakaoAccessToken: newKakaoToken.accessToken
@@ -211,10 +212,8 @@ describe('AuthService', () => {
         refreshToken: 'newKakaoRefreshToken',
         refreshTokenExpiresIn: 604800
       };
-      const expMillis = AuthService.convertSecondsToMillis(newKakaoToken.expiresIn);
-      const refreshExpMillis = AuthService.convertSecondsToMillis(
-        newKakaoToken.refreshTokenExpiresIn
-      );
+      const expMillis = convertSecondsToMillis(newKakaoToken.expiresIn);
+      const refreshExpMillis = convertSecondsToMillis(newKakaoToken.refreshTokenExpiresIn);
       const accessTokenInfo = setupCreateNewAccessTokenMock(expMillis);
       const refreshTokenInfo = setupCreateNewRefreshTokenMock(refreshExpMillis);
       const updateAuthDto: UpdateAuthDto = {
