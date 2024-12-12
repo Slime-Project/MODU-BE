@@ -7,11 +7,11 @@ import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
-import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { GetReviewsDto } from '@/review/dto/get-reviews.dto';
-import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
-import { PatchReviewDto } from '@/review/dto/patch-review.dto';
+import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
+import { FindReviewsResDto } from '@/review/dto/find-reviews-res.dto';
+import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
+import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
+import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
 
@@ -68,20 +68,20 @@ describe('ReviewController', () => {
     });
   });
 
-  describe('get', () => {
-    it('should return an instance of GetReviewResDto', async () => {
+  describe('findOne', () => {
+    it('should return an instance of FindReviewResDto', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
       service.findOne.mockResolvedValue(review);
-      const result = await controller.get(req, review.productId, review.id);
-      expect(result).toBeInstanceOf(GetReviewResDto);
+      const result = await controller.findOne(req, review.productId, review.id);
+      expect(result).toBeInstanceOf(FindReviewResDto);
     });
   });
 
-  describe('getMany', () => {
-    it('should return an instance of GetReviewsResDto', async () => {
+  describe('findMany', () => {
+    it('should return an instance of FindReviewsResDto', async () => {
       const review = getMockReview();
       const sortBy: SortBy = 'createdAt';
       const orderBy: OrderBy = 'desc';
@@ -91,25 +91,25 @@ describe('ReviewController', () => {
         meta: { page, pageSize: REVIEW_PAGE_SIZE, totalReviews: 1, totalPages: 1 }
       };
       service.findMany.mockResolvedValue(reviewsData);
-      const getReviewsDto: GetReviewsDto = { sortBy, orderBy, page };
-      const result = await controller.getMany(review.productId, getReviewsDto);
-      expect(result).toBeInstanceOf(GetReviewsResDto);
+      const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
+      const result = await controller.findMany(review.productId, getReviewsDto);
+      expect(result).toBeInstanceOf(FindReviewsResDto);
     });
   });
 
-  describe('patch', () => {
-    it('should return an instance of PatchReviewResDto', async () => {
+  describe('update', () => {
+    it('should return an instance of UpdateReviewResDto', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
       } as RefreshTokenGuardReq;
-      const patchReviewDto: PatchReviewDto = {
+      const updateReviewDto: UpdateReviewDto = {
         text: review.text,
         rating: review.rating
       };
       service.update.mockResolvedValue(review);
-      const result = await controller.patch(req, patchReviewDto, review.productId, review.id);
-      expect(result).toBeInstanceOf(PatchReviewResDto);
+      const result = await controller.update(req, updateReviewDto, review.productId, review.id);
+      expect(result).toBeInstanceOf(UpdateReviewResDto);
     });
   });
 });

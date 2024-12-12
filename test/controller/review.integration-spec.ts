@@ -5,10 +5,10 @@ import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { GetReviewResDto } from '@/review/dto/get-review-res.dto';
-import { GetReviewsResDto } from '@/review/dto/get-reviews-res.dto';
-import { PatchReviewResDto } from '@/review/dto/patch-review-res.dto';
-import { PatchReviewDto } from '@/review/dto/patch-review.dto';
+import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
+import { FindReviewsResDto } from '@/review/dto/find-reviews-res.dto';
+import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
+import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
   createProduct,
@@ -137,7 +137,7 @@ describe('ReviewController (integration)', () => {
         .get(`/api/products/${review.productId}/reviews/${review.id}`)
         .set('Cookie', [refreshTokenCookie])
         .expect(200);
-      validateResDto(GetReviewResDto, body);
+      validateResDto(FindReviewResDto, body);
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);
@@ -194,7 +194,7 @@ describe('ReviewController (integration)', () => {
       const { body } = await request(app.getHttpServer())
         .get(`/api/products/${product.id}/reviews?page=${page}`)
         .expect(200);
-      validateResDto(GetReviewsResDto, body);
+      validateResDto(FindReviewsResDto, body);
 
       await Promise.allSettled([
         deleteUser(prismaService, userId1),
@@ -214,7 +214,7 @@ describe('ReviewController (integration)', () => {
       const { refreshTokenCookie } = await createUser(app, userId);
       const product = await createProduct(prismaService);
       const review = await createReview(userId, product.id);
-      const patchReviewDto: PatchReviewDto = {
+      const patchReviewDto: UpdateReviewDto = {
         text: 'new-text',
         rating: 5
       };
@@ -223,7 +223,7 @@ describe('ReviewController (integration)', () => {
         .set('Cookie', [refreshTokenCookie])
         .send(patchReviewDto)
         .expect(200);
-      validateResDto(PatchReviewResDto, body);
+      validateResDto(UpdateReviewResDto, body);
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);
@@ -240,7 +240,7 @@ describe('ReviewController (integration)', () => {
       await createUser(app, anotherUserId);
       const product = await createProduct(prismaService);
       const review = await createReview(anotherUserId, product.id);
-      const patchReviewDto: PatchReviewDto = {
+      const patchReviewDto: UpdateReviewDto = {
         text: 'new-text',
         rating: 5
       };
@@ -259,7 +259,7 @@ describe('ReviewController (integration)', () => {
     it('404', async () => {
       const userId = '3456789012';
       const { refreshTokenCookie } = await createUser(app, userId);
-      const patchReviewDto: PatchReviewDto = {
+      const patchReviewDto: UpdateReviewDto = {
         text: 'new-text',
         rating: 5
       };

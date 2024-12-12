@@ -1,3 +1,3 @@
 import { ReviewResDto } from '@/review/dto/review-res.dto';
 
-export class GetReviewResDto extends ReviewResDto {}
+export class UpdateReviewResDto extends ReviewResDto {}

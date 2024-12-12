@@ -8,8 +8,8 @@ import {
 import { REVIEW_PAGE_SIZE } from '@/constants/review-constants';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { GetReviewsDto } from '@/review/dto/get-reviews.dto';
-import { PatchReviewDto } from '@/review/dto/patch-review.dto';
+import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
+import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 
 import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
 
@@ -81,7 +81,7 @@ export class ReviewService {
     return review;
   }
 
-  async findSortedAndPaginatedReviews(getReviewsDto: GetReviewsDto, productId: number) {
+  async findSortedAndPaginatedReviews(findReviewsDto: FindReviewsDto, productId: number) {
     const sortingOpts: SortingOpts = {
       createdAt: {
         desc: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -97,12 +97,12 @@ export class ReviewService {
         productId
       },
       take: REVIEW_PAGE_SIZE,
-      skip: (getReviewsDto.page - 1) * REVIEW_PAGE_SIZE,
-      orderBy: sortingOpts[getReviewsDto.sortBy || 'rating'][getReviewsDto.orderBy || 'desc']
+      skip: (findReviewsDto.page - 1) * REVIEW_PAGE_SIZE,
+      orderBy: sortingOpts[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc']
     });
   }
 
-  async findMany(getReviewsDto: GetReviewsDto, productId: number) {
+  async findMany(findReviewsDto: FindReviewsDto, productId: number) {
     const product = await this.prismaService.product.findUnique({
       where: {
         id: productId
@@ -113,7 +113,7 @@ export class ReviewService {
       throw new NotFoundException('Product not found');
     }
 
-    const reviews = await this.findSortedAndPaginatedReviews(getReviewsDto, productId);
+    const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, productId);
     const totalReviews = await this.prismaService.review.count({
       where: {
         productId
@@ -122,7 +122,7 @@ export class ReviewService {
     const totalPages = Math.ceil(totalReviews / REVIEW_PAGE_SIZE);
     const reviewsData: ReviewsData = {
       reviews,
-      meta: { page: getReviewsDto.page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages }
+      meta: { page: findReviewsDto.page, pageSize: REVIEW_PAGE_SIZE, totalReviews, totalPages }
     };
     return reviewsData;
   }
@@ -131,12 +131,12 @@ export class ReviewService {
     userId,
     productId,
     id,
-    patchReviewDto
+    updateReviewDto
   }: {
     userId: string;
     productId: number;
     id: number;
-    patchReviewDto: PatchReviewDto;
+    updateReviewDto: UpdateReviewDto;
   }) {
     const review = await this.prismaService.review.findUnique({
       where: {
@@ -159,7 +159,7 @@ export class ReviewService {
       where: {
         id
       },
-      data: patchReviewDto
+      data: updateReviewDto
     });
   }
 }

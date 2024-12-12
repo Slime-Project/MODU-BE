@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, Length, IsNumber, ValidateIf } from 'class-validator';
 
-export class PatchReviewDto {
+export class UpdateReviewDto {
   @ApiProperty({
     description: 'The rating score for the product, typically between 1 and 5',
     example: 4
