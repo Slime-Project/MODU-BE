@@ -39,8 +39,9 @@ model Product {
   link                   String    @default("")
   price                  Int
   seller                 String
-  createdAt              DateTime @default(now())
-  likedCount             Int @default(0)
+  createdAt              DateTime  @default(now())
+  likedCount             Int       @default(0)
+  naverProductId         String?   @unique
 
   reviews                Review[]  @relation("ProductReviews")
 }
