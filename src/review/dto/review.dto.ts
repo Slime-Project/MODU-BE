@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsNumber, IsDate } from 'class-validator';
 
-export class ReviewResDto {
+export class ReviewDto {
   @ApiProperty({
     description: 'The unique identifier of the review',
     example: 1

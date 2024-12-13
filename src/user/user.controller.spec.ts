@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { FindUserResDto } from '@/user/dto/find-user-res.dto';
+import { UserDto } from '@/user/dto/user.dto';
 import { UserService } from '@/user/user.service';
 
 import { UserController } from './user.controller';
@@ -37,7 +37,7 @@ describe('UserController', () => {
   });
 
   describe('findOne', () => {
-    it('should return an instance of FindUserResDto', async () => {
+    it('should return an instance of UserDto', async () => {
       const req = {
         id: '1234567890'
       } as TokenGuardReq;
@@ -51,7 +51,7 @@ describe('UserController', () => {
       };
       service.findOne.mockResolvedValue(userInfo);
       const result = await controller.findOne(req);
-      expect(result).toBeInstanceOf(FindUserResDto);
+      expect(result).toBeInstanceOf(UserDto);
     });
   });
 

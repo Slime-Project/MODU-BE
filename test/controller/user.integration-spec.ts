@@ -4,9 +4,9 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { FindUserResDto } from '@/user/dto/find-user-res.dto';
+import { UserDto } from '@/user/dto/user.dto';
 import { UserModule } from '@/user/user.module';
-import { createTestingApp, createUser, deleteUser, validateResDto } from '@/utils/integration-test';
+import { createTestingApp, createUser, deleteUser, validateDto } from '@/utils/integration-test';
 
 describe('UserController (integration)', () => {
   let app: INestApplication;
@@ -20,14 +20,14 @@ describe('UserController (integration)', () => {
 
   describe('/api/user (GET)', () => {
     it('200', async () => {
-      const { refreshTokenCookie, kakaoUser } = await createUser(app, id);
+      const { accessTokenCookie, refreshTokenCookie, kakaoUser } = await createUser(app, id);
 
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
       const { body } = await request(app.getHttpServer())
         .get('/api/user')
-        .set('Cookie', [refreshTokenCookie])
+        .set('Cookie', [accessTokenCookie, refreshTokenCookie])
         .expect(200);
-      validateResDto(FindUserResDto, body);
+      validateDto(UserDto, body);
 
       await deleteUser(prismaService, id);
     });
@@ -39,22 +39,22 @@ describe('UserController (integration)', () => {
 
   describe('/api/user (DELETE)', () => {
     it('204', async () => {
-      const { refreshTokenCookie } = await createUser(app, id);
+      const { accessTokenCookie, refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.unlink = jest.fn().mockResolvedValue({
         id
       });
       const res = await request(app.getHttpServer())
         .delete('/api/user')
-        .set('Cookie', [refreshTokenCookie])
+        .set('Cookie', [accessTokenCookie, refreshTokenCookie])
         .expect(204);
       const cookies = res.get('Set-Cookie');
-      const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
-      expect(accessTokenCookie).toBeDefined();
-      expect(accessTokenCookie).toContain('HttpOnly');
-      expect(accessTokenCookie).toContain('Secure');
-      expect(accessTokenCookie).toContain('SameSite=Strict');
-      const expires = accessTokenCookie.match(/expires=([^;]+);?/);
+      const resAccessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
+      expect(resAccessTokenCookie).toBeDefined();
+      expect(resAccessTokenCookie).toContain('HttpOnly');
+      expect(resAccessTokenCookie).toContain('Secure');
+      expect(resAccessTokenCookie).toContain('SameSite=Strict');
+      const expires = resAccessTokenCookie.match(/expires=([^;]+);?/);
       expect(expires).toBeDefined();
 
       if (expires) {
