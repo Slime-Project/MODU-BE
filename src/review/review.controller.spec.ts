@@ -7,6 +7,7 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
+import { ReviewCountDto } from '@/review/dto/review-count.dto';
 import { ReviewDto } from '@/review/dto/review.dto';
 import { ReviewsDto } from '@/review/dto/reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
@@ -92,6 +93,14 @@ describe('ReviewController', () => {
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(review.productId, getReviewsDto);
       expect(result).toBeInstanceOf(ReviewsDto);
+    });
+  });
+
+  describe('count', () => {
+    it('should return an instance of ReviewCountDto', async () => {
+      service.count.mockResolvedValue({ count: 5 });
+      const result = await controller.count(1);
+      expect(result).toBeInstanceOf(ReviewCountDto);
     });
   });
 
