@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import axios from 'axios';
@@ -34,6 +35,20 @@ describe('ProductService', () => {
     expect(productService).toBeDefined();
   });
 
+  describe('findOne', () => {
+    it('should return a product', async () => {
+      const product = getMockProduct();
+      prismaService.product.findUnique.mockResolvedValue(product);
+      const result = await productService.findOne(product.id);
+      expect(result).toEqual(product);
+    });
+
+    it('should throw NotFoundException when product is not found', async () => {
+      prismaService.product.findUnique.mockResolvedValue(null);
+      return expect(productService.findOne(1)).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('findMany', () => {
     it('should return products data', async () => {
       const product = getMockProduct();
@@ -58,7 +73,7 @@ describe('ProductService', () => {
   });
 
   describe('searchProductsOnNaver', () => {
-    it('should return ??', async () => {
+    it('should return products and their total count', async () => {
       const findProductsDto: FindProductsDto = {
         page: 1,
         query: 'query'

@@ -3,6 +3,7 @@ import * as request from 'supertest';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';
+import { ProductDto } from '@/product/dto/product.dto';
 import { ProductsDto } from '@/product/dto/products.dto';
 import { ProductModule } from '@/product/product.module';
 import { ProductService } from '@/product/product.service';
@@ -22,6 +23,22 @@ describe('ProductController (integration)', () => {
     app = await createTestingApp([ProductModule]);
     prismaService = app.get(PrismaService);
     productService = app.get(ProductService);
+  });
+
+  describe('/api/products/:id (GET)', () => {
+    it('200', async () => {
+      const product = await createProduct(prismaService, '3');
+      const { body } = await request(app.getHttpServer())
+        .get(`/api/products/${product.id}`)
+        .expect(200);
+      validateDto(ProductDto, body);
+
+      await deleteProduct(prismaService, product.id);
+    });
+
+    it('404', async () => {
+      await request(app.getHttpServer()).get('/api/products/0').expect(404);
+    });
   });
 
   describe('/api/products (GET)', () => {
