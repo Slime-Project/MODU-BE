@@ -33,9 +33,9 @@ const createTestingApp = async <T>(modules: Type<T>[]) => {
   return app;
 };
 
-const validateResDto = async (ResDto: ClassConstructor<object>, body: object) => {
-  const dto = plainToInstance(ResDto, body);
-  const errors = await validate(dto, {
+const validateDto = async (dto: ClassConstructor<object>, obj: object) => {
+  const instance = plainToInstance(dto, obj);
+  const errors = await validate(instance, {
     whitelist: true,
     forbidNonWhitelisted: true
   });
@@ -71,7 +71,8 @@ const createUser = async (app: INestApplication, id: string) => {
   const res = await request(app.getHttpServer()).post('/api/auth/login').send(loginDto);
   const cookies = res.get('Set-Cookie');
   const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
-  return { refreshTokenCookie, kakaoUser };
+  const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
+  return { accessTokenCookie, refreshTokenCookie, kakaoUser };
 };
 
 const deleteUser = async (prismaService: PrismaService, id: string) => {
@@ -119,7 +120,7 @@ const createReview = async (
 
 export {
   createTestingApp,
-  validateResDto,
+  validateDto,
   mockKakaoLogin,
   createUser,
   deleteUser,

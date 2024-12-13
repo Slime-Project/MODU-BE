@@ -16,12 +16,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
-import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
-import { FindReviewsResDto } from '@/review/dto/find-reviews-res.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
+import { ReviewDto } from '@/review/dto/review.dto';
+import { ReviewsDto } from '@/review/dto/reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewService } from '@/review/review.service';
 
@@ -38,7 +36,7 @@ export class ReviewController {
   @ApiResponse({
     status: 201,
     description: 'created',
-    type: CreateReviewResDto
+    type: ReviewDto
   })
   @ApiResponse({
     status: 400,
@@ -60,7 +58,7 @@ export class ReviewController {
     @Param('productId', ParseIntPipe) productId: number
   ) {
     const review = await this.reviewService.create(createReviewDto, id, productId);
-    return plainToInstance(CreateReviewResDto, review);
+    return plainToInstance(ReviewDto, review);
   }
 
   @ApiOperation({
@@ -99,7 +97,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: FindReviewResDto
+    type: ReviewDto
   })
   @ApiResponse({
     status: 401,
@@ -121,7 +119,7 @@ export class ReviewController {
     @Param('id', ParseIntPipe) reviewId: number
   ) {
     const review = await this.reviewService.findOne(req.id, productId, reviewId);
-    return plainToInstance(FindReviewResDto, review);
+    return plainToInstance(ReviewDto, review);
   }
 
   @ApiOperation({
@@ -130,7 +128,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: FindReviewsResDto
+    type: ReviewsDto
   })
   @ApiResponse({
     status: 400,
@@ -146,7 +144,7 @@ export class ReviewController {
     @Query() findReviewsDto: FindReviewsDto
   ) {
     const reviews = await this.reviewService.findMany(findReviewsDto, productId);
-    return plainToInstance(FindReviewsResDto, reviews);
+    return plainToInstance(ReviewsDto, reviews);
   }
 
   @ApiOperation({
@@ -155,7 +153,7 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: UpdateReviewResDto
+    type: ReviewDto
   })
   @ApiResponse({
     status: 400,
@@ -187,6 +185,6 @@ export class ReviewController {
       id: reviewId,
       updateReviewDto
     });
-    return plainToInstance(UpdateReviewResDto, review);
+    return plainToInstance(ReviewDto, review);
   }
 }

@@ -4,7 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
-import { FindUserResDto } from '@/user/dto/find-user-res.dto';
+import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
+import { UserDto } from '@/user/dto/user.dto';
 import { UserService } from '@/user/user.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -20,7 +21,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: FindUserResDto
+    type: UserDto
   })
   @ApiResponse({
     status: 401,
@@ -28,10 +29,11 @@ export class UserController {
   })
   @HttpCode(200)
   @UseGuards(AccessTokenGuard)
+  @UseGuards(RefreshTokenGuard)
   @Get('')
   async findOne(@Req() req: TokenGuardReq) {
     const user = await this.userService.findOne(req.id, req.cookies.refresh_token);
-    return plainToInstance(FindUserResDto, user);
+    return plainToInstance(UserDto, user);
   }
 
   @ApiOperation({
@@ -47,6 +49,7 @@ export class UserController {
   })
   @HttpCode(204)
   @UseGuards(AccessTokenGuard)
+  @UseGuards(RefreshTokenGuard)
   @Delete('')
   async delete(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;

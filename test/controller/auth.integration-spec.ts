@@ -12,7 +12,7 @@ import {
   createUser,
   deleteUser,
   mockKakaoLogin,
-  validateResDto
+  validateDto
 } from '@/utils/integration-test';
 
 describe('AuthController (integration)', () => {
@@ -34,7 +34,7 @@ describe('AuthController (integration)', () => {
       mockKakaoLogin(kakaoLoginService, id);
       const res = await request(app.getHttpServer()).post('/api/auth/login').send(req).expect(201);
 
-      validateResDto(LoginResDto, res.body);
+      validateDto(LoginResDto, res.body);
 
       const cookies = res.get('Set-Cookie');
       const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
@@ -62,22 +62,22 @@ describe('AuthController (integration)', () => {
 
   describe('/api/auth/logout (POST)', () => {
     it('204', async () => {
-      const { refreshTokenCookie } = await createUser(app, id);
+      const { accessTokenCookie, refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.logout = jest.fn().mockResolvedValue({
         id
       });
       const res = await request(app.getHttpServer())
         .post('/api/auth/logout')
-        .set('Cookie', [refreshTokenCookie])
+        .set('Cookie', [accessTokenCookie, refreshTokenCookie])
         .expect(204);
       const cookies = res.get('Set-Cookie');
-      const accessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
-      expect(accessTokenCookie).toBeDefined();
-      expect(accessTokenCookie).toContain('HttpOnly');
-      expect(accessTokenCookie).toContain('Secure');
-      expect(accessTokenCookie).toContain('SameSite=Strict');
-      const expires = accessTokenCookie.match(/expires=([^;]+);?/);
+      const resAccessTokenCookie = cookies.find(cookie => cookie.startsWith('access_token='));
+      expect(resAccessTokenCookie).toBeDefined();
+      expect(resAccessTokenCookie).toContain('HttpOnly');
+      expect(resAccessTokenCookie).toContain('Secure');
+      expect(resAccessTokenCookie).toContain('SameSite=Strict');
+      const expires = resAccessTokenCookie.match(/expires=([^;]+);?/);
       expect(expires).toBeDefined();
 
       if (expires) {

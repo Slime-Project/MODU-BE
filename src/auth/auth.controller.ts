@@ -97,6 +97,7 @@ export class AuthController {
   })
   @HttpCode(204)
   @UseGuards(AccessTokenGuard)
+  @UseGuards(RefreshTokenGuard)
   @Post('logout')
   async logout(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;

@@ -5,12 +5,10 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
-import { FindReviewsResDto } from '@/review/dto/find-reviews-res.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
+import { ReviewDto } from '@/review/dto/review.dto';
+import { ReviewsDto } from '@/review/dto/reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
@@ -44,7 +42,7 @@ describe('ReviewController', () => {
   });
 
   describe('create', () => {
-    it('should return an instance of CreateReviewResDto', async () => {
+    it('should return an instance of ReviewDto', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
@@ -52,7 +50,7 @@ describe('ReviewController', () => {
       const body: CreateReviewDto = { text: review.text, rating: review.rating };
       service.create.mockResolvedValue(review);
       const result = await controller.create(req, body, review.productId);
-      expect(result).toBeInstanceOf(CreateReviewResDto);
+      expect(result).toBeInstanceOf(ReviewDto);
     });
   });
 
@@ -69,19 +67,19 @@ describe('ReviewController', () => {
   });
 
   describe('findOne', () => {
-    it('should return an instance of FindReviewResDto', async () => {
+    it('should return an instance of ReviewDto', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
       } as TokenGuardReq;
       service.findOne.mockResolvedValue(review);
       const result = await controller.findOne(req, review.productId, review.id);
-      expect(result).toBeInstanceOf(FindReviewResDto);
+      expect(result).toBeInstanceOf(ReviewDto);
     });
   });
 
   describe('findMany', () => {
-    it('should return an instance of FindReviewsResDto', async () => {
+    it('should return an instance of ReviewsDto', async () => {
       const review = getMockReview();
       const sortBy: SortBy = 'createdAt';
       const orderBy: OrderBy = 'desc';
@@ -93,12 +91,12 @@ describe('ReviewController', () => {
       service.findMany.mockResolvedValue(reviewsData);
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(review.productId, getReviewsDto);
-      expect(result).toBeInstanceOf(FindReviewsResDto);
+      expect(result).toBeInstanceOf(ReviewsDto);
     });
   });
 
   describe('update', () => {
-    it('should return an instance of UpdateReviewResDto', async () => {
+    it('should return an instance of ReviewDto', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
@@ -109,7 +107,7 @@ describe('ReviewController', () => {
       };
       service.update.mockResolvedValue(review);
       const result = await controller.update(req, updateReviewDto, review.productId, review.id);
-      expect(result).toBeInstanceOf(UpdateReviewResDto);
+      expect(result).toBeInstanceOf(ReviewDto);
     });
   });
 });

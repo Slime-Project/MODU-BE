@@ -10,7 +10,7 @@ import {
   createProduct,
   createTestingApp,
   deleteProduct,
-  validateResDto
+  validateDto
 } from '@/utils/integration-test';
 
 describe('ProductController (integration)', () => {
@@ -42,7 +42,7 @@ describe('ProductController (integration)', () => {
       const { body } = await request(app.getHttpServer())
         .get('/api/products?page=1&query=apple')
         .expect(200);
-      validateResDto(ProductsDto, body);
+      validateDto(ProductsDto, body);
 
       await deleteProduct(prismaService, product.id);
     });
