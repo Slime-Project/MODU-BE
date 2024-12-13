@@ -2,12 +2,12 @@ import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
-import { FindProductsDto } from '@/product/dto/find-products.dto';
-import { ProductsDto } from '@/product/dto/products.dto';
-import { ProductService } from '@/product/product.service';
 import { getMockProduct } from '@/utils/unit-test';
 
+import { FindProductsDto } from './dto/find-products.dto';
+import { ProductsDto } from './dto/products.dto';
 import { ProductController } from './product.controller';
+import { ProductService } from './product.service';
 
 import { ProductsData } from '@/types/product.type';
 
@@ -29,7 +29,7 @@ describe('ProductController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('findOne', () => {
+  describe('findMany', () => {
     it('should return an instance of ProductsDto', async () => {
       const product = getMockProduct();
       const findProductsDto: FindProductsDto = {
