@@ -7,8 +7,9 @@ import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindProductsDto } from '@/product/dto/find-products.dto';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';
-import { ProductsDto } from '@/product/dto/products.dto';
 import { calculateTotalPages } from '@/utils/page';
+
+import { ProductsData } from '@/types/product.type';
 
 @Injectable()
 export class ProductService {
@@ -55,7 +56,7 @@ export class ProductService {
       )
     );
     const totalPages = calculateTotalPages(totalProducts, PRODUCTS_PAGE_SIZE);
-    const productsDto: ProductsDto = {
+    const productsDto: ProductsData = {
       products,
       pageSize: PRODUCTS_PAGE_SIZE,
       totalProducts,
