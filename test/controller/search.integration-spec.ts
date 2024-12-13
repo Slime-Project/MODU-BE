@@ -3,9 +3,9 @@ import * as request from 'supertest';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';
-import { ProductsDto } from '@/product/dto/products.dto';
-import { ProductModule } from '@/product/product.module';
 import { ProductService } from '@/product/product.service';
+import { SearchResDto } from '@/search/dto/search-res.dto';
+import { SearchModule } from '@/search/search.module';
 import {
   createProduct,
   createTestingApp,
@@ -13,20 +13,20 @@ import {
   validateResDto
 } from '@/utils/integration-test';
 
-describe('ProductController (integration)', () => {
+describe('SearchController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let productService: ProductService;
 
   beforeEach(async () => {
-    app = await createTestingApp([ProductModule]);
+    app = await createTestingApp([SearchModule]);
     prismaService = app.get(PrismaService);
     productService = app.get(ProductService);
   });
 
-  describe('/api/products (GET)', () => {
+  describe('/api/search (GET)', () => {
     it('200', async () => {
-      const product = await createProduct(prismaService, '2');
+      const product = await createProduct(prismaService, '1');
       const naverProduct: NaverProductDto = {
         title: product.title,
         img: product.img,
@@ -40,9 +40,9 @@ describe('ProductController (integration)', () => {
         totalProducts: 1
       });
       const { body } = await request(app.getHttpServer())
-        .get('/api/products?page=1&query=apple')
+        .get('/api/search?query=apple')
         .expect(200);
-      validateResDto(ProductsDto, body);
+      validateResDto(SearchResDto, body);
 
       await deleteProduct(prismaService, product.id);
     });

@@ -10,6 +10,7 @@ import { OpenAiModule } from './open-ai/open-ai.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
 import { ReviewModule } from './review/review.module';
+import { SearchModule } from './search/search.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
 
@@ -25,7 +26,8 @@ import { UserModule } from './user/user.module';
     CrawlerModule,
     TasksModule,
     ReviewModule,
-    ProductModule
+    ProductModule,
+    SearchModule
   ]
 })
 export class AppModule {}
