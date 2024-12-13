@@ -4,12 +4,13 @@ import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
 import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -62,7 +63,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   @Post('token/reissue')
-  async reissueToken(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
+  async reissueToken(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     const data = await this.authService.reissueToken(refreshToken, req.id);
 
@@ -95,9 +96,9 @@ export class AuthController {
     description: 'Invalid or expired refresh token, or login required'
   })
   @HttpCode(204)
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Post('logout')
-  async logout(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     await this.authService.logout(req.id, refreshToken);
 

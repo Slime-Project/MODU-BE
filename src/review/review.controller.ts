@@ -15,7 +15,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
-import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
+import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { CreateReviewResDto } from '@/review/dto/create-review-res.dto';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewResDto } from '@/review/dto/find-review-res.dto';
@@ -25,7 +25,7 @@ import { UpdateReviewResDto } from '@/review/dto/update-review-res.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewService } from '@/review/review.service';
 
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('products/:productId/reviews')
 @ApiTags('review')
@@ -52,10 +52,10 @@ export class ReviewController {
     status: 409,
     description: 'Conflict - User has already submitted a review for this product'
   })
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Post('')
   async create(
-    @Req() { id }: RefreshTokenGuardReq,
+    @Req() { id }: TokenGuardReq,
     @Body() createReviewDto: CreateReviewDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
@@ -82,11 +82,11 @@ export class ReviewController {
     status: 404,
     description: 'Not Found'
   })
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   @Delete(':id')
   async delete(
-    @Req() { id }: RefreshTokenGuardReq,
+    @Req() { id }: TokenGuardReq,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
@@ -113,10 +113,10 @@ export class ReviewController {
     status: 404,
     description: 'Not Found'
   })
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Get(':id')
   async findOne(
-    @Req() req: RefreshTokenGuardReq,
+    @Req() req: TokenGuardReq,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
@@ -173,10 +173,10 @@ export class ReviewController {
     status: 404,
     description: 'Review not found'
   })
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Patch(':id')
   async update(
-    @Req() req: RefreshTokenGuardReq,
+    @Req() req: TokenGuardReq,
     @Body() updateReviewDto: UpdateReviewDto,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number

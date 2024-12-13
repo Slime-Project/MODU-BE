@@ -12,7 +12,7 @@ import { LoginDto } from '@/auth/dto/login.dto';
 import { AuthController } from './auth.controller';
 
 import { ReissuedToken } from '@/types/auth.type';
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -93,7 +93,7 @@ describe('AuthController', () => {
       };
       const req = {
         id: '1234567890'
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       req.cookies = {
         refresh_token: 'refreshToken'
       };
@@ -120,7 +120,7 @@ describe('AuthController', () => {
       const refreshToken = 'refreshToken';
       const req = {
         id: '1234567890'
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       req.cookies = {
         refresh_token: refreshToken
       };

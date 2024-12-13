@@ -1,7 +1,7 @@
 import { Request } from 'express';
 
-interface RefreshTokenGuardReq extends Request {
+interface TokenGuardReq extends Request {
   id: string;
 }
 
-export { RefreshTokenGuardReq };
+export { TokenGuardReq };
