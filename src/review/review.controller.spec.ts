@@ -17,7 +17,7 @@ import { getMockReview } from '@/utils/unit-test';
 
 import { ReviewController } from './review.controller';
 
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
 
 describe('ReviewController', () => {
@@ -48,7 +48,7 @@ describe('ReviewController', () => {
       const review = getMockReview();
       const req = {
         id: review.userId
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       const body: CreateReviewDto = { text: review.text, rating: review.rating };
       service.create.mockResolvedValue(review);
       const result = await controller.create(req, body, review.productId);
@@ -61,7 +61,7 @@ describe('ReviewController', () => {
       const review = getMockReview();
       const req = {
         id: review.userId
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       service.delete.mockResolvedValue(review);
       await controller.delete(req, review.productId, review.id);
       expect(service.delete).toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('ReviewController', () => {
       const review = getMockReview();
       const req = {
         id: review.userId
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       service.findOne.mockResolvedValue(review);
       const result = await controller.findOne(req, review.productId, review.id);
       expect(result).toBeInstanceOf(FindReviewResDto);
@@ -102,7 +102,7 @@ describe('ReviewController', () => {
       const review = getMockReview();
       const req = {
         id: review.userId
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       const updateReviewDto: UpdateReviewDto = {
         text: review.text,
         rating: review.rating

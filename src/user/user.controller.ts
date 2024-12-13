@@ -3,11 +3,11 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
-import { RefreshTokenGuard } from '@/auth/guard/refresh-token.guard';
+import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { FindUserResDto } from '@/user/dto/find-user-res.dto';
 import { UserService } from '@/user/user.service';
 
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('user')
 @ApiTags('user')
@@ -27,9 +27,9 @@ export class UserController {
     description: 'Invalid or expired refresh token, or login required'
   })
   @HttpCode(200)
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Get('')
-  async findOne(@Req() req: RefreshTokenGuardReq) {
+  async findOne(@Req() req: TokenGuardReq) {
     const user = await this.userService.findOne(req.id, req.cookies.refresh_token);
     return plainToInstance(FindUserResDto, user);
   }
@@ -46,9 +46,9 @@ export class UserController {
     description: 'Invalid or expired refresh token, or login required'
   })
   @HttpCode(204)
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Delete('')
-  async delete(@Req() req: RefreshTokenGuardReq, @Res({ passthrough: true }) res: Response) {
+  async delete(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     await this.userService.delete(req.id, refreshToken);
 

@@ -9,7 +9,7 @@ import { UserService } from '@/user/user.service';
 
 import { UserController } from './user.controller';
 
-import { RefreshTokenGuardReq } from '@/types/refreshTokenGuard.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 import { UserInfo } from '@/types/user.type';
 
 describe('UserController', () => {
@@ -40,7 +40,7 @@ describe('UserController', () => {
     it('should return an instance of FindUserResDto', async () => {
       const req = {
         id: '1234567890'
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       req.cookies = {
         refresh_token: 'refreshToken'
       };
@@ -60,7 +60,7 @@ describe('UserController', () => {
       const refreshToken = 'refreshToken';
       const req = {
         id: '1234567890'
-      } as RefreshTokenGuardReq;
+      } as TokenGuardReq;
       req.cookies = {
         refresh_token: refreshToken
       };
