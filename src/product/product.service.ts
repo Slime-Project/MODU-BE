@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
@@ -63,5 +63,17 @@ export class ProductService {
       totalPages
     };
     return productsDto;
+  }
+
+  async findOne(id: number) {
+    const product = await this.prismaService.product.findUnique({
+      where: { id }
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return product;
   }
 }
