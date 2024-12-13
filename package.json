@@ -106,12 +106,6 @@
     "**/*.{ts,js}": [
       "prettier --write",
       "eslint --fix"
-    ],
-    "src/**/*.spec.ts": [
-      "npm test"
-    ],
-    "**/*.integration-spec.ts": [
-      "npm run test:integration"
     ]
   }
 }
