@@ -18,6 +18,7 @@ import { plainToInstance } from 'class-transformer';
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
+import { ReviewCountDto } from '@/review/dto/review-count.dto';
 import { ReviewDto } from '@/review/dto/review.dto';
 import { ReviewsDto } from '@/review/dto/reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
@@ -89,6 +90,28 @@ export class ReviewController {
     @Param('id', ParseIntPipe) reviewId: number
   ) {
     await this.reviewService.delete(id, productId, reviewId);
+  }
+
+  @ApiOperation({
+    summary: 'Get product review count'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: ReviewCountDto
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid query fields'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found'
+  })
+  @Get('count')
+  async count(@Param('productId', ParseIntPipe) productId: number) {
+    const count = await this.reviewService.count(productId);
+    return plainToInstance(ReviewCountDto, count);
   }
 
   @ApiOperation({

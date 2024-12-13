@@ -210,6 +210,21 @@ describe('ReviewService', () => {
     });
   });
 
+  describe('count', () => {
+    it('should return review count', async () => {
+      const count = 5;
+      prismaService.product.findUnique.mockResolvedValue({} as Product);
+      prismaService.review.count.mockResolvedValue(count);
+      const result = await reviewService.count(1);
+      expect(result).toEqual({ count });
+    });
+
+    it('should throw NotFoundException when product is not found', async () => {
+      prismaService.product.findUnique.mockResolvedValue(null);
+      return expect(reviewService.count(1)).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('update', () => {
     it('should return a review', async () => {
       const review = getMockReview();
