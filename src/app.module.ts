@@ -13,6 +13,7 @@ import { ReviewModule } from './review/review.module';
 import { SearchModule } from './search/search.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
+import { ProductsWishlistModule } from './wishlist/products/products-wishlist.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { UserModule } from './user/user.module';
     TasksModule,
     ReviewModule,
     ProductModule,
-    SearchModule
+    SearchModule,
+    ProductsWishlistModule
   ]
 })
 export class AppModule {}

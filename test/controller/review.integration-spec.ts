@@ -57,6 +57,19 @@ describe('ReviewController (integration)', () => {
       return request(app.getHttpServer()).post('/api/products/1/reviews').expect(401);
     });
 
+    it('404', async () => {
+      const userId = '3456789012';
+      const { accessTokenCookie } = await createUser(app, userId);
+
+      await request(app.getHttpServer())
+        .post('/api/products/1/reviews')
+        .set('Cookie', [accessTokenCookie])
+        .send({ text: 'Great product!', rating: 5 })
+        .expect(404);
+
+      await deleteUser(prismaService, userId);
+    });
+
     it('409', async () => {
       const userId = '3456789012';
       const { accessTokenCookie } = await createUser(app, userId);

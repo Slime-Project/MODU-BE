@@ -19,6 +19,16 @@ export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createReviewDto: CreateReviewDto, userId: string, productId: number) {
+    const product = await this.prismaService.product.findUnique({
+      where: {
+        id: productId
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
     const review = await this.prismaService.review.findUnique({
       where: {
         productId_userId: {
