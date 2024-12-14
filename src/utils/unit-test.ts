@@ -1,4 +1,4 @@
-import { Auth, Product, Review } from '@prisma/client';
+import { Auth, Product, Review, WishlistItem } from '@prisma/client';
 
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
@@ -43,6 +43,20 @@ const getMockProduct = () => {
   return product;
 };
 
+const getMockWishlistItem = (
+  userId: string,
+  productId: number | null = null,
+  giftCollectionId: number | null = null
+) => {
+  const mockWishlistItem: WishlistItem = {
+    id: 1,
+    userId,
+    productId,
+    giftCollectionId
+  };
+  return mockWishlistItem;
+};
+
 const mockNaverRes = {
   lastBuildDate: new Date().toISOString(),
   total: 1,
@@ -68,4 +82,4 @@ const mockNaverRes = {
   ]
 };
 
-export { getMockAuth, getMockReview, getMockProduct, mockNaverRes };
+export { getMockAuth, getMockReview, getMockProduct, getMockWishlistItem, mockNaverRes };

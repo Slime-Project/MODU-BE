@@ -13,16 +13,17 @@ enum UserRole {
 }
 
 model User {
-  id                     String    @id
-  auths                  Auth[]
-  role                   UserRole  @default(USER)
-  reviews                Review[]  @relation("UserReviews")
+  id                     String          @id
+  auths                  Auth[]      
+  role                   UserRole        @default(USER)
+  reviews                Review[]        @relation("UserReviews")
+  wishlistItems          WishlistItem[]
 }
 
 model Auth {
-  id                     Int       @id @default(autoincrement())
-  userId                 String
-  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                     Int             @id @default(autoincrement())
+  userId                 String      
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshToken           String
   refreshTokenExp        DateTime
   kakaoAccessToken       String
@@ -32,31 +33,51 @@ model Auth {
 }
 
 model Product {
-  id                     Int       @id @default(autoincrement()) 
+  id                     Int              @id @default(autoincrement()) 
   title                  String
-  body                   String?   @db.Text
+  body                   String?          @db.Text
   img                    String?
-  link                   String    @default("")
+  link                   String           @default("")
   price                  Int
   seller                 String
-  createdAt              DateTime  @default(now())
-  likedCount             Int       @default(0)
-  naverProductId         String?   @unique
-
-  reviews                Review[]  @relation("ProductReviews")
+  createdAt              DateTime         @default(now())
+  likedCount             Int              @default(0)
+  naverProductId         String?          @unique
+       
+  reviews                Review[]         @relation("ProductReviews")
+  wishlistItems          WishlistItem[]
 }
 
 model Review {
-  id                     Int     @id @default(autoincrement())
+  id                     Int              @id @default(autoincrement())
   productId              Int
-  userId                 String
-  rating                 Int        @db.SmallInt
-  text                   String
-  createdAt              DateTime   @default(now())
-
-  user                   User       @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
-  product                Product    @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
+  userId                 String      
+  rating                 Int              @db.SmallInt
+  text                   String      
+  createdAt              DateTime         @default(now())
+      
+  user                   User             @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  product                Product          @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([id, productId])
   @@unique([productId, userId])
+}
+
+model GiftCollection {
+  id                     Int              @id @default(autoincrement())
+  wishlistItems          WishlistItem[]
+}
+
+model WishlistItem {
+  id                     Int              @id @default(autoincrement())
+  userId                 String
+  productId              Int?
+  giftCollectionId       Int?
+
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product                Product?         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  giftCollection         GiftCollection?  @relation(fields: [giftCollectionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@unique([userId, giftCollectionId])
 }
