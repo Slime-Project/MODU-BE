@@ -58,7 +58,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
@@ -93,7 +93,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired token, or token is missing'
   })
   @HttpCode(204)
   @UseGuards(AccessTokenGuard)

@@ -45,7 +45,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
   @ApiResponse({
     status: 409,
@@ -71,7 +71,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
   @ApiResponse({
     status: 403,
@@ -124,7 +124,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
   @ApiResponse({
     status: 403,
@@ -184,7 +184,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
   @ApiResponse({
     status: 403,
