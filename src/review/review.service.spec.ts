@@ -8,7 +8,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
-import { getMockReview } from '@/utils/unit-test';
+import { getMockProduct, getMockReview } from '@/utils/unit-test';
 
 import { ReviewService } from './review.service';
 
@@ -33,17 +33,29 @@ describe('ReviewService', () => {
 
   describe('create', () => {
     it('should return a review', async () => {
+      const product = getMockProduct();
       const review = getMockReview();
       const createReviewDto: CreateReviewDto = { text: review.text, rating: review.rating };
+      prismaService.product.findUnique.mockResolvedValue(product);
       prismaService.review.findUnique.mockResolvedValue(null);
       prismaService.review.create.mockResolvedValue(review);
       const result = await reviewService.create(createReviewDto, review.userId, review.productId);
       expect(result).toEqual(review);
     });
 
+    it('should throw NotFoundException when product is not found', async () => {
+      const createReviewDto: CreateReviewDto = { text: 'test', rating: 5 };
+      prismaService.product.findUnique.mockResolvedValue(null);
+      return expect(reviewService.create(createReviewDto, '1', 1)).rejects.toThrow(
+        NotFoundException
+      );
+    });
+
     it('should throw ConflictException when user has already submitted a review for this product', async () => {
+      const product = getMockProduct();
       const review = getMockReview();
       const createReviewDto: CreateReviewDto = { text: review.text, rating: review.rating };
+      prismaService.product.findUnique.mockResolvedValue(product);
       prismaService.review.findUnique.mockResolvedValue(review);
       return expect(
         reviewService.create(createReviewDto, review.userId, review.productId)
