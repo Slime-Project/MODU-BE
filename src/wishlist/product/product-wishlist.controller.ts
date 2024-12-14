@@ -3,14 +3,14 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
-import { ProductsWishlistDto } from '@/wishlist/products/dto/products-wishlist.dto';
-import { ProductsWishlistService } from '@/wishlist/products/products-wishlist.service';
+import { ProductWishlistDto } from '@/wishlist/product/dto/product-wishlist.dto';
+import { ProductWishlistService } from '@/wishlist/product/product-wishlist.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('wishlist/products')
-export class ProductsWishlistController {
-  constructor(private readonly service: ProductsWishlistService) {}
+export class ProductWishlistController {
+  constructor(private readonly service: ProductWishlistService) {}
 
   @ApiOperation({
     summary: 'Add a product to user wishlist'
@@ -18,7 +18,7 @@ export class ProductsWishlistController {
   @ApiResponse({
     status: 201,
     description: 'created',
-    type: ProductsWishlistDto
+    type: ProductWishlistDto
   })
   @ApiResponse({
     status: 400,
@@ -40,6 +40,6 @@ export class ProductsWishlistController {
   @Post(':id')
   async create(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) productId: number) {
     const product = await this.service.create(id, productId);
-    return plainToInstance(ProductsWishlistDto, product);
+    return plainToInstance(ProductWishlistDto, product);
   }
 }

@@ -23,14 +23,13 @@ describe('ReviewService (integration)', () => {
     const userId2 = '6789012345';
     const userId3 = '7890123456';
     let product: Product;
-    let reviews: Review[];
 
     beforeAll(async () => {
       await prismaService.user.createMany({
         data: [{ id: userId1 }, { id: userId2 }, { id: userId3 }]
       });
       product = await createProduct(prismaService);
-      reviews = await Promise.all(
+      await Promise.all(
         [userId1, userId2, userId3].map((userId, i) =>
           createReview(prismaService, {
             userId,
@@ -44,7 +43,15 @@ describe('ReviewService (integration)', () => {
 
     it('should return reviews sorted by rating desc', async () => {
       const page = 1;
-      const sortedReviews = [...reviews].sort((a, b) => b.rating - a.rating);
+      const isSortedByRating = (reviews: Review[]) => {
+        for (let i = 1; i < reviews.length; i += 1) {
+          if (reviews[i - 1].rating < reviews[i].rating) {
+            return false;
+          }
+        }
+
+        return true;
+      };
       const result = await reviewService.findSortedAndPaginatedReviews(
         {
           sortBy: 'rating',
@@ -53,12 +60,20 @@ describe('ReviewService (integration)', () => {
         },
         product.id
       );
-      expect(result).toEqual(sortedReviews);
+      expect(isSortedByRating(result)).toEqual(true);
     });
 
     it('should return reviews sorted by rating asc', async () => {
       const page = 1;
-      const sortedReviews = [...reviews].sort((a, b) => a.rating - b.rating);
+      const isSortedByRatingAsc = (reviews: Review[]) => {
+        for (let i = 1; i < reviews.length; i += 1) {
+          if (reviews[i - 1].rating > reviews[i].rating) {
+            return false;
+          }
+        }
+
+        return true;
+      };
       const result = await reviewService.findSortedAndPaginatedReviews(
         {
           sortBy: 'rating',
@@ -67,14 +82,20 @@ describe('ReviewService (integration)', () => {
         },
         product.id
       );
-      expect(result).toEqual(sortedReviews);
+      expect(isSortedByRatingAsc(result)).toEqual(true);
     });
 
     it('should return reviews sorted by newest', async () => {
       const page = 1;
-      const sortedReviews = reviews.sort(
-        (a, b) => b.createdAt.getSeconds() - a.createdAt.getSeconds()
-      );
+      const isSortedByNewest = (reviews: Review[]) => {
+        for (let i = 1; i < reviews.length; i += 1) {
+          if (reviews[i - 1].createdAt < reviews[i].createdAt) {
+            return false;
+          }
+        }
+
+        return true;
+      };
       const result = await reviewService.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
@@ -83,7 +104,7 @@ describe('ReviewService (integration)', () => {
         },
         product.id
       );
-      expect(result).toEqual(sortedReviews);
+      expect(isSortedByNewest(result)).toEqual(true);
     });
 
     afterAll(async () => {

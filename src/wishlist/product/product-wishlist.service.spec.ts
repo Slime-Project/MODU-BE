@@ -5,21 +5,21 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PrismaService } from '@/prisma/prisma.service';
 import { getMockProduct, getMockWishlistItem } from '@/utils/unit-test';
 
-import { ProductsWishlistService } from './products-wishlist.service';
+import { ProductWishlistService } from './product-wishlist.service';
 
-describe('ProductsWishlistService', () => {
-  let service: ProductsWishlistService;
+describe('ProductWishlistService', () => {
+  let service: ProductWishlistService;
   let prismaService: DeepMockProxy<PrismaService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
-        ProductsWishlistService,
+        ProductWishlistService,
         { provide: PrismaService, useValue: mockDeep<PrismaService>() }
       ]
     }).compile();
 
-    service = module.get(ProductsWishlistService);
+    service = module.get(ProductWishlistService);
     prismaService = module.get(PrismaService);
   });
 

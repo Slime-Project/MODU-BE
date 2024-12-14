@@ -3,7 +3,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
-export class ProductsWishlistService {
+export class ProductWishlistService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(userId: string, productId: number) {

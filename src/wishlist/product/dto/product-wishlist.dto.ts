@@ -4,7 +4,7 @@ import { IsNotEmpty, ValidateNested } from 'class-validator';
 
 import { ProductDto } from '@/product/dto/product.dto';
 
-export class ProductsWishlistDto {
+export class ProductWishlistDto {
   @ApiProperty({
     type: [ProductDto]
   })
