@@ -1,22 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient, User } from '@prisma/client';
-import { ITXClientDenyList } from '@prisma/client/runtime/library';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+
+import { UserInfo } from '@/types/user.type';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(data: User, prisma?: Omit<PrismaClient, ITXClientDenyList>): Promise<User> {
-    return (prisma || this.prismaService).user.create({
-      data
+  async delete(id: string, refreshToken: string) {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId: id,
+          refreshToken
+        }
+      }
+    });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    await KakaoLoginService.unlink(auth.kakaoAccessToken);
+    await this.prismaService.user.delete({
+      where: { id }
     });
   }
 
-  async findOne(id: bigint): Promise<User | null> {
-    return this.prismaService.user.findUnique({
-      where: { id }
+  async findOne(id: string, refreshToken: string) {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId: id,
+          refreshToken
+        }
+      }
     });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const kakaoUserInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
+    const userInfo: UserInfo = {
+      id,
+      nickname: kakaoUserInfo.properties.nickname,
+      profileImage: kakaoUserInfo.properties.profileImage
+    };
+    return userInfo;
   }
 }

@@ -1,10 +1,10 @@
 import { Expose, Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsDate, ValidateNested, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsDate, ValidateNested, IsOptional, IsNumber } from 'class-validator';
 
 import { KakaoAccountDto } from '@/kakao/login/dto/kakao-account.dto';
 import { PropertiesDto } from '@/kakao/login/dto/properties.dto';
 
-export class UserInfoDto {
+export class KaKaoUserInfoDto {
   @IsNumber()
   @IsNotEmpty()
   @Expose({ name: 'id' })

@@ -1,10 +1,16 @@
+import { UnauthorizedException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { getMockAuth } from '@/utils/unit-test';
 
 import { UserService } from './user.service';
+
+import { UserInfo } from '@/types/user.type';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -23,31 +29,54 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should return a user record', async () => {
-      const user: User = { id: BigInt(1234567890) };
+  describe('findOne', () => {
+    it('should return user information', async () => {
+      const auth = getMockAuth();
+      const kakaoUser = {
+        id: Number(auth.id),
+        properties: {
+          nickname: 'nickname',
+          profileImage: 'url'
+        }
+      } as KaKaoUserInfoDto;
+      const userInfo: UserInfo = {
+        id: auth.userId,
+        nickname: kakaoUser.properties.nickname,
+        profileImage: kakaoUser.properties.profileImage
+      };
 
-      prismaService.user.create.mockResolvedValue(user);
-      const result = await userService.create(user);
-      expect(result).toEqual(user);
+      prismaService.auth.findUnique.mockResolvedValue(auth);
+      KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
+      const result = await userService.findOne(auth.userId, auth.refreshToken);
+      expect(result).toEqual(userInfo);
+    });
+
+    it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
+      prismaService.auth.findUnique.mockResolvedValue(null);
+      return expect(userService.findOne('1234567890', 'expired-token')).rejects.toThrow(
+        UnauthorizedException
+      );
     });
   });
 
-  describe('findOne', () => {
-    it('should return a user record if the user exists', async () => {
-      const user: User = { id: BigInt(1234567890) };
+  describe('delete', () => {
+    it('should remove user and unlink from Kakao', async () => {
+      const auth = getMockAuth();
+      const user: User = { id: auth.userId, role: UserRole.USER };
 
-      prismaService.user.findUnique.mockResolvedValue(user);
-      const result = await userService.findOne(user.id);
-      expect(result).toEqual(user);
+      prismaService.auth.findUnique.mockResolvedValue(auth);
+      KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
+      prismaService.user.delete.mockResolvedValue(user);
+      await userService.delete(auth.userId, auth.refreshToken);
+      expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
+      expect(prismaService.user.delete).toHaveBeenCalled();
     });
 
-    it('should return a null if the user does not exist', async () => {
-      const id = BigInt(1234567890);
-
-      prismaService.user.findUnique.mockResolvedValue(null);
-      const result = await userService.findOne(id);
-      expect(result).toEqual(null);
+    it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
+      prismaService.auth.findUnique.mockResolvedValue(null);
+      return expect(userService.delete('1234567890', 'expired-token')).rejects.toThrow(
+        UnauthorizedException
+      );
     });
   });
 });

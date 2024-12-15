@@ -1,13 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Auth, User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 
+import { LoginDto } from '@/auth/dto/login.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { UserService } from '@/user/user.service';
-
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { convertSecondsToMillis } from '@/utils/date';
 
 import {
   JwtPayload,
@@ -15,28 +14,24 @@ import {
   RefreshTokenInfo,
   TokensInfo,
   ReissuedToken,
-  CreateAuth
+  CreateAuth,
+  UpdateAuth
 } from '@/types/auth.type';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
     private readonly kakaoLoginService: KakaoLoginService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prismaService: PrismaService
   ) {}
 
-  static convertSecondsToMillis(seconds: number) {
-    return seconds * 1000;
-  }
-
   static getExpDate(expMillis: number) {
     return new Date(Date.now() + expMillis);
   }
 
-  async createAccessToken(id: number, expSec: number): Promise<AccessTokenInfo> {
+  async createAccessToken(id: string, expSec: number): Promise<AccessTokenInfo> {
     const payload: JwtPayload = {
       id
     };
@@ -45,12 +40,12 @@ export class AuthService {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: expSec
     });
-    const expMillis = AuthService.convertSecondsToMillis(expSec);
+    const expMillis = convertSecondsToMillis(expSec);
     const expDate = AuthService.getExpDate(expMillis);
     return { accessToken, exp: expDate };
   }
 
-  async createRefreshToken(id: number, expSec: number): Promise<RefreshTokenInfo> {
+  async createRefreshToken(id: string, expSec: number): Promise<RefreshTokenInfo> {
     const payload: JwtPayload = {
       id
     };
@@ -58,21 +53,26 @@ export class AuthService {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: expSec
     });
-    const expMillis = AuthService.convertSecondsToMillis(expSec);
+    const expMillis = convertSecondsToMillis(expSec);
     const expDate = AuthService.getExpDate(expMillis);
     return { refreshToken, refreshTokenExp: expDate };
   }
 
-  async create(code: string): Promise<{ user: User; token: TokensInfo }> {
-    const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(code);
-    const { accessToken, exp } = await this.createAccessToken(kakaoUser.id, kakaoToken.expiresIn);
+  async login(loginDto: LoginDto): Promise<{ user: User; token: TokensInfo }> {
+    const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(
+      loginDto.code
+    );
+    const id = kakaoUser.id.toString();
+    const { accessToken, exp } = await this.createAccessToken(id, kakaoToken.expiresIn);
     const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
-      kakaoUser.id,
+      id,
       kakaoToken.refreshTokenExpiresIn
     );
-    let user = await this.userService.findOne(BigInt(kakaoUser.id));
+    let user = await this.prismaService.user.findUnique({
+      where: { id }
+    });
     const createAuth: CreateAuth = {
-      userId: BigInt(kakaoUser.id),
+      userId: id,
       refreshToken,
       refreshTokenExp,
       kakaoAccessToken: kakaoToken.accessToken,
@@ -81,10 +81,14 @@ export class AuthService {
 
     if (!user) {
       user = await this.prismaService.$transaction(async prisma => {
-        const createdUser = await this.userService.create({ id: BigInt(kakaoUser.id) }, prisma);
-        await prisma.auth.create({
-          data: createAuth
-        });
+        const [createdUser] = await Promise.all([
+          prisma.user.create({
+            data: { id, role: UserRole.USER }
+          }),
+          prisma.auth.create({
+            data: createAuth
+          })
+        ]);
         return createdUser;
       });
     } else {
@@ -104,52 +108,27 @@ export class AuthService {
     };
   }
 
-  async update(id: number, data: UpdateAuthDto): Promise<Auth> {
-    return this.prismaService.auth.update({
-      where: { id },
-      data
+  async removeExpiredAuthRecords() {
+    return this.prismaService.auth.deleteMany({
+      where: {
+        refreshTokenExp: { lte: new Date() }
+      }
     });
   }
 
-  async remove(id: number): Promise<Auth> {
-    return this.prismaService.auth.delete({
-      where: { id }
-    });
-  }
-
-  async findOne(userId: bigint, refreshToken: string): Promise<Auth> {
+  async reissueToken(refreshToken: string, id: string) {
     const auth = await this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {
-          userId,
+          userId: id,
           refreshToken
         }
       }
     });
-
-    if (!auth) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
-    if (new Date() > auth.refreshTokenExp) {
-      this.remove(auth.id);
-      throw new UnauthorizedException('expired refresh token');
-    }
-
-    return auth;
-  }
-
-  async reissueToken(refreshToken: string, id: bigint) {
-    const auth = await this.findOne(id, refreshToken);
-
-    if (!auth) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
     const newKakaoToken = await this.kakaoLoginService.reissueToken(auth.kakaoRefreshToken);
-    const { accessToken, exp } = await this.createAccessToken(Number(id), newKakaoToken.expiresIn);
+    const { accessToken, exp } = await this.createAccessToken(id, newKakaoToken.expiresIn);
 
-    const updateAuthDto: UpdateAuthDto = {
+    const updateAuth: UpdateAuth = {
       kakaoAccessToken: newKakaoToken.accessToken
     };
     const reissuedToken: ReissuedToken = {
@@ -159,19 +138,37 @@ export class AuthService {
 
     if (newKakaoToken.refreshToken) {
       const { refreshToken: newRefreshToken, refreshTokenExp } = await this.createRefreshToken(
-        Number(id),
+        id,
         newKakaoToken.expiresIn
       );
 
-      updateAuthDto.kakaoRefreshToken = newKakaoToken.refreshToken;
-      updateAuthDto.refreshToken = newRefreshToken;
-      updateAuthDto.refreshTokenExp = refreshTokenExp;
+      updateAuth.kakaoRefreshToken = newKakaoToken.refreshToken;
+      updateAuth.refreshToken = newRefreshToken;
+      updateAuth.refreshTokenExp = refreshTokenExp;
 
       reissuedToken.refreshToken = newRefreshToken;
       reissuedToken.refreshTokenExp = refreshTokenExp;
     }
 
-    await this.update(auth.id, updateAuthDto);
+    await this.prismaService.auth.update({
+      where: { id: auth.id },
+      data: updateAuth
+    });
     return reissuedToken;
+  }
+
+  async logout(id: string, refreshToken: string) {
+    const auth = await this.prismaService.auth.findUnique({
+      where: {
+        userId_refreshToken: {
+          userId: id,
+          refreshToken
+        }
+      }
+    });
+    await KakaoLoginService.logout(auth.kakaoAccessToken);
+    await this.prismaService.auth.delete({
+      where: { id: auth.id }
+    }); // 카카오 로그아웃 성공 시
   }
 }

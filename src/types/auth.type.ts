@@ -1,16 +1,17 @@
 import { Auth } from '@prisma/client';
-import { Request } from 'express';
 
 type CreateAuth = Omit<Auth, 'id'>;
-
-interface ReissueTokenReq extends Request {
-  id: bigint;
-}
+type UpdateAuth = {
+  refreshToken?: string;
+  refreshTokenExp?: Date;
+  kakaoAccessToken: string;
+  kakaoRefreshToken?: string;
+};
 
 type JwtPayload = {
-  id: number;
+  id: string;
 };
-type VerifyedJWT = { id: number; iat: number; exp: number };
+type VerifyedJWT = { id: string; iat: number; exp: number };
 
 type AccessTokenInfo = { accessToken: string; exp: Date };
 type RefreshTokenInfo = { refreshToken: string; refreshTokenExp: Date };
@@ -19,7 +20,7 @@ type ReissuedToken = AccessTokenInfo & Partial<RefreshTokenInfo>;
 
 export {
   CreateAuth,
-  ReissueTokenReq,
+  UpdateAuth,
   JwtPayload,
   VerifyedJWT,
   TokensInfo,

@@ -1,17 +1,18 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
+import { UserRole } from '@prisma/client';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { AuthService } from '@/auth/auth.service';
-import { CreateAuthReqDto } from '@/auth/dto/create-auth-req.dto';
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
+import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { LoginDto } from '@/auth/dto/login.dto';
 
 import { AuthController } from './auth.controller';
 
-import { ReissuedToken, ReissueTokenReq } from '@/types/auth.type';
+import { ReissuedToken } from '@/types/auth.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -37,20 +38,20 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
+  describe('login', () => {
     it('should set cookies', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890) };
+      const user = { id: '1234567890', role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
         refreshToken: 'refreshToken',
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
-      const reqBody: CreateAuthReqDto = { code };
+      const reqBody: LoginDto = { code };
 
-      service.create.mockResolvedValue({ user, token });
-      await controller.create(reqBody, response);
+      service.login.mockResolvedValue({ user, token });
+      await controller.login(reqBody, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', token.accessToken, {
         httpOnly: true,
         secure: true,
@@ -65,21 +66,20 @@ describe('AuthController', () => {
       });
     });
 
-    it('should return the body with user', async () => {
+    it('should return an instance of LoginResDto', async () => {
       const code = 'test-code';
-      const user = { id: BigInt(1234567890) };
+      const user = { id: '1234567890', role: UserRole.USER };
       const token = {
         accessToken: 'accessToken',
         exp: new Date(Date.now() + 3600000),
         refreshToken: 'refreshToken',
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
-      const reqBody: CreateAuthReqDto = { code };
-      const resBody = { id: Number(user.id) };
+      const reqBody: LoginDto = { code };
 
-      service.create.mockResolvedValue({ user, token });
-      const result: CreateAuthResDto = await controller.create(reqBody, response);
-      expect(result).toEqual(resBody);
+      service.login.mockResolvedValue({ user, token });
+      const result = await controller.login(reqBody, response);
+      expect(result).toBeInstanceOf(LoginResDto);
     });
   });
 
@@ -92,8 +92,8 @@ describe('AuthController', () => {
         refreshTokenExp: new Date(Date.now() + 604800000)
       };
       const req = {
-        id: BigInt(1234567890)
-      } as ReissueTokenReq;
+        id: '1234567890'
+      } as TokenGuardReq;
       req.cookies = {
         refresh_token: 'refreshToken'
       };
@@ -113,21 +113,30 @@ describe('AuthController', () => {
         expires: token.refreshTokenExp
       });
     });
+  });
 
-    it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
+  describe('logout', () => {
+    it('should clear cookies', async () => {
+      const refreshToken = 'refreshToken';
       const req = {
-        id: BigInt(1234567890)
-      } as ReissueTokenReq;
+        id: '1234567890'
+      } as TokenGuardReq;
       req.cookies = {
-        refresh_token: 'invalidToken'
+        refresh_token: refreshToken
       };
-
-      service.reissueToken.mockRejectedValue(
-        new UnauthorizedException('Invalid or expired refresh token')
-      );
-      return expect(controller.reissueToken(req, response)).rejects.toThrow(
-        new UnauthorizedException('Invalid or expired refresh token')
-      );
+      await controller.logout(req, response);
+      expect(response.cookie).toHaveBeenCalledWith('access_token', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: new Date(0)
+      });
+      expect(response.cookie).toHaveBeenCalledWith('refresh_token', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        expires: new Date(0)
+      });
     });
   });
 });

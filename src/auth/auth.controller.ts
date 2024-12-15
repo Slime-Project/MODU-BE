@@ -1,14 +1,16 @@
 import { Body, Controller, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 
-import { CreateAuthResDto } from '@/auth/dto/create-auth-res.dto';
+import { LoginResDto } from '@/auth/dto/login-res.dto';
+import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 
 import { AuthService } from './auth.service';
-import { CreateAuthReqDto } from './dto/create-auth-req.dto';
+import { LoginDto } from './dto/login.dto';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
-import { ReissueTokenReq } from '@/types/auth.type';
+import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -19,17 +21,17 @@ export class AuthController {
     summary: 'Signup & Login'
   })
   @ApiResponse({
-    status: 200,
-    description: 'success',
-    type: CreateAuthResDto
+    status: 201,
+    description: 'created',
+    type: LoginResDto
   })
   @ApiResponse({
     status: 400,
     description: 'Invalid code'
   })
-  @Post('')
-  async create(@Body() { code }: CreateAuthReqDto, @Res({ passthrough: true }) res: Response) {
-    const { user, token } = await this.authService.create(code);
+  @Post('/login')
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const { user, token } = await this.authService.login(loginDto);
 
     res.cookie('access_token', token.accessToken, {
       httpOnly: true,
@@ -44,8 +46,7 @@ export class AuthController {
       expires: token.refreshTokenExp
     });
 
-    const body: CreateAuthResDto = { id: Number(user.id) };
-    return body;
+    return plainToInstance(LoginResDto, user);
   }
 
   @ApiOperation({
@@ -53,16 +54,16 @@ export class AuthController {
   })
   @ApiResponse({
     status: 204,
-    description: 'success'
+    description: 'No Content'
   })
   @ApiResponse({
     status: 401,
-    description: 'Invalid or expired refresh token, or login required'
+    description: 'Unauthorized - Invalid or expired refresh token, or login required'
   })
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   @Post('token/reissue')
-  async reissueToken(@Req() req: ReissueTokenReq, @Res({ passthrough: true }) res: Response) {
+  async reissueToken(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
     const data = await this.authService.reissueToken(refreshToken, req.id);
 
@@ -81,5 +82,38 @@ export class AuthController {
         expires: data.refreshTokenExp
       });
     }
+  }
+
+  @ApiOperation({
+    summary: 'Logout'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'No Content'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired token, or token is missing'
+  })
+  @HttpCode(204)
+  @UseGuards(AccessTokenGuard)
+  @UseGuards(RefreshTokenGuard)
+  @Post('logout')
+  async logout(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies.refresh_token;
+    await this.authService.logout(req.id, refreshToken);
+
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: new Date(0)
+    });
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: new Date(0)
+    });
   }
 }

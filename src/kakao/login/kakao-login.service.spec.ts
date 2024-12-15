@@ -1,13 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { mockDeep } from 'jest-mock-extended';
 
 import { GetTokenDto } from './dto/get-token.dto';
+import { KaKaoUserInfoDto } from './dto/kakao-user-info.dto';
 import { ReissueTokenDto } from './dto/reissue-token.dto';
-import { UserInfoDto } from './dto/user-info.dto';
 import { KakaoLoginService } from './kakao-login.service';
 
 import { GetTokenRes, ReissueTokenRes, UserInfoRes } from '@/types/kakao.type';
@@ -48,8 +48,14 @@ describe('KakaoLoginService', () => {
     });
     it('should throw BadRequestException when code is invalid', async () => {
       const code = 'test-code';
+      const errorResponse = {
+        isAxiosError: true,
+        response: {
+          status: 400
+        }
+      } as AxiosError;
 
-      axios.post = jest.fn().mockRejectedValue(new BadRequestException('Invalid code'));
+      axios.post = jest.fn().mockRejectedValue(errorResponse);
       expect(kakaoLoginService.getToken(code)).rejects.toThrow(
         new BadRequestException('Invalid code')
       );
@@ -97,7 +103,7 @@ describe('KakaoLoginService', () => {
           }
         }
       };
-      const user = plainToInstance(UserInfoDto, res, { excludeExtraneousValues: true });
+      const user = plainToInstance(KaKaoUserInfoDto, res, { excludeExtraneousValues: true });
 
       axios.get = jest.fn().mockResolvedValue({ data: res });
       const result = await KakaoLoginService.getUserInfo(accessToken);
@@ -120,12 +126,30 @@ describe('KakaoLoginService', () => {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as UserInfoDto;
+      } as KaKaoUserInfoDto;
 
       kakaoLoginService.getToken = jest.fn().mockResolvedValue(token);
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(user);
       const result = await kakaoLoginService.login(code);
       expect(result).toEqual({ user, token });
+    });
+  });
+
+  describe('logout', () => {
+    it('should return an object containing an id', async () => {
+      const data = { id: 1234567890 };
+      axios.post = jest.fn().mockResolvedValue({ data });
+      const result = await KakaoLoginService.logout('kakaoAccessToken');
+      expect(result).toEqual(data);
+    });
+  });
+
+  describe('unlink', () => {
+    it('should return an object containing an id', async () => {
+      const data = { id: 1234567890 };
+      axios.post = jest.fn().mockResolvedValue({ data });
+      const result = await KakaoLoginService.unlink('kakaoAccessToken');
+      expect(result).toEqual(data);
     });
   });
 });
