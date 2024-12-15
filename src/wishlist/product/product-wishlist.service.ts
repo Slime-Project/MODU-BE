@@ -44,4 +44,30 @@ export class ProductWishlistService {
 
     return { product: updatedProduct };
   }
+
+  async remove(userId: string, productId: number) {
+    const wishlistItem = await this.prismaService.wishlistItem.findUnique({
+      where: {
+        userId_productId: { userId, productId }
+      }
+    });
+
+    if (!wishlistItem) {
+      throw new NotFoundException('Product is not present in the wishlist');
+    }
+
+    await this.prismaService.$transaction([
+      this.prismaService.product.update({
+        where: { id: productId },
+        data: {
+          likedCount: { decrement: 1 }
+        }
+      }),
+      this.prismaService.wishlistItem.delete({
+        where: {
+          userId_productId: { userId, productId }
+        }
+      })
+    ]);
+  }
 }

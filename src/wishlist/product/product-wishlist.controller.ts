@@ -1,4 +1,13 @@
-import { Controller, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
@@ -17,7 +26,7 @@ export class ProductWishlistController {
   })
   @ApiResponse({
     status: 201,
-    description: 'created',
+    description: 'Created',
     type: ProductWishlistDto
   })
   @ApiResponse({
@@ -41,5 +50,31 @@ export class ProductWishlistController {
   async create(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) productId: number) {
     const product = await this.service.create(id, productId);
     return plainToInstance(ProductWishlistDto, product);
+  }
+
+  @ApiOperation({
+    summary: 'Remove a product to user wishlist'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'No Content'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing fields in the request body'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found - Product is not present in the wishlist'
+  })
+  @UseGuards(AccessTokenGuard)
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) productId: number) {
+    await this.service.remove(id, productId);
   }
 }

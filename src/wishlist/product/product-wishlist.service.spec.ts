@@ -53,5 +53,22 @@ describe('ProductWishlistService', () => {
       prismaService.wishlistItem.findUnique.mockResolvedValue(wishlistItem);
       return expect(service.create(userId, product.id)).rejects.toThrow(ConflictException);
     });
+
+    describe('remove', () => {
+      it('should call prisma delete method when the product exists in the wishlist', async () => {
+        const userId = '1';
+        const product = getMockProduct();
+        const wishlistItem = getMockWishlistItem(userId, product.id);
+        prismaService.wishlistItem.findUnique.mockResolvedValue(wishlistItem);
+        prismaService.$transaction.mockResolvedValue([product, wishlistItem]);
+        await service.remove(userId, product.id);
+        expect(prismaService.wishlistItem.delete).toHaveBeenCalled();
+      });
+
+      it('should throw a NotFoundException if the product is not present in the wishlist', async () => {
+        prismaService.wishlistItem.findUnique.mockResolvedValue(null);
+        return expect(service.remove('1', 1)).rejects.toThrow(NotFoundException);
+      });
+    });
   });
 });

@@ -44,4 +44,14 @@ describe('ProductWishlistController', () => {
       expect(result).toBeInstanceOf(ProductWishlistDto);
     });
   });
+
+  describe('remove', () => {
+    it('should call remove method of productWishlistService', async () => {
+      const req = {
+        id: '1'
+      } as TokenGuardReq;
+      await controller.remove(req, 1);
+      expect(service.remove).toHaveBeenCalled();
+    });
+  });
 });
