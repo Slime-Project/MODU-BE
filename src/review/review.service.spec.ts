@@ -197,19 +197,16 @@ describe('ReviewService', () => {
         sortBy: 'createdAt',
         orderBy: 'desc'
       };
-      const totalReviews = 1;
+      const total = 1;
       const reviewsData: ReviewsData = {
         reviews: [review],
-        meta: {
-          page: findReviewsDto.page,
-          pageSize: REVIEWS_PAGE_SIZE,
-          totalReviews,
-          totalPages: 1
-        }
+        pageSize: REVIEWS_PAGE_SIZE,
+        total,
+        totalPages: 1
       };
       prismaService.product.findUnique.mockResolvedValue({ id: review.productId } as Product);
       reviewService.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([review]);
-      prismaService.review.count.mockResolvedValue(totalReviews);
+      prismaService.review.count.mockResolvedValue(total);
       const result = await reviewService.findMany(findReviewsDto, review.productId);
       expect(result).toEqual(reviewsData);
     });

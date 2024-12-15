@@ -125,15 +125,17 @@ export class ReviewService {
     }
 
     const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, productId);
-    const totalReviews = await this.prismaService.review.count({
+    const total = await this.prismaService.review.count({
       where: {
         productId
       }
     });
-    const totalPages = calculateTotalPages(totalReviews, REVIEWS_PAGE_SIZE);
+    const totalPages = calculateTotalPages(total, REVIEWS_PAGE_SIZE);
     const reviewsData: ReviewsData = {
       reviews,
-      meta: { page: findReviewsDto.page, pageSize: REVIEWS_PAGE_SIZE, totalReviews, totalPages }
+      pageSize: REVIEWS_PAGE_SIZE,
+      total,
+      totalPages
     };
     return reviewsData;
   }

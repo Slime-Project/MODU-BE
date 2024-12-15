@@ -1,14 +1,11 @@
 import { Product } from '@prisma/client';
 
-import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
+import { ItemsData } from '@/types/common.type';
 
 type Sort = 'sim' | 'date' | 'asc' | 'dsc';
 
-type ProductsData = {
+type ProductsData = ItemsData & {
   products: Product[];
-  pageSize: typeof PRODUCTS_PAGE_SIZE;
-  totalProducts: number;
-  totalPages: number;
 };
 
 export { Sort, ProductsData };

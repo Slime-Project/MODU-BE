@@ -46,11 +46,10 @@ describe('ProductController', () => {
         page: 1,
         query: 'query'
       };
-      const totalProducts = 1;
       const productsData: ProductsData = {
         products: [product],
         pageSize: PRODUCTS_PAGE_SIZE,
-        totalProducts,
+        total: 1,
         totalPages: 1
       };
       service.findMany.mockResolvedValue(productsData);

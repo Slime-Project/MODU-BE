@@ -38,13 +38,11 @@ export class ProductService {
     const products: NaverProductDto[] = data.items.map(product =>
       plainToInstance(NaverProductDto, product, { excludeExtraneousValues: true })
     );
-    const totalProducts: number = data.total;
-    return { products, totalProducts };
+    return { products, total: data.total as number };
   }
 
   async findMany(findProductsDto: FindProductsDto) {
-    const { products: naverProducts, totalProducts } =
-      await this.searchProductsOnNaver(findProductsDto);
+    const { products: naverProducts, total } = await this.searchProductsOnNaver(findProductsDto);
 
     const products = await Promise.all(
       naverProducts.map(product =>
@@ -55,11 +53,11 @@ export class ProductService {
         })
       )
     );
-    const totalPages = calculateTotalPages(totalProducts, PRODUCTS_PAGE_SIZE);
+    const totalPages = calculateTotalPages(total, PRODUCTS_PAGE_SIZE);
     const productsData: ProductsData = {
       products,
       pageSize: PRODUCTS_PAGE_SIZE,
-      totalProducts,
+      total,
       totalPages
     };
     return productsData;

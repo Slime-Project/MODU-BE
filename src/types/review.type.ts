@@ -1,6 +1,6 @@
 import { Prisma, Review } from '@prisma/client';
 
-import { REVIEWS_PAGE_SIZE } from '@/constants/review';
+import { ItemsData } from '@/types/common.type';
 
 type CreateReview = Pick<Review, Exclude<keyof Review, 'id' | 'createdAt'>>;
 
@@ -14,14 +14,8 @@ type SortingOpts = {
   rating: Record<OrderBy, OrderByOpt[]>;
 };
 
-type ReviewsData = {
+type ReviewsData = ItemsData & {
   reviews: Review[];
-  meta: {
-    page: number;
-    pageSize: typeof REVIEWS_PAGE_SIZE;
-    totalReviews: number;
-    totalPages: number;
-  };
 };
 
 export { CreateReview, SortBy, OrderBy, SortingOpts, ReviewsData };

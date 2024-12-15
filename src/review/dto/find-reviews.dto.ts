@@ -1,20 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsIn, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsIn, IsOptional } from 'class-validator';
+
+import { FindItemsDto } from '@/common/dto/find-items.dto';
 
 import { OrderBy, SortBy } from '@/types/review.type';
 
-export class FindReviewsDto {
-  @ApiProperty({
-    description: 'Must be an integer greater than or equal to 1',
-    example: 1
-  })
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  readonly page: number;
-
+export class FindReviewsDto extends FindItemsDto {
   @ApiProperty({
     description: 'If not provided, defaults to "rating"',
     example: 'rating',
