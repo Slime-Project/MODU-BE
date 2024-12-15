@@ -8,6 +8,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
+import { calculateSkip } from '@/utils/page';
 import { getMockProduct, getMockReview } from '@/utils/unit-test';
 
 import { ReviewService } from './review.service';
@@ -124,7 +125,7 @@ describe('ReviewService', () => {
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           take: REVIEWS_PAGE_SIZE,
-          skip: (page - 1) * REVIEWS_PAGE_SIZE
+          skip: calculateSkip(page, REVIEWS_PAGE_SIZE)
         })
       );
     });

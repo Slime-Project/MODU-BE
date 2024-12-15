@@ -1,10 +1,12 @@
 import {
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UseGuards
 } from '@nestjs/common';
@@ -12,7 +14,9 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
+import { FindWishlistProductsDto } from '@/wishlist/product/dto/find-wishlist-products.dto';
 import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
+import { WishlistProductsDto } from '@/wishlist/product/dto/wishlist-products.dto';
 import { WishlistProductService } from '@/wishlist/product/wishlist-product.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -76,5 +80,30 @@ export class WishlistProductController {
   @HttpCode(204)
   async remove(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) productId: number) {
     await this.service.remove(id, productId);
+  }
+
+  @ApiOperation({
+    summary: 'Get wishlist products'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ok'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing fields in the request body'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
+  })
+  @UseGuards(AccessTokenGuard)
+  @Get('')
+  async findMany(
+    @Req() { id }: TokenGuardReq,
+    @Query() findWishlistProductDto: FindWishlistProductsDto
+  ) {
+    const result = await this.service.findMany(id, findWishlistProductDto);
+    return plainToInstance(WishlistProductsDto, result);
   }
 }

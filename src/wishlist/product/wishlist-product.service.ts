@@ -1,6 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { WISHLIST_PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
+import { calculateSkip, calculateTotalPages } from '@/utils/page';
+import { FindWishlistProductsDto } from '@/wishlist/product/dto/find-wishlist-products.dto';
+
+import { WishlistProductsData } from '@/types/wishlist.type';
 
 @Injectable()
 export class WishlistProductService {
@@ -69,5 +74,42 @@ export class WishlistProductService {
         }
       })
     ]);
+  }
+
+  async findMany(userId: string, findWishlistProductsDto: FindWishlistProductsDto) {
+    const products = await this.prismaService.product.findMany({
+      where: {
+        wishlistItems: {
+          some: {
+            userId,
+            productId: {
+              not: null
+            }
+          }
+        }
+      },
+      take: WISHLIST_PRODUCTS_PAGE_SIZE,
+      skip: calculateSkip(findWishlistProductsDto.page, WISHLIST_PRODUCTS_PAGE_SIZE)
+    });
+    const total = await this.prismaService.product.count({
+      where: {
+        wishlistItems: {
+          some: {
+            userId,
+            productId: {
+              not: null
+            }
+          }
+        }
+      }
+    });
+    const totalPages = calculateTotalPages(total, WISHLIST_PRODUCTS_PAGE_SIZE);
+    const wishlistProductsData: WishlistProductsData = {
+      products,
+      total,
+      totalPages,
+      pageSize: WISHLIST_PRODUCTS_PAGE_SIZE
+    };
+    return wishlistProductsData;
   }
 }

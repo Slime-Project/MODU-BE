@@ -13,6 +13,7 @@ import {
   validateDto
 } from '@/utils/integration-test';
 import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
+import { WishlistProductsDto } from '@/wishlist/product/dto/wishlist-products.dto';
 import { WishlistProductModule } from '@/wishlist/product/wishlist-product.module';
 
 describe('WishlistProductController (integration)', () => {
@@ -71,6 +72,10 @@ describe('WishlistProductController (integration)', () => {
         .post(`/api/wishlist/products/${product.id}`)
         .set('Cookie', [accessTokenCookie])
         .expect(409);
+
+      prismaService.wishlistItem.delete({
+        where: { userId_productId: { userId, productId: product.id } }
+      });
     });
   });
 
@@ -95,6 +100,28 @@ describe('WishlistProductController (integration)', () => {
         .delete(`/api/wishlist/products/${product.id}`)
         .set('Cookie', [accessTokenCookie])
         .expect(404);
+    });
+  });
+
+  describe('/api/wishlist/products (GET)', () => {
+    it('200', async () => {
+      prismaService.wishlistItem.create({
+        data: { userId, productId: product.id }
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/api/wishlist/products?page=1')
+        .set('Cookie', [accessTokenCookie])
+        .expect(200);
+      validateDto(WishlistProductsDto, body);
+
+      prismaService.wishlistItem.delete({
+        where: { userId_productId: { userId, productId: product.id } }
+      });
+    });
+
+    it('401', async () => {
+      return request(app.getHttpServer()).get('/api/wishlist/products?page=1').expect(401);
     });
   });
 });

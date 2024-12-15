@@ -2,4 +2,8 @@ const calculateTotalPages = (totalItems: number, pageSize: number) => {
   return Math.ceil(totalItems / pageSize);
 };
 
-export { calculateTotalPages };
+const calculateSkip = (page: number, pageSize: number) => {
+  return (page - 1) * pageSize;
+};
+
+export { calculateTotalPages, calculateSkip };
