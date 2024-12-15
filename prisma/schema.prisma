@@ -34,4 +34,21 @@ model Product {
   seller                 String
   createdAt              DateTime @default(now())
   likedCount             Int @default(0)
+  tags                   ProductTag[]
+}
+
+model Tag {
+  id                     Int       @id @default(autoincrement())
+  name                   String    @unique
+  products               ProductTag[] 
+}
+
+model ProductTag {
+  productId Int
+  tagId     Int
+
+  product   Product @relation(fields: [productId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([productId, tagId]) // 복합 기본키 설정
 }
