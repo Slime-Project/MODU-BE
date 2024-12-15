@@ -9,7 +9,6 @@ export class ProductsDto {
   @ApiProperty({
     type: [ProductDto]
   })
-  @IsNotEmpty()
   @Expose()
   @Type(() => ProductDto)
   @ValidateNested()
