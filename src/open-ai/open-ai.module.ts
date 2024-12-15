@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { OpenAiService } from './open-ai.service';
+import { CrawlerModule } from '@/crawler/crawler.module';
+import { PrismaModule } from '@/prisma/prisma.module';
+
 import { OpenAiController } from './open-ai.controller';
+import { OpenAiService } from './open-ai.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, CrawlerModule, PrismaModule],
   providers: [OpenAiService],
   controllers: [OpenAiController]
 })
