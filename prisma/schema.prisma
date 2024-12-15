@@ -46,6 +46,7 @@ model Product {
        
   reviews                Review[]         @relation("ProductReviews")
   wishlistItems          WishlistItem[]
+  tags                   ProductTag[]
 }
 
 model Review {
@@ -80,4 +81,20 @@ model WishlistItem {
 
   @@unique([userId, productId])
   @@unique([userId, giftCollectionId])
+}
+
+model Tag {
+  id                     Int       @id @default(autoincrement())
+  name                   String    @unique
+  products               ProductTag[] 
+}
+
+model ProductTag {
+  productId Int
+  tagId     Int
+
+  product   Product @relation(fields: [productId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([productId, tagId]) // 복합 기본키 설정
 }

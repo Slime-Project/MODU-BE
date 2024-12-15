@@ -56,6 +56,8 @@ module.exports = {
       {
         devDependencies: ['**/*-spec.ts', '**/*.spec.ts', '**/integration-test.ts']
       }
-    ]
+    ],
+    radix: ['error', 'as-needed']
+
   }
 };
