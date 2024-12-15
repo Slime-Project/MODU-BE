@@ -4,13 +4,13 @@ import { IsNotEmpty, ValidateNested } from 'class-validator';
 
 import { ProductDto } from '@/product/dto/product.dto';
 
-export class ProductWishlistDto {
+export class WishlistProductDto {
   @ApiProperty({
-    type: [ProductDto]
+    type: ProductDto
   })
   @IsNotEmpty()
   @Expose()
   @Type(() => ProductDto)
   @ValidateNested()
-  product: ProductDto[];
+  product: ProductDto;
 }

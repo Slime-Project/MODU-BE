@@ -12,10 +12,10 @@ import {
   deleteUser,
   validateDto
 } from '@/utils/integration-test';
-import { ProductWishlistDto } from '@/wishlist/product/dto/product-wishlist.dto';
-import { ProductWishlistModule } from '@/wishlist/product/product-wishlist.module';
+import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
+import { WishlistProductModule } from '@/wishlist/product/wishlist-product.module';
 
-describe('ProductWishlistController (integration)', () => {
+describe('WishlistProductController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -24,7 +24,7 @@ describe('ProductWishlistController (integration)', () => {
   let product: Product;
 
   beforeAll(async () => {
-    app = await createTestingApp([ProductWishlistModule, AuthModule]);
+    app = await createTestingApp([WishlistProductModule, AuthModule]);
     prismaService = app.get(PrismaService);
 
     userId = '1';
@@ -44,7 +44,7 @@ describe('ProductWishlistController (integration)', () => {
         .post(`/api/wishlist/products/${product.id}`)
         .set('Cookie', [accessTokenCookie])
         .expect(201);
-      validateDto(ProductWishlistDto, body);
+      validateDto(WishlistProductDto, body);
 
       prismaService.wishlistItem.delete({
         where: { userId_productId: { userId, productId: product.id } }

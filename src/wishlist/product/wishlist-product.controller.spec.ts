@@ -4,29 +4,29 @@ import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { getMockProduct } from '@/utils/unit-test';
-import { ProductWishlistDto } from '@/wishlist/product/dto/product-wishlist.dto';
-import { ProductWishlistService } from '@/wishlist/product/product-wishlist.service';
+import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
+import { WishlistProductService } from '@/wishlist/product/wishlist-product.service';
 
-import { ProductWishlistController } from './product-wishlist.controller';
+import { WishlistProductController } from './wishlist-product.controller';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
-describe('ProductWishlistController', () => {
-  let controller: ProductWishlistController;
-  let service: DeepMockProxy<ProductWishlistService>;
+describe('WishlistProductController', () => {
+  let controller: WishlistProductController;
+  let service: DeepMockProxy<WishlistProductService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      controllers: [ProductWishlistController],
+      controllers: [WishlistProductController],
       providers: [
-        { provide: ProductWishlistService, useValue: mockDeep<ProductWishlistService>() },
+        { provide: WishlistProductService, useValue: mockDeep<WishlistProductService>() },
         { provide: ConfigService, useValue: mockDeep<ConfigService>() },
         { provide: JwtService, useValue: mockDeep<JwtService>() }
       ]
     }).compile();
 
-    controller = module.get(ProductWishlistController);
-    service = module.get(ProductWishlistService);
+    controller = module.get(WishlistProductController);
+    service = module.get(WishlistProductService);
   });
 
   it('should be defined', () => {
@@ -34,19 +34,29 @@ describe('ProductWishlistController', () => {
   });
 
   describe('create', () => {
-    it('should return an instance of ProductWishlistDto', async () => {
+    it('should return an instance of WishlistProductDto', async () => {
       const product = getMockProduct();
       const req = {
         id: '1'
       } as TokenGuardReq;
       service.create.mockResolvedValue({ product });
       const result = await controller.create(req, product.id);
-      expect(result).toBeInstanceOf(ProductWishlistDto);
+      expect(result).toBeInstanceOf(WishlistProductDto);
     });
   });
 
   describe('remove', () => {
-    it('should call remove method of productWishlistService', async () => {
+    it('should call remove method of WishlistProductService', async () => {
+      const req = {
+        id: '1'
+      } as TokenGuardReq;
+      await controller.remove(req, 1);
+      expect(service.remove).toHaveBeenCalled();
+    });
+  });
+
+  describe('findMany', () => {
+    it('should call remove method of WishlistProductService', async () => {
       const req = {
         id: '1'
       } as TokenGuardReq;
