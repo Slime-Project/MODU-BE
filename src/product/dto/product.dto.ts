@@ -55,5 +55,5 @@ export class ProductDto {
   @Min(0)
   @IsNotEmpty()
   @Expose()
-  readonly likedCount: number;
+  readonly wishedCount: number;
 }
