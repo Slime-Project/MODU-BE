@@ -54,7 +54,7 @@ describe('ProductController (integration)', () => {
       };
       productService.searchProductsOnNaver = jest.fn().mockResolvedValue({
         products: [naverProduct],
-        totalProducts: 1
+        total: 1
       });
       const { body } = await request(app.getHttpServer())
         .get('/api/products?page=1&query=apple')

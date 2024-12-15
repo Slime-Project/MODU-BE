@@ -6,7 +6,7 @@ export class FindItemsDto {
   @ApiProperty({
     description: 'page >= 1'
   })
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => parseInt(value))
   @IsNotEmpty()
   @IsInt()
   @Min(1)

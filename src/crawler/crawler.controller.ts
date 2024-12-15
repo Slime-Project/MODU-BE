@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+
 import { CrawlerService } from './crawler.service';
 
 @Controller('crawler')

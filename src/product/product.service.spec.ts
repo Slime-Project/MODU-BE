@@ -56,16 +56,16 @@ describe('ProductService', () => {
         page: 1,
         query: 'query'
       };
-      const totalProducts = 1;
+      const total = 1;
       const productsData: ProductsData = {
         products: [product],
         pageSize: PRODUCTS_PAGE_SIZE,
-        totalProducts,
+        total,
         totalPages: 1
       };
       productService.searchProductsOnNaver = jest
         .fn()
-        .mockResolvedValue({ products: [product], totalProducts });
+        .mockResolvedValue({ products: [product], total });
       prismaService.product.upsert.mockResolvedValue(product);
       const result = await productService.findMany(findProductsDto);
       expect(result).toEqual(productsData);
@@ -83,7 +83,7 @@ describe('ProductService', () => {
       result.products.forEach(product => {
         expect(product).toBeInstanceOf(NaverProductDto);
       });
-      expect(result.totalProducts).toBeGreaterThanOrEqual(0);
+      expect(result.total).toBeGreaterThanOrEqual(0);
     });
   });
 });

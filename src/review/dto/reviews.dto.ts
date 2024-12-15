@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { ValidateNested } from 'class-validator';
 
+import { ItemsDto } from '@/common/dto/items.dto';
 import { ReviewDto } from '@/review/dto/review.dto';
-import { ReviewMetaDto } from '@/review/dto/reviews-meta.dto';
 
-export class ReviewsDto {
+export class ReviewsDto extends ItemsDto {
   @ApiProperty({
     type: [ReviewDto]
   })
@@ -13,11 +13,4 @@ export class ReviewsDto {
   @Type(() => ReviewDto)
   @ValidateNested()
   reviews: ReviewDto[];
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @Expose()
-  @Type(() => ReviewMetaDto)
-  @ValidateNested()
-  meta: ReviewMetaDto;
 }

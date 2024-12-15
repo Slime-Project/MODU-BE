@@ -87,7 +87,9 @@ describe('ReviewController', () => {
       const page = 1;
       const reviewsData: ReviewsData = {
         reviews: [review],
-        meta: { page, pageSize: REVIEWS_PAGE_SIZE, totalReviews: 1, totalPages: 1 }
+        pageSize: REVIEWS_PAGE_SIZE,
+        total: 1,
+        totalPages: 1
       };
       service.findMany.mockResolvedValue(reviewsData);
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
