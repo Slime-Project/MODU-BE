@@ -1,19 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-import { IsIn, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
+import { Expose } from 'class-transformer';
+import { IsIn, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
-import { ProductDto } from '@/product/dto/product.dto';
 
-export class ProductsDto {
-  @ApiProperty({
-    type: [ProductDto]
-  })
-  @Expose()
-  @Type(() => ProductDto)
-  @ValidateNested()
-  products: ProductDto[];
-
+export class ItemsDto {
   @ApiProperty({ example: 10 })
   @IsIn([PRODUCTS_PAGE_SIZE])
   @IsNotEmpty()
@@ -24,7 +15,7 @@ export class ProductsDto {
   @IsNumber()
   @IsNotEmpty()
   @Expose()
-  totalProducts: number;
+  total: number;
 
   @ApiProperty()
   @IsNumber()

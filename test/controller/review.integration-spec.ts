@@ -156,7 +156,7 @@ describe('ReviewController (integration)', () => {
     });
 
     it('401', async () => {
-      return request(app.getHttpServer()).delete('/api/products/0/reviews/0').expect(401);
+      return request(app.getHttpServer()).get('/api/products/0/reviews/0').expect(401);
     });
 
     it('403', async () => {

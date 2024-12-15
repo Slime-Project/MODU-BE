@@ -9,7 +9,6 @@ export class ReviewsDto {
   @ApiProperty({
     type: [ReviewDto]
   })
-  @IsNotEmpty()
   @Expose()
   @Type(() => ReviewDto)
   @ValidateNested()

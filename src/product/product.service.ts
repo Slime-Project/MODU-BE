@@ -56,13 +56,13 @@ export class ProductService {
       )
     );
     const totalPages = calculateTotalPages(totalProducts, PRODUCTS_PAGE_SIZE);
-    const productsDto: ProductsData = {
+    const productsData: ProductsData = {
       products,
       pageSize: PRODUCTS_PAGE_SIZE,
       totalProducts,
       totalPages
     };
-    return productsDto;
+    return productsData;
   }
 
   async findOne(id: number) {

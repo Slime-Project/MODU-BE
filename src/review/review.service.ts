@@ -10,7 +10,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
-import { calculateTotalPages } from '@/utils/page';
+import { calculateSkip, calculateTotalPages } from '@/utils/page';
 
 import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
 
@@ -108,7 +108,7 @@ export class ReviewService {
         productId
       },
       take: REVIEWS_PAGE_SIZE,
-      skip: (findReviewsDto.page - 1) * REVIEWS_PAGE_SIZE,
+      skip: calculateSkip(findReviewsDto.page, REVIEWS_PAGE_SIZE),
       orderBy: sortingOpts[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc']
     });
   }
