@@ -15,7 +15,7 @@ export class SearchController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success',
+    description: 'Ok',
     type: SearchResDto
   })
   @ApiResponse({

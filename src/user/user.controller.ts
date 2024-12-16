@@ -20,12 +20,12 @@ export class UserController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success',
+    description: 'Ok',
     type: UserDto
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token, or token is missing'
+    description: 'Unauthorized - Invalid or expired token, or token is missing'
   })
   @HttpCode(200)
   @UseGuards(AccessTokenGuard)
@@ -45,7 +45,7 @@ export class UserController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized- Invalid or expired refresh token, or token is missing'
+    description: 'Unauthorized - Invalid or expired token, or token is missing'
   })
   @HttpCode(204)
   @UseGuards(AccessTokenGuard)

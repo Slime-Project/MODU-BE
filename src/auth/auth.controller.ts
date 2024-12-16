@@ -22,12 +22,12 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: 'created',
+    description: 'Created',
     type: LoginResDto
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid code'
+    description: 'Unauthorized - Invalid code'
   })
   @Post('/login')
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -50,7 +50,9 @@ export class AuthController {
   }
 
   @ApiOperation({
-    summary: 'Reissue token'
+    summary: 'Reissue token',
+    description:
+      'Reissues access and refresh tokens. Refresh token reissued based on remaining expiration time.'
   })
   @ApiResponse({
     status: 204,
