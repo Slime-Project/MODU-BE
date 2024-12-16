@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, Length, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, Length, IsInt, Min, Max } from 'class-validator';
 
 export class CreateReviewDto {
   @ApiProperty({
     description: 'The rating score for the product, typically between 1 and 5',
     example: 4
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(5)
   @IsNotEmpty()
   readonly rating: number;
 

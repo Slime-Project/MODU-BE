@@ -46,5 +46,9 @@ describe('SearchController (integration)', () => {
 
       await deleteProduct(prismaService, product.id);
     });
+
+    it('400', async () => {
+      await request(app.getHttpServer()).get('/api/search').expect(400);
+    });
   });
 });

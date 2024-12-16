@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsNumber, IsDate } from 'class-validator';
+import { IsString, IsNotEmpty, IsDate, IsInt, Min, Max } from 'class-validator';
 
 export class ReviewDto {
   @ApiProperty({
     description: 'The unique identifier of the review',
     example: 1
   })
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   @Expose()
   readonly id: number;
@@ -16,7 +16,9 @@ export class ReviewDto {
     description: 'The rating score for the product, typically between 1 and 5',
     example: 4
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(5)
   @IsNotEmpty()
   @Expose()
   readonly rating: number;

@@ -34,10 +34,6 @@ export class WishlistProductController {
     type: WishlistProductDto
   })
   @ApiResponse({
-    status: 400,
-    description: 'Bad Request - Invalid or missing fields in the request body'
-  })
-  @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
@@ -64,10 +60,6 @@ export class WishlistProductController {
     description: 'No Content'
   })
   @ApiResponse({
-    status: 400,
-    description: 'Bad Request - Invalid or missing fields in the request body'
-  })
-  @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid or expired access token, or access token is missing'
   })
@@ -91,7 +83,7 @@ export class WishlistProductController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Invalid or missing fields in the request body'
+    description: 'Bad Request - Invalid or missing query fields'
   })
   @ApiResponse({
     status: 401,

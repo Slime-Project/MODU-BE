@@ -47,7 +47,7 @@ describe('WishlistProductController (integration)', () => {
         .expect(201);
       validateDto(WishlistProductDto, body);
 
-      prismaService.wishlistItem.delete({
+      await prismaService.wishlistItem.delete({
         where: { userId_productId: { userId, productId: product.id } }
       });
     });
@@ -64,7 +64,7 @@ describe('WishlistProductController (integration)', () => {
     });
 
     it('409', async () => {
-      prismaService.wishlistItem.create({
+      await prismaService.wishlistItem.create({
         data: { userId, productId: product.id }
       });
 
@@ -73,7 +73,7 @@ describe('WishlistProductController (integration)', () => {
         .set('Cookie', [accessTokenCookie])
         .expect(409);
 
-      prismaService.wishlistItem.delete({
+      await prismaService.wishlistItem.delete({
         where: { userId_productId: { userId, productId: product.id } }
       });
     });
@@ -81,7 +81,7 @@ describe('WishlistProductController (integration)', () => {
 
   describe('/api/wishlist/products/:id (DELETE)', () => {
     it('204', async () => {
-      prismaService.wishlistItem.create({
+      await prismaService.wishlistItem.create({
         data: { userId, productId: product.id }
       });
 
@@ -105,7 +105,7 @@ describe('WishlistProductController (integration)', () => {
 
   describe('/api/wishlist/products (GET)', () => {
     it('200', async () => {
-      prismaService.wishlistItem.create({
+      await prismaService.wishlistItem.create({
         data: { userId, productId: product.id }
       });
 
@@ -115,7 +115,22 @@ describe('WishlistProductController (integration)', () => {
         .expect(200);
       validateDto(WishlistProductsDto, body);
 
-      prismaService.wishlistItem.delete({
+      await prismaService.wishlistItem.delete({
+        where: { userId_productId: { userId, productId: product.id } }
+      });
+    });
+
+    it('400', async () => {
+      await prismaService.wishlistItem.create({
+        data: { userId, productId: product.id }
+      });
+
+      await request(app.getHttpServer())
+        .get('/api/wishlist/products')
+        .set('Cookie', [accessTokenCookie])
+        .expect(400);
+
+      await prismaService.wishlistItem.delete({
         where: { userId_productId: { userId, productId: product.id } }
       });
     });

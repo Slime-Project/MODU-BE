@@ -36,7 +36,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 201,
-    description: 'created',
+    description: 'Created',
     type: ReviewDto
   })
   @ApiResponse({
@@ -79,7 +79,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Not Found'
+    description: 'Not Found - Review not found'
   })
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
@@ -97,16 +97,12 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success',
+    description: 'Ok',
     type: ReviewCountDto
   })
   @ApiResponse({
-    status: 400,
-    description: 'Bad Request - Invalid query fields'
-  })
-  @ApiResponse({
     status: 404,
-    description: 'Not Found'
+    description: 'Not Found - Product not found'
   })
   @Get('count')
   async count(@Param('productId', ParseIntPipe) productId: number) {
@@ -132,7 +128,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Not Found'
+    description: 'Not Found - Review not found'
   })
   @UseGuards(AccessTokenGuard)
   @Get(':id')
@@ -155,11 +151,11 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Invalid query fields'
+    description: 'Bad Request - Invalid or missing query fields'
   })
   @ApiResponse({
     status: 404,
-    description: 'Not Found'
+    description: 'Not Found - Product not found'
   })
   @Get('')
   async findMany(
@@ -175,7 +171,7 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success',
+    description: 'Ok',
     type: ReviewDto
   })
   @ApiResponse({
@@ -188,11 +184,11 @@ export class ReviewController {
   })
   @ApiResponse({
     status: 403,
-    description: 'You are not authorized to delete this review'
+    description: 'Forbidden - You are not authorized to patch this review'
   })
   @ApiResponse({
     status: 404,
-    description: 'Review not found'
+    description: 'Not Found - Review not found'
   })
   @UseGuards(AccessTokenGuard)
   @Patch(':id')
