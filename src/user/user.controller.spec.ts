@@ -55,7 +55,7 @@ describe('UserController', () => {
     });
   });
 
-  describe('delete', () => {
+  describe('remove', () => {
     it('should clear cookies', async () => {
       const refreshToken = 'refreshToken';
       const req = {
@@ -64,7 +64,7 @@ describe('UserController', () => {
       req.cookies = {
         refresh_token: refreshToken
       };
-      await controller.delete(req, response);
+      await controller.remove(req, response);
       expect(response.cookie).toHaveBeenCalledWith('access_token', '', {
         httpOnly: true,
         secure: true,

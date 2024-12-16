@@ -9,7 +9,7 @@ import { UserInfo } from '@/types/user.type';
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async delete(id: string, refreshToken: string) {
+  async remove(id: string, refreshToken: string) {
     const auth = await this.prismaService.auth.findUnique({
       where: {
         userId_refreshToken: {

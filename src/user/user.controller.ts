@@ -51,9 +51,9 @@ export class UserController {
   @UseGuards(AccessTokenGuard)
   @UseGuards(RefreshTokenGuard)
   @Delete('')
-  async delete(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
+  async remove(@Req() req: TokenGuardReq, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token;
-    await this.userService.delete(req.id, refreshToken);
+    await this.userService.remove(req.id, refreshToken);
 
     res.cookie('access_token', '', {
       httpOnly: true,

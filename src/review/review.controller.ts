@@ -84,12 +84,12 @@ export class ReviewController {
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   @Delete(':id')
-  async delete(
+  async remove(
     @Req() { id }: TokenGuardReq,
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    await this.reviewService.delete(id, productId, reviewId);
+    await this.reviewService.remove(id, productId, reviewId);
   }
 
   @ApiOperation({

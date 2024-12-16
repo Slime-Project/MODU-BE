@@ -59,7 +59,7 @@ describe('UserService', () => {
     });
   });
 
-  describe('delete', () => {
+  describe('remove', () => {
     it('should remove user and unlink from Kakao', async () => {
       const auth = getMockAuth();
       const user: User = { id: auth.userId, role: UserRole.USER };
@@ -67,14 +67,14 @@ describe('UserService', () => {
       prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
       prismaService.user.delete.mockResolvedValue(user);
-      await userService.delete(auth.userId, auth.refreshToken);
+      await userService.remove(auth.userId, auth.refreshToken);
       expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
       expect(prismaService.user.delete).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException when refresh token is invalid or expired', () => {
       prismaService.auth.findUnique.mockResolvedValue(null);
-      return expect(userService.delete('1234567890', 'expired-token')).rejects.toThrow(
+      return expect(userService.remove('1234567890', 'expired-token')).rejects.toThrow(
         UnauthorizedException
       );
     });

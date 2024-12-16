@@ -55,15 +55,15 @@ describe('ReviewController', () => {
     });
   });
 
-  describe('delete', () => {
-    it('should call delete method of reviewService', async () => {
+  describe('remove', () => {
+    it('should call remove method of reviewService', async () => {
       const review = getMockReview();
       const req = {
         id: review.userId
       } as TokenGuardReq;
-      service.delete.mockResolvedValue(review);
-      await controller.delete(req, review.productId, review.id);
-      expect(service.delete).toHaveBeenCalled();
+      service.remove.mockResolvedValue(review);
+      await controller.remove(req, review.productId, review.id);
+      expect(service.remove).toHaveBeenCalled();
     });
   });
 
