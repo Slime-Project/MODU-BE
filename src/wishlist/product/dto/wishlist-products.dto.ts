@@ -3,14 +3,14 @@ import { Expose, Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 
 import { ItemsDto } from '@/common/dto/items.dto';
-import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
+import { ProductDto } from '@/product/dto/product.dto';
 
 export class WishlistProductsDto extends ItemsDto {
   @ApiProperty({
-    type: [WishlistProductDto]
+    type: [ProductDto]
   })
   @Expose()
-  @Type(() => WishlistProductDto)
+  @Type(() => ProductDto)
   @ValidateNested()
-  products: WishlistProductDto[];
+  products: ProductDto[];
 }
