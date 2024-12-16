@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
+import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { ProductDto } from '@/product/dto/product.dto';
 import { getMockProduct } from '@/utils/unit-test';
 

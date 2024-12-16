@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { Product } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { REVIEWS_PAGE_SIZE } from '@/constants/review';
+import { REVIEWS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { FindReviewsDto } from '@/review/dto/find-reviews.dto';

@@ -1,7 +1,7 @@
 import { Auth, Product, Review, WishlistItem } from '@prisma/client';
 
 import { AuthService } from '@/auth/auth.service';
-import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
+import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 
 const getMockAuth = () => {
   const auth: Auth = {

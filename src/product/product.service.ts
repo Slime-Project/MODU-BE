@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 
-import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
+import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindProductsDto } from '@/product/dto/find-products.dto';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';

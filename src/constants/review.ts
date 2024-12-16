@@ -1,2 +1,0 @@
-const REVIEWS_PAGE_SIZE = 10;
-export { REVIEWS_PAGE_SIZE };
