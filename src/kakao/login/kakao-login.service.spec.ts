@@ -136,20 +136,20 @@ describe('KakaoLoginService', () => {
   });
 
   describe('logout', () => {
-    it('should return an object containing an id', async () => {
+    it('should call axios post method for Kakao logout', async () => {
       const data = { id: 1234567890 };
       axios.post = jest.fn().mockResolvedValue({ data });
-      const result = await KakaoLoginService.logout('kakaoAccessToken');
-      expect(result).toEqual(data);
+      await KakaoLoginService.logout('kakaoAccessToken');
+      expect(axios.post).toHaveBeenCalled();
     });
   });
 
   describe('unlink', () => {
-    it('should return an object containing an id', async () => {
+    it('should call axios post method for Kakao unlink', async () => {
       const data = { id: 1234567890 };
       axios.post = jest.fn().mockResolvedValue({ data });
-      const result = await KakaoLoginService.unlink('kakaoAccessToken');
-      expect(result).toEqual(data);
+      await KakaoLoginService.unlink('kakaoAccessToken');
+      expect(axios.post).toHaveBeenCalled();
     });
   });
 });

@@ -64,9 +64,7 @@ describe('AuthController (integration)', () => {
     it('204', async () => {
       const { accessTokenCookie, refreshTokenCookie } = await createUser(app, id);
 
-      KakaoLoginService.logout = jest.fn().mockResolvedValue({
-        id
-      });
+      KakaoLoginService.logout = jest.fn();
       const res = await request(app.getHttpServer())
         .post('/api/auth/logout')
         .set('Cookie', [accessTokenCookie, refreshTokenCookie])

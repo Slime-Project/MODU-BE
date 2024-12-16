@@ -61,7 +61,6 @@ describe('ReviewController', () => {
       const req = {
         id: review.userId
       } as TokenGuardReq;
-      service.remove.mockResolvedValue(review);
       await controller.remove(req, review.productId, review.id);
       expect(service.remove).toHaveBeenCalled();
     });

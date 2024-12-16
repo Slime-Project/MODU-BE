@@ -65,12 +65,12 @@ describe('ReviewService', () => {
   });
 
   describe('remove', () => {
-    it('should return a review', async () => {
+    it('should call prisma delete method when the review exists', async () => {
       const review = getMockReview();
       prismaService.review.findUnique.mockResolvedValue(review);
       prismaService.review.delete.mockResolvedValue(review);
-      const result = await reviewService.remove(review.userId, review.productId, review.id);
-      expect(result).toEqual(review);
+      await reviewService.remove(review.userId, review.productId, review.id);
+      expect(prismaService.review.delete).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when review is not found', async () => {
@@ -97,7 +97,7 @@ describe('ReviewService', () => {
 
     it('should throw NotFoundException when review is not found', async () => {
       prismaService.review.findUnique.mockResolvedValue(null);
-      return expect(reviewService.remove('1234567890', 1, 1)).rejects.toThrow(NotFoundException);
+      return expect(reviewService.findOne('1234567890', 1, 1)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
