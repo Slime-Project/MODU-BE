@@ -46,7 +46,7 @@ export class ReviewService {
     return this.prismaService.review.create({ data });
   }
 
-  async delete(userId: string, productId: number, id: number) {
+  async remove(userId: string, productId: number, id: number) {
     const review = await this.prismaService.review.findUnique({
       where: {
         id_productId: {
