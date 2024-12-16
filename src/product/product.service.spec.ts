@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import axios from 'axios';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { PRODUCTS_PAGE_SIZE } from '@/constants/product';
+import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindProductsDto } from '@/product/dto/find-products.dto';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';
