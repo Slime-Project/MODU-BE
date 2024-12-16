@@ -64,7 +64,7 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    return this.prismaService.review.delete({
+    await this.prismaService.review.delete({
       where: {
         id
       }

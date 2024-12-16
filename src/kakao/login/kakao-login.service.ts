@@ -78,23 +78,21 @@ export class KakaoLoginService {
     };
   }
 
-  static async logout(accessToken: string): Promise<{ id: number }> {
+  static async logout(accessToken: string) {
     const logoutUrl = 'https://kapi.kakao.com/v1/user/logout';
-    const { data } = await axios.post(logoutUrl, null, {
+    await axios.post(logoutUrl, null, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     });
-    return data;
   }
 
-  static async unlink(accessToken: string): Promise<{ id: number }> {
+  static async unlink(accessToken: string) {
     const unlinkUrl = 'https://kapi.kakao.com/v1/user/unlink';
-    const { data } = await axios.post(unlinkUrl, null, {
+    await axios.post(unlinkUrl, null, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     });
-    return data;
   }
 }

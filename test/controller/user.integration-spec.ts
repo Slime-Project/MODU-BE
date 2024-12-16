@@ -41,9 +41,7 @@ describe('UserController (integration)', () => {
     it('204', async () => {
       const { accessTokenCookie, refreshTokenCookie } = await createUser(app, id);
 
-      KakaoLoginService.unlink = jest.fn().mockResolvedValue({
-        id
-      });
+      KakaoLoginService.unlink = jest.fn();
       const res = await request(app.getHttpServer())
         .delete('/api/user')
         .set('Cookie', [accessTokenCookie, refreshTokenCookie])

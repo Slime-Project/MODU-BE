@@ -246,7 +246,7 @@ describe('AuthService', () => {
     it('should remove auth and log out from Kakao', async () => {
       const auth = getMockAuth();
       prismaService.auth.findUnique.mockResolvedValue(auth);
-      KakaoLoginService.logout = jest.fn().mockResolvedValue({ id: auth.userId });
+      KakaoLoginService.logout = jest.fn();
       prismaService.auth.delete.mockResolvedValue(auth);
       await authService.logout(auth.userId, auth.refreshToken);
       expect(prismaService.auth.delete).toHaveBeenCalled();

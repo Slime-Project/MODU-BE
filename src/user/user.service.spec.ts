@@ -65,7 +65,7 @@ describe('UserService', () => {
       const user: User = { id: auth.userId, role: UserRole.USER };
 
       prismaService.auth.findUnique.mockResolvedValue(auth);
-      KakaoLoginService.unlink = jest.fn().mockResolvedValue({ id: auth.userId });
+      KakaoLoginService.unlink = jest.fn();
       prismaService.user.delete.mockResolvedValue(user);
       await userService.remove(auth.userId, auth.refreshToken);
       expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
