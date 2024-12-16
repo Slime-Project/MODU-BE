@@ -53,6 +53,19 @@ describe('ReviewController (integration)', () => {
       await deleteProduct(prismaService, product.id);
     });
 
+    it('400', async () => {
+      const userId = '3456789012';
+      const { accessTokenCookie } = await createUser(app, userId);
+
+      await request(app.getHttpServer())
+        .post('/api/products/1/reviews')
+        .set('Cookie', [accessTokenCookie])
+        .send({ text: 'Great product!', rating: 0 })
+        .expect(400);
+
+      await deleteUser(prismaService, userId);
+    });
+
     it('401', async () => {
       return request(app.getHttpServer()).post('/api/products/1/reviews').expect(401);
     });
@@ -215,6 +228,10 @@ describe('ReviewController (integration)', () => {
       ]);
     });
 
+    it('400', async () => {
+      await request(app.getHttpServer()).get('/api/products/0/reviews?page=a').expect(400);
+    });
+
     it('404', async () => {
       await request(app.getHttpServer()).get('/api/products/0/reviews?page=1').expect(404);
     });
@@ -255,6 +272,22 @@ describe('ReviewController (integration)', () => {
 
       await deleteUser(prismaService, userId);
       await deleteProduct(prismaService, product.id);
+    });
+
+    it('400', async () => {
+      const userId = '3456789012';
+      const { accessTokenCookie } = await createUser(app, userId);
+
+      await request(app.getHttpServer())
+        .patch('/api/products/1/reviews/1')
+        .send({
+          text: 'new-text',
+          rating: 0
+        })
+        .set('Cookie', [accessTokenCookie])
+        .expect(400);
+
+      await deleteUser(prismaService, userId);
     });
 
     it('401', async () => {

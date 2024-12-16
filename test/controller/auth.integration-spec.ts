@@ -99,11 +99,8 @@ describe('AuthController (integration)', () => {
       await deleteUser(prismaService, id);
     });
 
-    it('400', async () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send({ code: 'invalidCode' })
-        .expect(400);
+    it('401', async () => {
+      return request(app.getHttpServer()).post('/api/auth/logout').expect(401);
     });
   });
 
