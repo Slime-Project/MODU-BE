@@ -56,4 +56,10 @@ export class ProductDto {
   @IsNotEmpty()
   @Expose()
   readonly likedCount: number;
+
+  @IsInt()
+  @Min(0)
+  @IsNotEmpty()
+  @Expose()
+  readonly averageRating: number;
 }

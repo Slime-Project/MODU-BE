@@ -2,11 +2,12 @@ import { Test } from '@nestjs/testing';
 import { Product, Review } from '@prisma/client';
 
 import { PrismaService } from '@/prisma/prisma.service';
+import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
 import { ProductReviewService } from '@/product/review/product-review.service';
 import { createProduct, createReview, deleteProduct } from '@/utils/integration-test';
 
 describe('ProductReviewService (integration)', () => {
-  let reviewService: ProductReviewService;
+  let service: ProductReviewService;
   let prismaService: PrismaService;
 
   beforeAll(async () => {
@@ -14,7 +15,7 @@ describe('ProductReviewService (integration)', () => {
       providers: [ProductReviewService, PrismaService]
     }).compile();
 
-    reviewService = module.get(ProductReviewService);
+    service = module.get(ProductReviewService);
     prismaService = module.get(PrismaService);
   });
 
@@ -52,7 +53,7 @@ describe('ProductReviewService (integration)', () => {
 
         return true;
       };
-      const result = await reviewService.findSortedAndPaginatedReviews(
+      const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'rating',
           orderBy: 'desc',
@@ -74,7 +75,7 @@ describe('ProductReviewService (integration)', () => {
 
         return true;
       };
-      const result = await reviewService.findSortedAndPaginatedReviews(
+      const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'rating',
           orderBy: 'asc',
@@ -96,7 +97,7 @@ describe('ProductReviewService (integration)', () => {
 
         return true;
       };
-      const result = await reviewService.findSortedAndPaginatedReviews(
+      const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
           orderBy: 'desc',
@@ -114,6 +115,50 @@ describe('ProductReviewService (integration)', () => {
             id: {
               in: [userId1, userId2, userId3]
             }
+          }
+        }),
+        deleteProduct(prismaService, product.id)
+      ]);
+    });
+  });
+
+  describe('should update product averageRating', () => {
+    const userId = '4';
+    let product: Product;
+
+    beforeAll(async () => {
+      const result = await Promise.all([
+        createProduct(prismaService),
+        prismaService.user.create({
+          data: { id: userId }
+        })
+      ]);
+      product = result[0] as Product;
+    });
+
+    it('create', async () => {
+      const createReviewDto: CreateReviewDto = {
+        text: 'good',
+        rating: 1
+      };
+      const { id } = await service.create(createReviewDto, userId, product.id);
+      const updatedProduct = await prismaService.product.findUnique({
+        where: { id: product.id }
+      });
+      expect(updatedProduct.averageRating).toEqual(createReviewDto.rating);
+
+      await prismaService.review.delete({
+        where: {
+          id
+        }
+      });
+    });
+
+    afterAll(async () => {
+      await Promise.all([
+        prismaService.user.delete({
+          where: {
+            id: userId
           }
         }),
         deleteProduct(prismaService, product.id)

@@ -38,7 +38,26 @@ export class ProductReviewService {
     }
 
     const data: CreateReview = { ...createReviewDto, userId, productId };
-    return this.prismaService.review.create({ data });
+    const result = await this.prismaService.$transaction(async prisma => {
+      const createdReview = await prisma.review.create({ data });
+      const { _avg: avg } = await prisma.review.aggregate({
+        _avg: {
+          rating: true
+        },
+        where: {
+          productId
+        }
+      });
+      const averageRating = avg.rating || 0;
+      await prisma.product.update({
+        where: { id: productId },
+        data: {
+          averageRating
+        }
+      });
+      return createdReview;
+    });
+    return result;
   }
 
   async findSortedAndPaginatedReviews(findReviewsDto: FindReviewsDto, productId: number) {

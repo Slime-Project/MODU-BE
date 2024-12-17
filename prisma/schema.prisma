@@ -43,6 +43,7 @@ model Product {
   createdAt              DateTime         @default(now())
   likedCount             Int              @default(0)
   naverProductId         String?          @unique
+  averageRating          Int              @default(0)
        
   reviews                Review[]         @relation("ProductReviews")
   wishlistItems          WishlistItem[]

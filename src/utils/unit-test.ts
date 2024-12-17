@@ -38,7 +38,8 @@ const getMockProduct = () => {
     price: 2000,
     seller: '네이버',
     likedCount: 0,
-    createdAt: new Date()
+    createdAt: new Date(),
+    averageRating: 0
   };
   return product;
 };
