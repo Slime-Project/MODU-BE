@@ -2,19 +2,19 @@ import { Test } from '@nestjs/testing';
 import { Product, Review } from '@prisma/client';
 
 import { PrismaService } from '@/prisma/prisma.service';
-import { ReviewService } from '@/review/review.service';
+import { ProductReviewService } from '@/product/review/product-review.service';
 import { createProduct, createReview, deleteProduct } from '@/utils/integration-test';
 
-describe('ReviewService (integration)', () => {
-  let reviewService: ReviewService;
+describe('ProductReviewService (integration)', () => {
+  let reviewService: ProductReviewService;
   let prismaService: PrismaService;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [ReviewService, PrismaService]
+      providers: [ProductReviewService, PrismaService]
     }).compile();
 
-    reviewService = module.get(ReviewService);
+    reviewService = module.get(ProductReviewService);
     prismaService = module.get(PrismaService);
   });
 

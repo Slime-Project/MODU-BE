@@ -9,7 +9,7 @@ type OrderBy = Prisma.SortOrder;
 type OrderByOpt = {
   [K in keyof Review]: { [P in K]: OrderBy };
 }[keyof Review];
-type SortingOpts = {
+type OrderByOpts = {
   createdAt: Record<OrderBy, OrderByOpt[]>;
   rating: Record<OrderBy, OrderByOpt[]>;
 };
@@ -18,4 +18,4 @@ type ReviewsData = ItemsData & {
   reviews: Review[];
 };
 
-export { CreateReview, SortBy, OrderBy, SortingOpts, ReviewsData };
+export { CreateReview, SortBy, OrderBy, OrderByOpts, ReviewsData };
