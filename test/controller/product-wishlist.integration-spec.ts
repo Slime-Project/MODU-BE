@@ -53,12 +53,12 @@ describe('WishlistProductController (integration)', () => {
     });
 
     it('401', async () => {
-      return request(app.getHttpServer()).post('/api/wishlist/products/1').expect(401);
+      return request(app.getHttpServer()).post('/api/wishlist/products/0').expect(401);
     });
 
     it('404', async () => {
       await request(app.getHttpServer())
-        .post('/api/wishlist/products/1')
+        .post('/api/wishlist/products/0')
         .set('Cookie', [accessTokenCookie])
         .expect(404);
     });
@@ -92,7 +92,7 @@ describe('WishlistProductController (integration)', () => {
     });
 
     it('401', async () => {
-      return request(app.getHttpServer()).delete('/api/wishlist/products/1').expect(401);
+      return request(app.getHttpServer()).delete('/api/wishlist/products/0').expect(401);
     });
 
     it('404', async () => {
