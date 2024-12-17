@@ -1,3 +1,4 @@
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
@@ -7,6 +8,7 @@ import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { calculateSkip } from '@/utils/page';
 import { getMockReview } from '@/utils/unit-test';
 
+import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
 
 import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
@@ -26,6 +28,26 @@ describe('ReviewService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('findOne', () => {
+    it('should return a review', async () => {
+      const review = getMockReview();
+      prismaService.review.findUnique.mockResolvedValue(review);
+      const result = await service.findOne(review.userId, review.id);
+      expect(result).toEqual(review);
+    });
+
+    it('should throw NotFoundException when review is not found', async () => {
+      prismaService.review.findUnique.mockResolvedValue(null);
+      return expect(service.findOne('1234567890', 1)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when user is not authorized to get the review', async () => {
+      const review = getMockReview();
+      prismaService.review.findUnique.mockResolvedValue(review);
+      return expect(service.findOne('another-user', review.id)).rejects.toThrow(ForbiddenException);
+    });
   });
 
   describe('findSortedAndPaginatedReviews', () => {
@@ -127,6 +149,63 @@ describe('ReviewService', () => {
       prismaService.review.count.mockResolvedValue(total);
       const result = await service.findMany(findReviewsDto, review.userId);
       expect(result).toEqual(reviewsData);
+    });
+  });
+
+  describe('update', () => {
+    it('should return a review', async () => {
+      const review = getMockReview();
+      const updateReviewDto: UpdateReviewDto = { text: review.text, rating: review.rating };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.review.update.mockResolvedValue(review);
+      const result = await service.update({
+        userId: review.userId,
+        updateReviewDto,
+        id: review.id
+      });
+      expect(result).toEqual(review);
+    });
+
+    it('should throw NotFoundException when review is not found', async () => {
+      const updateReviewDto: UpdateReviewDto = { text: 'new-text', rating: 5 };
+      prismaService.review.findUnique.mockResolvedValue(null);
+      return expect(
+        service.update({ userId: '1234567890', updateReviewDto, id: 1 })
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
+      const review = getMockReview();
+      const updateReviewDto: UpdateReviewDto = { text: 'new-text', rating: 5 };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      return expect(
+        service.update({
+          userId: 'another-user',
+          updateReviewDto,
+          id: review.id
+        })
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('remove', () => {
+    it('should call prisma delete method when the review exists', async () => {
+      const review = getMockReview();
+      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.review.delete.mockResolvedValue(review);
+      await service.remove(review.userId, review.id);
+      expect(prismaService.review.delete).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when review is not found', async () => {
+      prismaService.review.findUnique.mockResolvedValue(null);
+      return expect(service.remove('1234567890', 1)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
+      const review = getMockReview();
+      prismaService.review.findUnique.mockResolvedValue(review);
+      return expect(service.remove('0987654321', review.id)).rejects.toThrow(ForbiddenException);
     });
   });
 });

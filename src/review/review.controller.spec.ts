@@ -7,10 +7,12 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewsDto } from '@/product/review/dto/reviews.dto';
-import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
 
+import { ReviewDto } from './dto/review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewController } from './review.controller';
+import { ReviewService } from './review.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
@@ -38,6 +40,18 @@ describe('ReviewController', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('findOne', () => {
+    it('should return an instance of ReviewDto', async () => {
+      const review = getMockReview();
+      const req = {
+        id: review.userId
+      } as TokenGuardReq;
+      service.findOne.mockResolvedValue(review);
+      const result = await controller.findOne(req, review.id);
+      expect(result).toBeInstanceOf(ReviewDto);
+    });
+  });
+
   describe('findMany', () => {
     it('should return an instance of ReviewsDto', async () => {
       const review = getMockReview();
@@ -57,6 +71,33 @@ describe('ReviewController', () => {
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(req, getReviewsDto);
       expect(result).toBeInstanceOf(ReviewsDto);
+    });
+  });
+
+  describe('update', () => {
+    it('should return an instance of ReviewDto', async () => {
+      const review = getMockReview();
+      const req = {
+        id: review.userId
+      } as TokenGuardReq;
+      const updateReviewDto: UpdateReviewDto = {
+        text: review.text,
+        rating: review.rating
+      };
+      service.update.mockResolvedValue(review);
+      const result = await controller.update(req, updateReviewDto, review.id);
+      expect(result).toBeInstanceOf(ReviewDto);
+    });
+  });
+
+  describe('remove', () => {
+    it('should call remove method of reviewService', async () => {
+      const review = getMockReview();
+      const req = {
+        id: review.userId
+      } as TokenGuardReq;
+      await controller.remove(req, review.id);
+      expect(service.remove).toHaveBeenCalled();
     });
   });
 });

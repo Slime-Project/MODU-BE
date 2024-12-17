@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
+import { ReviewDto } from '../../review/dto/review.dto';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { getMockReview } from '@/utils/unit-test';
@@ -10,9 +11,7 @@ import { getMockReview } from '@/utils/unit-test';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
 import { ReviewCountDto } from './dto/review-count.dto';
-import { ReviewDto } from './dto/review.dto';
 import { ReviewsDto } from './dto/reviews.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
 import { ProductReviewController } from './product-review.controller';
 import { ProductReviewService } from './product-review.service';
 
@@ -55,29 +54,6 @@ describe('ProductReviewController', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should call remove method of reviewService', async () => {
-      const review = getMockReview();
-      const req = {
-        id: review.userId
-      } as TokenGuardReq;
-      await controller.remove(req, review.productId, review.id);
-      expect(service.remove).toHaveBeenCalled();
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return an instance of ReviewDto', async () => {
-      const review = getMockReview();
-      const req = {
-        id: review.userId
-      } as TokenGuardReq;
-      service.findOne.mockResolvedValue(review);
-      const result = await controller.findOne(req, review.productId, review.id);
-      expect(result).toBeInstanceOf(ReviewDto);
-    });
-  });
-
   describe('findMany', () => {
     it('should return an instance of ReviewsDto', async () => {
       const review = getMockReview();
@@ -102,22 +78,6 @@ describe('ProductReviewController', () => {
       service.count.mockResolvedValue({ count: 5 });
       const result = await controller.count(1);
       expect(result).toBeInstanceOf(ReviewCountDto);
-    });
-  });
-
-  describe('update', () => {
-    it('should return an instance of ReviewDto', async () => {
-      const review = getMockReview();
-      const req = {
-        id: review.userId
-      } as TokenGuardReq;
-      const updateReviewDto: UpdateReviewDto = {
-        text: review.text,
-        rating: review.rating
-      };
-      service.update.mockResolvedValue(review);
-      const result = await controller.update(req, updateReviewDto, review.productId, review.id);
-      expect(result).toBeInstanceOf(ReviewDto);
     });
   });
 });

@@ -1,15 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
 
+import { UpdateReviewDto } from './dto/update-review.dto';
+
 import { ReviewsData } from '@/types/review.type';
 
 @Injectable()
 export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async findOne(userId: string, id: number) {
+    const review = await this.prismaService.review.findUnique({
+      where: { id }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to get this review');
+    }
+
+    return review;
+  }
 
   async findSortedAndPaginatedReviews(findReviewsDto: FindReviewsDto, userId: string) {
     return this.prismaService.review.findMany({
@@ -38,5 +56,54 @@ export class ReviewService {
       totalPages
     };
     return reviewsData;
+  }
+
+  async update({
+    userId,
+    id,
+    updateReviewDto
+  }: {
+    userId: string;
+    id: number;
+    updateReviewDto: UpdateReviewDto;
+  }) {
+    const review = await this.prismaService.review.findUnique({
+      where: { id }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this review');
+    }
+
+    return this.prismaService.review.update({
+      where: {
+        id
+      },
+      data: updateReviewDto
+    });
+  }
+
+  async remove(userId: string, id: number) {
+    const review = await this.prismaService.review.findUnique({
+      where: { id }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this review');
+    }
+
+    await this.prismaService.review.delete({
+      where: {
+        id
+      }
+    });
   }
 }

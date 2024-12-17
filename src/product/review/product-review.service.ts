@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -11,7 +6,6 @@ import { calculateSkip, calculateTotalPages } from '@/utils/page';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
 
 import { CreateReview, ReviewsData } from '@/types/review.type';
 
@@ -45,52 +39,6 @@ export class ProductReviewService {
 
     const data: CreateReview = { ...createReviewDto, userId, productId };
     return this.prismaService.review.create({ data });
-  }
-
-  async remove(userId: string, productId: number, id: number) {
-    const review = await this.prismaService.review.findUnique({
-      where: {
-        id_productId: {
-          id,
-          productId
-        }
-      }
-    });
-
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
-
-    if (review.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this review');
-    }
-
-    await this.prismaService.review.delete({
-      where: {
-        id
-      }
-    });
-  }
-
-  async findOne(userId: string, productId: number, id: number) {
-    const review = await this.prismaService.review.findUnique({
-      where: {
-        id_productId: {
-          id,
-          productId
-        }
-      }
-    });
-
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
-
-    if (review.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this review');
-    }
-
-    return review;
   }
 
   async findSortedAndPaginatedReviews(findReviewsDto: FindReviewsDto, productId: number) {
@@ -149,41 +97,5 @@ export class ProductReviewService {
       }
     });
     return { count };
-  }
-
-  async update({
-    userId,
-    productId,
-    id,
-    updateReviewDto
-  }: {
-    userId: string;
-    productId: number;
-    id: number;
-    updateReviewDto: UpdateReviewDto;
-  }) {
-    const review = await this.prismaService.review.findUnique({
-      where: {
-        id_productId: {
-          id,
-          productId
-        }
-      }
-    });
-
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
-
-    if (review.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this review');
-    }
-
-    return this.prismaService.review.update({
-      where: {
-        id
-      },
-      data: updateReviewDto
-    });
   }
 }

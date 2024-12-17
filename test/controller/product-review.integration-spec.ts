@@ -5,10 +5,9 @@ import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewDto } from '@/product/review/dto/review.dto';
 import { ReviewsDto } from '@/product/review/dto/reviews.dto';
-import { UpdateReviewDto } from '@/product/review/dto/update-review.dto';
 import { ProductReviewModule } from '@/product/review/product-review.module';
+import { ReviewDto } from '@/review/dto/review.dto';
 import {
   createProduct,
   createTestingApp,
@@ -100,109 +99,6 @@ describe('ProductReviewController (integration)', () => {
     });
   });
 
-  describe('/api/products/:productId/reviews/:id (DELETE)', () => {
-    it('204', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(userId, product.id);
-
-      await request(app.getHttpServer())
-        .delete(`/api/products/${review.productId}/reviews/${review.id}`)
-        .set('Cookie', [accessTokenCookie])
-        .expect(204);
-
-      await deleteUser(prismaService, userId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('401', async () => {
-      return request(app.getHttpServer()).delete('/api/products/0/reviews/0').expect(401);
-    });
-
-    it('403', async () => {
-      const userId = '3456789012';
-      const anotherUserId = '4567890123';
-      const { accessTokenCookie } = await createUser(app, userId);
-      await createUser(app, anotherUserId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(anotherUserId, product.id);
-
-      await request(app.getHttpServer())
-        .delete(`/api/products/${review.productId}/reviews/${review.id}`)
-        .set('Cookie', [accessTokenCookie])
-        .expect(403);
-
-      await deleteUser(prismaService, userId);
-      await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('404', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-
-      await request(app.getHttpServer())
-        .delete('/api/products/0/reviews/0')
-        .set('Cookie', [accessTokenCookie])
-        .expect(404);
-
-      await deleteUser(prismaService, userId);
-    });
-  });
-
-  describe('/api/products/:productId/reviews/:id (GET)', () => {
-    it('200', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(userId, product.id);
-
-      const { body } = await request(app.getHttpServer())
-        .get(`/api/products/${review.productId}/reviews/${review.id}`)
-        .set('Cookie', [accessTokenCookie])
-        .expect(200);
-      validateDto(ReviewDto, body);
-
-      await deleteUser(prismaService, userId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('401', async () => {
-      return request(app.getHttpServer()).get('/api/products/0/reviews/0').expect(401);
-    });
-
-    it('403', async () => {
-      const userId = '3456789012';
-      const anotherUserId = '4567890123';
-      const { accessTokenCookie } = await createUser(app, userId);
-      await createUser(app, anotherUserId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(anotherUserId, product.id);
-
-      await request(app.getHttpServer())
-        .get(`/api/products/${review.productId}/reviews/${review.id}`)
-        .set('Cookie', [accessTokenCookie])
-        .expect(403);
-
-      await deleteUser(prismaService, userId);
-      await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('404', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-
-      await request(app.getHttpServer())
-        .get('/api/products/0/reviews/0')
-        .set('Cookie', [accessTokenCookie])
-        .expect(404);
-
-      await deleteUser(prismaService, userId);
-    });
-  });
-
   describe('/api/products/:productId/reviews (GET)', () => {
     it('200', async () => {
       const userId1 = '3456789012';
@@ -250,88 +146,6 @@ describe('ProductReviewController (integration)', () => {
 
     it('404', async () => {
       await request(app.getHttpServer()).get('/api/products/0/reviews/count').expect(404);
-    });
-  });
-
-  describe('/api/products/:productId/reviews/:id (PATCH)', () => {
-    it('200', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(userId, product.id);
-      const patchReviewDto: UpdateReviewDto = {
-        text: 'new-text',
-        rating: 5
-      };
-      const { body } = await request(app.getHttpServer())
-        .patch(`/api/products/${review.productId}/reviews/${review.id}`)
-        .set('Cookie', [accessTokenCookie])
-        .send(patchReviewDto)
-        .expect(200);
-      validateDto(ReviewDto, body);
-
-      await deleteUser(prismaService, userId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('400', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-
-      await request(app.getHttpServer())
-        .patch('/api/products/1/reviews/1')
-        .send({
-          text: 'new-text',
-          rating: 0
-        })
-        .set('Cookie', [accessTokenCookie])
-        .expect(400);
-
-      await deleteUser(prismaService, userId);
-    });
-
-    it('401', async () => {
-      return request(app.getHttpServer()).patch('/api/products/0/reviews/0').expect(401);
-    });
-
-    it('403', async () => {
-      const userId = '3456789012';
-      const anotherUserId = '4567890123';
-      const { accessTokenCookie } = await createUser(app, userId);
-      await createUser(app, anotherUserId);
-      const product = await createProduct(prismaService);
-      const review = await createReview(anotherUserId, product.id);
-      const patchReviewDto: UpdateReviewDto = {
-        text: 'new-text',
-        rating: 5
-      };
-
-      await request(app.getHttpServer())
-        .patch(`/api/products/${review.productId}/reviews/${review.id}`)
-        .send(patchReviewDto)
-        .set('Cookie', [accessTokenCookie])
-        .expect(403);
-
-      await deleteUser(prismaService, userId);
-      await deleteUser(prismaService, anotherUserId);
-      await deleteProduct(prismaService, product.id);
-    });
-
-    it('404', async () => {
-      const userId = '3456789012';
-      const { accessTokenCookie } = await createUser(app, userId);
-      const patchReviewDto: UpdateReviewDto = {
-        text: 'new-text',
-        rating: 5
-      };
-
-      await request(app.getHttpServer())
-        .patch('/api/products/0/reviews/0')
-        .send(patchReviewDto)
-        .set('Cookie', [accessTokenCookie])
-        .expect(404);
-
-      await deleteUser(prismaService, userId);
     });
   });
 });

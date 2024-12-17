@@ -3,8 +3,7 @@ import { Expose, Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 
 import { ItemsDto } from '@/common/dto/items.dto';
-
-import { ReviewDto } from './review.dto';
+import { ReviewDto } from '@/review/dto/review.dto';
 
 export class ReviewsDto extends ItemsDto {
   @ApiProperty({
