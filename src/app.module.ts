@@ -10,6 +10,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
 import { ProductReviewModule } from './product/review/product-review.module';
 import { ReviewModule } from './review/review.module';
+import { S3Module } from './s3/s3.module';
 import { SearchModule } from './search/search.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
@@ -30,7 +31,8 @@ import { WishlistProductModule } from './wishlist/product/wishlist-product.modul
     ProductModule,
     SearchModule,
     WishlistProductModule,
-    ReviewModule
+    ReviewModule,
+    S3Module
   ]
 })
 export class AppModule {}
