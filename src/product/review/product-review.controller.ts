@@ -30,7 +30,7 @@ import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 @Controller('products/:productId/reviews')
 @ApiTags('review')
 export class ProductReviewController {
-  constructor(private readonly reviewService: ProductReviewService) {}
+  constructor(private readonly service: ProductReviewService) {}
 
   @ApiOperation({
     summary: 'Create a product review'
@@ -59,7 +59,7 @@ export class ProductReviewController {
     @Body() createReviewDto: CreateReviewDto,
     @Param('productId', ParseIntPipe) productId: number
   ) {
-    const review = await this.reviewService.create(createReviewDto, id, productId);
+    const review = await this.service.create(createReviewDto, id, productId);
     return plainToInstance(ReviewDto, review);
   }
 
@@ -90,7 +90,7 @@ export class ProductReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    await this.reviewService.remove(id, productId, reviewId);
+    await this.service.remove(id, productId, reviewId);
   }
 
   @ApiOperation({
@@ -107,7 +107,7 @@ export class ProductReviewController {
   })
   @Get('count')
   async count(@Param('productId', ParseIntPipe) productId: number) {
-    const count = await this.reviewService.count(productId);
+    const count = await this.service.count(productId);
     return plainToInstance(ReviewCountDto, count);
   }
 
@@ -138,7 +138,7 @@ export class ProductReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const review = await this.reviewService.findOne(req.id, productId, reviewId);
+    const review = await this.service.findOne(req.id, productId, reviewId);
     return plainToInstance(ReviewDto, review);
   }
 
@@ -163,7 +163,7 @@ export class ProductReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Query() findReviewsDto: FindReviewsDto
   ) {
-    const reviews = await this.reviewService.findMany(findReviewsDto, productId);
+    const reviews = await this.service.findMany(findReviewsDto, productId);
     return plainToInstance(ReviewsDto, reviews);
   }
 
@@ -199,7 +199,7 @@ export class ProductReviewController {
     @Param('productId', ParseIntPipe) productId: number,
     @Param('id', ParseIntPipe) reviewId: number
   ) {
-    const review = await this.reviewService.update({
+    const review = await this.service.update({
       userId: req.id,
       productId,
       id: reviewId,

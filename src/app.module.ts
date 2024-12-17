@@ -9,6 +9,7 @@ import { OpenAiModule } from './open-ai/open-ai.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
 import { ProductReviewModule } from './product/review/product-review.module';
+import { ReviewModule } from './review/review.module';
 import { SearchModule } from './search/search.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
@@ -28,7 +29,8 @@ import { WishlistProductModule } from './wishlist/product/wishlist-product.modul
     ProductReviewModule,
     ProductModule,
     SearchModule,
-    WishlistProductModule
+    WishlistProductModule,
+    ReviewModule
   ]
 })
 export class AppModule {}

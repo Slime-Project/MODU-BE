@@ -5,7 +5,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 
-import { REVIEWS_PAGE_SIZE } from '@/constants/page';
+import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
 
@@ -13,7 +13,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
-import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
+import { CreateReview, ReviewsData } from '@/types/review.type';
 
 @Injectable()
 export class ProductReviewService {
@@ -94,23 +94,14 @@ export class ProductReviewService {
   }
 
   async findSortedAndPaginatedReviews(findReviewsDto: FindReviewsDto, productId: number) {
-    const sortingOpts: SortingOpts = {
-      createdAt: {
-        desc: [{ createdAt: 'desc' }, { id: 'desc' }],
-        asc: [{ createdAt: 'asc' }, { id: 'desc' }]
-      },
-      rating: {
-        desc: [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
-        asc: [{ rating: 'asc' }, { createdAt: 'desc' }, { id: 'desc' }]
-      }
-    };
     return this.prismaService.review.findMany({
       where: {
         productId
       },
       take: REVIEWS_PAGE_SIZE,
       skip: calculateSkip(findReviewsDto.page, REVIEWS_PAGE_SIZE),
-      orderBy: sortingOpts[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc']
+      orderBy:
+        REIVEW_ORDERBY_OPTS[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc']
     });
   }
 

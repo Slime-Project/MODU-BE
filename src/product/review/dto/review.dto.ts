@@ -12,6 +12,18 @@ export class ReviewDto {
   @Expose()
   readonly id: number;
 
+  @ApiProperty()
+  @IsInt()
+  @IsNotEmpty()
+  @Expose()
+  productId: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  userId: string;
+
   @ApiProperty({
     description: 'The rating score for the product, typically between 1 and 5',
     example: 4
