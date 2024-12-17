@@ -74,7 +74,7 @@ describe('ProductReviewController (integration)', () => {
       const { accessTokenCookie } = await createUser(app, userId);
 
       await request(app.getHttpServer())
-        .post('/api/products/1/reviews')
+        .post('/api/products/0/reviews')
         .set('Cookie', [accessTokenCookie])
         .send({ text: 'Great product!', rating: 5 })
         .expect(404);
