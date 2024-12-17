@@ -5,27 +5,30 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEWS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { calculateSkip } from '@/utils/page';
 import { getMockProduct, getMockReview } from '@/utils/unit-test';
 
-import { ReviewService } from './review.service';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { FindReviewsDto } from './dto/find-reviews.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { ProductReviewService } from './product-review.service';
 
 import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
 
-describe('ReviewService', () => {
-  let reviewService: ReviewService;
+describe('ProductReviewService', () => {
+  let reviewService: ProductReviewService;
   let prismaService: DeepMockProxy<PrismaService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [ReviewService, { provide: PrismaService, useValue: mockDeep<PrismaService>() }]
+      providers: [
+        ProductReviewService,
+        { provide: PrismaService, useValue: mockDeep<PrismaService>() }
+      ]
     }).compile();
 
     prismaService = module.get(PrismaService);
-    reviewService = module.get(ReviewService);
+    reviewService = module.get(ProductReviewService);
   });
 
   it('should be defined', () => {

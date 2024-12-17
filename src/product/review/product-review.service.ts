@@ -7,15 +7,16 @@ import {
 
 import { REVIEWS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
+
+import { CreateReviewDto } from './dto/create-review.dto';
+import { FindReviewsDto } from './dto/find-reviews.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 
 import { CreateReview, ReviewsData, SortingOpts } from '@/types/review.type';
 
 @Injectable()
-export class ReviewService {
+export class ProductReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createReviewDto: CreateReviewDto, userId: string, productId: number) {

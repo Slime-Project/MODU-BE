@@ -16,20 +16,21 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
-import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { ReviewCountDto } from '@/review/dto/review-count.dto';
-import { ReviewDto } from '@/review/dto/review.dto';
-import { ReviewsDto } from '@/review/dto/reviews.dto';
-import { UpdateReviewDto } from '@/review/dto/update-review.dto';
-import { ReviewService } from '@/review/review.service';
+
+import { CreateReviewDto } from './dto/create-review.dto';
+import { FindReviewsDto } from './dto/find-reviews.dto';
+import { ReviewCountDto } from './dto/review-count.dto';
+import { ReviewDto } from './dto/review.dto';
+import { ReviewsDto } from './dto/reviews.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { ProductReviewService } from './product-review.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Controller('products/:productId/reviews')
 @ApiTags('review')
-export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+export class ProductReviewController {
+  constructor(private readonly reviewService: ProductReviewService) {}
 
   @ApiOperation({
     summary: 'Create a product review'

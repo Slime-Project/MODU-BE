@@ -5,37 +5,37 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEWS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { FindReviewsDto } from '@/review/dto/find-reviews.dto';
-import { ReviewCountDto } from '@/review/dto/review-count.dto';
-import { ReviewDto } from '@/review/dto/review.dto';
-import { ReviewsDto } from '@/review/dto/reviews.dto';
-import { UpdateReviewDto } from '@/review/dto/update-review.dto';
-import { ReviewService } from '@/review/review.service';
 import { getMockReview } from '@/utils/unit-test';
 
-import { ReviewController } from './review.controller';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { FindReviewsDto } from './dto/find-reviews.dto';
+import { ReviewCountDto } from './dto/review-count.dto';
+import { ReviewDto } from './dto/review.dto';
+import { ReviewsDto } from './dto/reviews.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { ProductReviewController } from './product-review.controller';
+import { ProductReviewService } from './product-review.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
 
-describe('ReviewController', () => {
-  let controller: ReviewController;
-  let service: DeepMockProxy<ReviewService>;
+describe('ProductReviewController', () => {
+  let controller: ProductReviewController;
+  let service: DeepMockProxy<ProductReviewService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      controllers: [ReviewController],
+      controllers: [ProductReviewController],
       providers: [
-        { provide: ReviewService, useValue: mockDeep<ReviewService>() },
+        { provide: ProductReviewService, useValue: mockDeep<ProductReviewService>() },
         { provide: PrismaService, useValue: mockDeep<PrismaService>() },
         { provide: ConfigService, useValue: mockDeep<ConfigService>() },
         { provide: JwtService, useValue: mockDeep<JwtService>() }
       ]
     }).compile();
 
-    controller = module.get(ReviewController);
-    service = module.get(ReviewService);
+    controller = module.get(ProductReviewController);
+    service = module.get(ProductReviewService);
   });
 
   it('should be defined', () => {

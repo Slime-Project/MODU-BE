@@ -3,12 +3,12 @@ import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateReviewDto } from '@/review/dto/create-review.dto';
-import { ReviewCountDto } from '@/review/dto/review-count.dto';
-import { ReviewDto } from '@/review/dto/review.dto';
-import { ReviewsDto } from '@/review/dto/reviews.dto';
-import { UpdateReviewDto } from '@/review/dto/update-review.dto';
-import { ReviewModule } from '@/review/review.module';
+import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
+import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
+import { ReviewDto } from '@/product/review/dto/review.dto';
+import { ReviewsDto } from '@/product/review/dto/reviews.dto';
+import { UpdateReviewDto } from '@/product/review/dto/update-review.dto';
+import { ProductReviewModule } from '@/product/review/product-review.module';
 import {
   createProduct,
   createTestingApp,
@@ -18,12 +18,12 @@ import {
   validateDto
 } from '@/utils/integration-test';
 
-describe('ReviewController (integration)', () => {
+describe('ProductReviewController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
   beforeEach(async () => {
-    app = await createTestingApp([ReviewModule, AuthModule]);
+    app = await createTestingApp([ProductReviewModule, AuthModule]);
     prismaService = app.get(PrismaService);
   });
 
