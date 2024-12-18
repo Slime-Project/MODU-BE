@@ -32,12 +32,11 @@ const getMockProduct = () => {
     id: 1,
     naverProductId: '1',
     title: 'title',
-    body: null,
     img: 'url',
     link: 'url',
     price: 2000,
     seller: '네이버',
-    likedCount: 0,
+    wishedCount: 0,
     createdAt: new Date()
   };
   return product;
