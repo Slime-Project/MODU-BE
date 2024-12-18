@@ -24,8 +24,24 @@ export class UserService {
     }
 
     await KakaoLoginService.unlink(auth.kakaoAccessToken);
-    await this.prismaService.user.delete({
-      where: { id }
+    await this.prismaService.$transaction(async prisma => {
+      const productIds = await prisma.wishlistItem.findMany({
+        where: { userId: id },
+        select: { productId: true }
+      });
+      await prisma.user.delete({
+        where: { id }
+      });
+      await Promise.all(
+        productIds.map(({ productId }) =>
+          this.prismaService.product.update({
+            where: { id: productId },
+            data: {
+              wishedCount: { decrement: 1 }
+            }
+          })
+        )
+      );
     });
   }
 

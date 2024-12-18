@@ -66,10 +66,10 @@ describe('UserService', () => {
 
       prismaService.auth.findUnique.mockResolvedValue(auth);
       KakaoLoginService.unlink = jest.fn();
-      prismaService.user.delete.mockResolvedValue(user);
+      prismaService.$transaction.mockResolvedValue(user);
       await userService.remove(auth.userId, auth.refreshToken);
       expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
-      expect(prismaService.user.delete).toHaveBeenCalled();
+      expect(prismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException when refresh token is invalid or expired', () => {

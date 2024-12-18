@@ -5,6 +5,7 @@ import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
+import { updateAverageRating } from '@/utils/review';
 
 import { UpdateReviewDto } from './dto/update-review.dto';
 
@@ -99,21 +100,7 @@ export class ReviewService {
           },
           data: updateReviewDto
         });
-        const { _avg: avg } = await prisma.review.aggregate({
-          _avg: {
-            rating: true
-          },
-          where: {
-            productId: review.productId
-          }
-        });
-        const averageRating = avg.rating || 0;
-        await prisma.product.update({
-          where: { id: review.productId },
-          data: {
-            averageRating
-          }
-        });
+        await updateAverageRating(prisma, review.productId);
         return updatedReview;
       });
     } else {
@@ -147,21 +134,7 @@ export class ReviewService {
           id
         }
       });
-      const { _avg: avg } = await prisma.review.aggregate({
-        _avg: {
-          rating: true
-        },
-        where: {
-          productId: review.productId
-        }
-      });
-      const averageRating = avg.rating || 0;
-      await prisma.product.update({
-        where: { id: review.productId },
-        data: {
-          averageRating
-        }
-      });
+      await updateAverageRating(prisma, review.productId);
     });
   }
 }

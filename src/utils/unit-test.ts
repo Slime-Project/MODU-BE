@@ -37,7 +37,7 @@ const getMockProduct = () => {
     link: 'url',
     price: 2000,
     seller: '네이버',
-    likedCount: 0,
+    wishedCount: 0,
     createdAt: new Date(),
     averageRating: 0
   };

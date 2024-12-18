@@ -41,7 +41,7 @@ model Product {
   price                  Int
   seller                 String
   createdAt              DateTime         @default(now())
-  likedCount             Int              @default(0)
+  wishedCount            Int              @default(0)
   naverProductId         String?          @unique
   averageRating          Int              @default(0)
        

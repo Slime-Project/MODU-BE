@@ -35,7 +35,7 @@ describe('WishlistProductService', () => {
     it('should return a review', async () => {
       const userId = '1';
       const product = getMockProduct();
-      const updatedProduct = { ...product, likedCount: product.likedCount + 1 };
+      const updatedProduct = { ...product, wishedCount: product.wishedCount + 1 };
       const wishlistItem = getMockWishlistItem(userId, product.id);
       prismaService.product.findUnique.mockResolvedValue(product);
       prismaService.wishlistItem.findUnique.mockResolvedValue(null);
