@@ -36,7 +36,7 @@ export class WishlistProductService {
       this.prismaService.product.update({
         where: { id: productId },
         data: {
-          likedCount: { increment: 1 }
+          wishedCount: { increment: 1 }
         }
       }),
       this.prismaService.wishlistItem.create({
@@ -65,7 +65,7 @@ export class WishlistProductService {
       this.prismaService.product.update({
         where: { id: productId },
         data: {
-          likedCount: { decrement: 1 }
+          wishedCount: { decrement: 1 }
         }
       }),
       this.prismaService.wishlistItem.delete({

@@ -8,5 +8,5 @@ export type ProductCrawled = {
   seller: string;
   createdAt: Date;
   tags?: number[];
-  likedCount: number;
+  wishedCount: number;
 };
