@@ -176,7 +176,7 @@ describe('ProductReviewService', () => {
   });
 
   describe('count', () => {
-    it('should return review count', async () => {
+    it('should return product review count', async () => {
       const count = 5;
       prismaService.product.findUnique.mockResolvedValue({} as Product);
       prismaService.review.count.mockResolvedValue(count);

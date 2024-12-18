@@ -152,6 +152,15 @@ describe('ReviewService', () => {
     });
   });
 
+  describe('count', () => {
+    it('should return user review count', async () => {
+      const count = 5;
+      prismaService.review.count.mockResolvedValue(count);
+      const result = await service.count('1');
+      expect(result).toEqual({ count });
+    });
+  });
+
   describe('update', () => {
     it('should return a review', async () => {
       const review = getMockReview();

@@ -6,6 +6,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
+import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
 import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 import { getMockReview } from '@/utils/unit-test';
 
@@ -71,6 +72,17 @@ describe('ReviewController', () => {
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(req, getReviewsDto);
       expect(result).toBeInstanceOf(ReviewsDto);
+    });
+  });
+
+  describe('count', () => {
+    it('should return an instance of ReviewCountDto', async () => {
+      service.count.mockResolvedValue({ count: 5 });
+      const req = {
+        id: '1'
+      } as TokenGuardReq;
+      const result = await controller.count(req);
+      expect(result).toBeInstanceOf(ReviewCountDto);
     });
   });
 

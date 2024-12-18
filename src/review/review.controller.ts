@@ -16,6 +16,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
+import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
 import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 
 import { ReviewDto } from './dto/review.dto';
@@ -28,6 +29,25 @@ import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 @ApiTags('review')
 export class ReviewController {
   constructor(private readonly service: ReviewService) {}
+
+  @ApiOperation({
+    summary: 'Get product review count'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ok',
+    type: ReviewCountDto
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
+  })
+  @UseGuards(AccessTokenGuard)
+  @Get('count')
+  async count(@Req() { id }: TokenGuardReq) {
+    const count = await this.service.count(id);
+    return plainToInstance(ReviewCountDto, count);
+  }
 
   @ApiOperation({
     summary: 'Get product reviews'

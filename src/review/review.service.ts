@@ -59,6 +59,15 @@ export class ReviewService {
     return reviewsData;
   }
 
+  async count(userId: string) {
+    const count = await this.prismaService.review.count({
+      where: {
+        userId
+      }
+    });
+    return { count };
+  }
+
   async update({
     userId,
     id,

@@ -4,6 +4,7 @@ import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
+import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
 import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 import { ReviewDto } from '@/review/dto/review.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
@@ -104,6 +105,20 @@ describe('ProductReviewController (integration)', () => {
 
     it('401', async () => {
       await request(app.getHttpServer()).get('/api/reviews?page=1').expect(401);
+    });
+  });
+
+  describe('/api/reviews/count (GET)', () => {
+    it('200', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get(`/api/reviews/count`)
+        .set('Cookie', [accessTokenCookie])
+        .expect(200);
+      validateDto(ReviewCountDto, body);
+    });
+
+    it('401', async () => {
+      await request(app.getHttpServer()).get('/api/reviews/count').expect(401);
     });
   });
 
