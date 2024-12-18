@@ -3,6 +3,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
+import { updateAverageRating } from '@/utils/review';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
@@ -40,21 +41,7 @@ export class ProductReviewService {
     const data: CreateReview = { ...createReviewDto, userId, productId };
     const result = await this.prismaService.$transaction(async prisma => {
       const createdReview = await prisma.review.create({ data });
-      const { _avg: avg } = await prisma.review.aggregate({
-        _avg: {
-          rating: true
-        },
-        where: {
-          productId
-        }
-      });
-      const averageRating = avg.rating || 0;
-      await prisma.product.update({
-        where: { id: productId },
-        data: {
-          averageRating
-        }
-      });
+      await updateAverageRating(prisma, productId);
       return createdReview;
     });
     return result;
