@@ -166,6 +166,36 @@ describe('ReviewService', () => {
       expect(result).toEqual(review);
     });
 
+    it('should call prisma transaction method when rating is changed', async () => {
+      const review = getMockReview();
+      const updateReviewDto: UpdateReviewDto = {
+        rating: review.rating < 5 ? review.rating + 1 : 4
+      };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.$transaction.mockResolvedValue(review);
+      await service.update({
+        userId: review.userId,
+        updateReviewDto,
+        id: review.id
+      });
+      expect(prismaService.$transaction).toHaveBeenCalled();
+    });
+
+    it('should call prisma update method when rating is not changed', async () => {
+      const review = getMockReview();
+      const updateReviewDto: UpdateReviewDto = {
+        rating: review.rating
+      };
+      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.review.update.mockResolvedValue(review);
+      await service.update({
+        userId: review.userId,
+        updateReviewDto,
+        id: review.id
+      });
+      expect(prismaService.review.update).toHaveBeenCalled();
+    });
+
     it('should throw NotFoundException when review is not found', async () => {
       const updateReviewDto: UpdateReviewDto = { text: 'new-text', rating: 5 };
       prismaService.review.findUnique.mockResolvedValue(null);
@@ -189,12 +219,12 @@ describe('ReviewService', () => {
   });
 
   describe('remove', () => {
-    it('should call prisma delete method when the review exists', async () => {
+    it('should call prisma transaction method when the review exists', async () => {
       const review = getMockReview();
       prismaService.review.findUnique.mockResolvedValue(review);
-      prismaService.review.delete.mockResolvedValue(review);
+      prismaService.$transaction.mockResolvedValue(review);
       await service.remove(review.userId, review.id);
-      expect(prismaService.review.delete).toHaveBeenCalled();
+      expect(prismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when review is not found', async () => {

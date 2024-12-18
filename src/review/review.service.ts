@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Review } from '@prisma/client';
 
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -79,12 +80,43 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    return this.prismaService.review.update({
-      where: {
-        id
-      },
-      data: updateReviewDto
-    });
+    let result: Review;
+
+    if (updateReviewDto.rating !== review.rating) {
+      result = await this.prismaService.$transaction(async prisma => {
+        const updatedReview = await prisma.review.update({
+          where: {
+            id
+          },
+          data: updateReviewDto
+        });
+        const { _avg: avg } = await prisma.review.aggregate({
+          _avg: {
+            rating: true
+          },
+          where: {
+            productId: review.productId
+          }
+        });
+        const averageRating = avg.rating || 0;
+        await prisma.product.update({
+          where: { id: review.productId },
+          data: {
+            averageRating
+          }
+        });
+        return updatedReview;
+      });
+    } else {
+      result = await this.prismaService.review.update({
+        where: {
+          id
+        },
+        data: updateReviewDto
+      });
+    }
+
+    return result;
   }
 
   async remove(userId: string, id: number) {
@@ -100,10 +132,27 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    await this.prismaService.review.delete({
-      where: {
-        id
-      }
+    await this.prismaService.$transaction(async prisma => {
+      await this.prismaService.review.delete({
+        where: {
+          id
+        }
+      });
+      const { _avg: avg } = await prisma.review.aggregate({
+        _avg: {
+          rating: true
+        },
+        where: {
+          productId: review.productId
+        }
+      });
+      const averageRating = avg.rating || 0;
+      await prisma.product.update({
+        where: { id: review.productId },
+        data: {
+          averageRating
+        }
+      });
     });
   }
 }

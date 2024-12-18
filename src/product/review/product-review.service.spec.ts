@@ -41,7 +41,7 @@ describe('ProductReviewService', () => {
       const createReviewDto: CreateReviewDto = { text: review.text, rating: review.rating };
       prismaService.product.findUnique.mockResolvedValue(product);
       prismaService.review.findUnique.mockResolvedValue(null);
-      prismaService.review.create.mockResolvedValue(review);
+      prismaService.$transaction.mockResolvedValue(review);
       const result = await service.create(createReviewDto, review.userId, review.productId);
       expect(result).toEqual(review);
     });
