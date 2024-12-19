@@ -15,17 +15,13 @@ import { ReviewsData } from '@/types/review.type';
 export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findOne(userId: string, id: number) {
+  async findOne(id: number) {
     const review = await this.prismaService.review.findUnique({
       where: { id }
     });
 
     if (!review) {
       throw new NotFoundException('Review not found');
-    }
-
-    if (review.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to get this review');
     }
 
     return review;

@@ -34,19 +34,13 @@ describe('ReviewService', () => {
     it('should return a review', async () => {
       const review = getMockReview();
       prismaService.review.findUnique.mockResolvedValue(review);
-      const result = await service.findOne(review.userId, review.id);
+      const result = await service.findOne(review.id);
       expect(result).toEqual(review);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
       prismaService.review.findUnique.mockResolvedValue(null);
-      return expect(service.findOne('1234567890', 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw ForbiddenException when user is not authorized to get the review', async () => {
-      const review = getMockReview();
-      prismaService.review.findUnique.mockResolvedValue(review);
-      return expect(service.findOne('another-user', review.id)).rejects.toThrow(ForbiddenException);
+      return expect(service.findOne(1)).rejects.toThrow(NotFoundException);
     });
   });
 

@@ -44,11 +44,8 @@ describe('ReviewController', () => {
   describe('findOne', () => {
     it('should return an instance of ReviewDto', async () => {
       const review = getMockReview();
-      const req = {
-        id: review.userId
-      } as TokenGuardReq;
       service.findOne.mockResolvedValue(review);
-      const result = await controller.findOne(req, review.id);
+      const result = await controller.findOne(review.id);
       expect(result).toBeInstanceOf(ReviewDto);
     });
   });

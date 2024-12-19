@@ -81,21 +81,12 @@ export class ReviewController {
     type: ReviewDto
   })
   @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - You are not authorized to get this review'
-  })
-  @ApiResponse({
     status: 404,
     description: 'Not Found - Review not found'
   })
-  @UseGuards(AccessTokenGuard)
   @Get(':id')
-  async findOne(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) reviewId: number) {
-    const review = await this.service.findOne(id, reviewId);
+  async findOne(@Param('id', ParseIntPipe) reviewId: number) {
+    const review = await this.service.findOne(reviewId);
     return plainToInstance(ReviewDto, review);
   }
 
