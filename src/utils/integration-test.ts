@@ -43,19 +43,17 @@ const validateDto = async (dto: ClassConstructor<object>, obj: object) => {
 };
 
 const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
-  const kakaoToken = {
+  const kakaoToken: GetTokenDto = {
     accessToken: 'kakaoAccessToken',
     refreshToken: 'kakaoRefreshToken',
     expiresIn: 3600,
     refreshTokenExpiresIn: 604800
-  } as GetTokenDto;
-  const kakaoUser = {
-    id: Number(id),
-    properties: {
-      nickname: 'nickname',
-      profileImage: 'url'
-    }
-  } as KaKaoUserInfoDto;
+  };
+  const kakaoUser: KaKaoUserInfoDto = {
+    id,
+    nickname: 'nickname',
+    profileImg: 'url'
+  };
 
   jest.spyOn(kakaoLoginService, 'login').mockResolvedValue({
     user: kakaoUser,

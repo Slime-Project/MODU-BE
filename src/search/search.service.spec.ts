@@ -3,7 +3,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { ProductService } from '@/product/product.service';
 import { SearchDto } from '@/search/dto/search.dto';
-import { getMockProduct } from '@/utils/unit-test';
+import { mockProduct } from '@/utils/unit-test';
 
 import { SearchService } from './search.service';
 
@@ -28,12 +28,11 @@ describe('SearchService', () => {
 
   describe('findMany', () => {
     it('should return products data', async () => {
-      const product = getMockProduct();
       const searchDto: SearchDto = {
         query: 'query'
       };
       const productsData = {
-        products: [product]
+        products: [mockProduct]
       } as ProductsData;
       productService.findMany.mockResolvedValue(productsData);
       const result = await searchService.findMany(searchDto);

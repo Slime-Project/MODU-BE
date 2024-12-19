@@ -47,7 +47,7 @@ describe('UserController', () => {
       const userInfo: UserInfo = {
         id: req.id,
         nickname: 'nickname',
-        profileImage: 'url'
+        profileImg: 'url'
       };
       service.findOne.mockResolvedValue(userInfo);
       const result = await controller.findOne(req);

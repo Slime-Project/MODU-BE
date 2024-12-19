@@ -1,6 +1,7 @@
 import { Prisma, Review } from '@prisma/client';
 
 import { ItemsData } from '@/types/common.type';
+import { UserInfo } from '@/types/user.type';
 
 type CreateReview = Pick<Review, Exclude<keyof Review, 'id' | 'createdAt'>>;
 
@@ -14,8 +15,22 @@ type OrderByOpts = {
   rating: Record<OrderBy, OrderByOpt[]>;
 };
 
+type ReviewWithReviewer = Review & {
+  reviewer: UserInfo | null;
+};
+type ReviewsWithReviewerData = ItemsData & {
+  reviews: ReviewWithReviewer[];
+};
 type ReviewsData = ItemsData & {
   reviews: Review[];
 };
 
-export { CreateReview, SortBy, OrderBy, OrderByOpts, ReviewsData };
+export {
+  CreateReview,
+  SortBy,
+  OrderBy,
+  OrderByOpts,
+  ReviewWithReviewer,
+  ReviewsWithReviewerData,
+  ReviewsData
+};

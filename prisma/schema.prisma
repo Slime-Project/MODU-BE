@@ -53,12 +53,12 @@ model Product {
 model Review {
   id                     Int              @id @default(autoincrement())
   productId              Int
-  userId                 String      
+  userId                 String?
   rating                 Int              @db.SmallInt
-  text                   String      
+  text                   String
   createdAt              DateTime         @default(now())
-      
-  user                   User             @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+
+  user                   User?            @relation("UserReviews", fields: [userId], references: [id], onDelete: SetNull)
   product                Product          @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([id, productId])

@@ -1,29 +1,20 @@
-import { Expose, Type } from 'class-transformer';
-import { IsNotEmpty, IsDate, ValidateNested, IsOptional, IsNumber } from 'class-validator';
-
-import { KakaoAccountDto } from '@/kakao/login/dto/kakao-account.dto';
-import { PropertiesDto } from '@/kakao/login/dto/properties.dto';
+import { Expose, Transform } from 'class-transformer';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class KaKaoUserInfoDto {
   @IsNumber()
   @IsNotEmpty()
   @Expose({ name: 'id' })
-  readonly id: number;
-
-  @IsDate()
-  @IsOptional()
-  @Expose({ name: 'connected_at' })
-  readonly connectedAt?: string;
+  @Transform(({ value }) => value.toString())
+  readonly id: string;
 
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PropertiesDto)
-  @Expose({ name: 'properties' })
-  readonly properties: PropertiesDto;
+  @Transform(({ obj }) => obj.kakao_account.profile.nickname)
+  @Expose()
+  readonly nickname: string;
 
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PropertiesDto)
-  @Expose({ name: 'kakao_account' })
-  readonly kakaoAccount: KakaoAccountDto;
+  @Transform(({ obj }) => obj.kakao_account.profile.profile_image_url)
+  @Expose()
+  readonly profileImg: string;
 }

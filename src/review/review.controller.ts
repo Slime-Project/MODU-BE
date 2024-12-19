@@ -17,9 +17,9 @@ import { plainToInstance } from 'class-transformer';
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 
 import { ReviewDto } from './dto/review.dto';
+import { ReviewsDto } from './dto/reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
 
@@ -81,21 +81,12 @@ export class ReviewController {
     type: ReviewDto
   })
   @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or expired access token, or access token is missing'
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - You are not authorized to get this review'
-  })
-  @ApiResponse({
     status: 404,
     description: 'Not Found - Review not found'
   })
-  @UseGuards(AccessTokenGuard)
   @Get(':id')
-  async findOne(@Req() { id }: TokenGuardReq, @Param('id', ParseIntPipe) reviewId: number) {
-    const review = await this.service.findOne(id, reviewId);
+  async findOne(@Param('id', ParseIntPipe) reviewId: number) {
+    const review = await this.service.findOne(reviewId);
     return plainToInstance(ReviewDto, review);
   }
 

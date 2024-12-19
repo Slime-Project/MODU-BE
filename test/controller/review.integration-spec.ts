@@ -5,8 +5,8 @@ import * as request from 'supertest';
 import { AuthModule } from '@/auth/auth.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 import { ReviewDto } from '@/review/dto/review.dto';
+import { ReviewsDto } from '@/review/dto/reviews.dto';
 import { UpdateReviewDto } from '@/review/dto/update-review.dto';
 import { ReviewModule } from '@/review/review.module';
 import {
@@ -50,35 +50,14 @@ describe('ProductReviewController (integration)', () => {
     it('200', async () => {
       const { id } = await createReview(prismaService, { userId, productId: product.id });
 
-      const { body } = await request(app.getHttpServer())
-        .get(`/api/reviews/${id}`)
-        .set('Cookie', [accessTokenCookie])
-        .expect(200);
+      const { body } = await request(app.getHttpServer()).get(`/api/reviews/${id}`).expect(200);
       validateDto(ReviewDto, body);
 
       await prismaService.review.delete({ where: { id } });
     });
 
-    it('401', async () => {
-      return request(app.getHttpServer()).get('/api/reviews/0').expect(401);
-    });
-
-    it('403', async () => {
-      const { id } = await createReview(prismaService, { userId, productId: product.id });
-
-      await request(app.getHttpServer())
-        .get(`/api/reviews/${id}`)
-        .set('Cookie', [anotherAccessTokenCookie])
-        .expect(403);
-
-      await prismaService.review.delete({ where: { id } });
-    });
-
     it('404', async () => {
-      await request(app.getHttpServer())
-        .get('/api/reviews/0')
-        .set('Cookie', [accessTokenCookie])
-        .expect(404);
+      await request(app.getHttpServer()).get('/api/reviews/0').expect(404);
     });
   });
 

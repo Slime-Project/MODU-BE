@@ -8,7 +8,7 @@ import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindProductsDto } from '@/product/dto/find-products.dto';
 import { NaverProductDto } from '@/product/dto/naver-product.dto';
-import { getMockProduct, mockNaverRes } from '@/utils/unit-test';
+import { mockProduct, mockNaverRes } from '@/utils/unit-test';
 
 import { ProductService } from './product.service';
 
@@ -37,10 +37,9 @@ describe('ProductService', () => {
 
   describe('findOne', () => {
     it('should return a product', async () => {
-      const product = getMockProduct();
-      prismaService.product.findUnique.mockResolvedValue(product);
-      const result = await productService.findOne(product.id);
-      expect(result).toEqual(product);
+      prismaService.product.findUnique.mockResolvedValue(mockProduct);
+      const result = await productService.findOne(mockProduct.id);
+      expect(result).toEqual(mockProduct);
     });
 
     it('should throw NotFoundException when product is not found', async () => {
@@ -51,22 +50,21 @@ describe('ProductService', () => {
 
   describe('findMany', () => {
     it('should return products data', async () => {
-      const product = getMockProduct();
       const findProductsDto: FindProductsDto = {
         page: 1,
         query: 'query'
       };
       const total = 1;
       const productsData: ProductsData = {
-        products: [product],
+        products: [mockProduct],
         pageSize: PRODUCTS_PAGE_SIZE,
         total,
         totalPages: 1
       };
       productService.searchProductsOnNaver = jest
         .fn()
-        .mockResolvedValue({ products: [product], total });
-      prismaService.product.upsert.mockResolvedValue(product);
+        .mockResolvedValue({ products: [mockProduct], total });
+      prismaService.product.upsert.mockResolvedValue(mockProduct);
       const result = await productService.findMany(findProductsDto);
       expect(result).toEqual(productsData);
     });

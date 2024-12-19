@@ -64,9 +64,30 @@ export class KakaoLoginService {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      params: {
+        property_keys: JSON.stringify(['kakao_account.profile'])
       }
     });
     return plainToInstance(KaKaoUserInfoDto, data, { excludeExtraneousValues: true });
+  }
+
+  async findUsers(ids: number[]): Promise<KaKaoUserInfoDto[]> {
+    const usersUrl = 'https://kapi.kakao.com/v2/app/users';
+    const { data } = await axios.get(usersUrl, {
+      headers: {
+        Authorization: `KakaoAK ${this.configService.get('KAKAO_ADMIN_KEY')}`,
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+      },
+      params: {
+        target_ids: JSON.stringify(ids),
+        target_id_type: 'user_id',
+        property_keys: JSON.stringify(['kakao_account.profile'])
+      }
+    });
+    return data.map(user =>
+      plainToInstance(KaKaoUserInfoDto, user, { excludeExtraneousValues: true })
+    );
   }
 
   async login(code: string) {

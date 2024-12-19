@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
 import { updateAverageRating } from '@/utils/review';
@@ -8,11 +9,14 @@ import { updateAverageRating } from '@/utils/review';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
 
-import { CreateReview, ReviewsData } from '@/types/review.type';
+import { CreateReview, ReviewsWithReviewerData, ReviewWithReviewer } from '@/types/review.type';
 
 @Injectable()
 export class ProductReviewService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly kakaoLoginService: KakaoLoginService
+  ) {}
 
   async create(createReviewDto: CreateReviewDto, userId: string, productId: number) {
     const product = await this.prismaService.product.findUnique({
@@ -71,14 +75,27 @@ export class ProductReviewService {
     }
 
     const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, productId);
+    const reviewsWithreviewer: ReviewWithReviewer[] = reviews.map(review => ({
+      ...review,
+      reviewer: null
+    }));
+    const ids = reviews.filter(({ userId }) => userId !== null).map(({ userId }) => Number(userId));
+
+    if (ids.length) {
+      const users = await this.kakaoLoginService.findUsers(ids);
+      users.forEach(user => {
+        reviewsWithreviewer.find(({ userId }) => userId === user.id).reviewer = user;
+      });
+    }
+
     const total = await this.prismaService.review.count({
       where: {
         productId
       }
     });
     const totalPages = calculateTotalPages(total, REVIEWS_PAGE_SIZE);
-    const reviewsData: ReviewsData = {
-      reviews,
+    const reviewsData: ReviewsWithReviewerData = {
+      reviews: reviewsWithreviewer,
       pageSize: REVIEWS_PAGE_SIZE,
       total,
       totalPages

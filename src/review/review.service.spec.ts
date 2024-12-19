@@ -6,7 +6,7 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { calculateSkip } from '@/utils/page';
-import { getMockReview } from '@/utils/unit-test';
+import { mockReview } from '@/utils/unit-test';
 
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
@@ -32,36 +32,28 @@ describe('ReviewService', () => {
 
   describe('findOne', () => {
     it('should return a review', async () => {
-      const review = getMockReview();
-      prismaService.review.findUnique.mockResolvedValue(review);
-      const result = await service.findOne(review.userId, review.id);
-      expect(result).toEqual(review);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      const result = await service.findOne(mockReview.id);
+      expect(result).toEqual(mockReview);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
       prismaService.review.findUnique.mockResolvedValue(null);
-      return expect(service.findOne('1234567890', 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw ForbiddenException when user is not authorized to get the review', async () => {
-      const review = getMockReview();
-      prismaService.review.findUnique.mockResolvedValue(review);
-      return expect(service.findOne('another-user', review.id)).rejects.toThrow(ForbiddenException);
+      return expect(service.findOne(1)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('findSortedAndPaginatedReviews', () => {
     it('should pass correct take and skip values to prismaService', async () => {
-      const review = getMockReview();
       const page = 1;
-      prismaService.review.findMany.mockResolvedValue([review]);
+      prismaService.review.findMany.mockResolvedValue([mockReview]);
       await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
           orderBy: 'desc',
           page
         },
-        review.userId
+        mockReview.userId
       );
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -72,12 +64,11 @@ describe('ReviewService', () => {
     });
 
     it('sshould default to sorting by highest rating', async () => {
-      const review = getMockReview();
       const findReviewsDto: FindReviewsDto = {
         page: 1
       };
-      prismaService.review.findMany.mockResolvedValue([review]);
-      await service.findSortedAndPaginatedReviews(findReviewsDto, review.userId);
+      prismaService.review.findMany.mockResolvedValue([mockReview]);
+      await service.findSortedAndPaginatedReviews(findReviewsDto, mockReview.userId);
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: [{ rating: 'desc' }, { id: 'desc' }]
@@ -86,17 +77,16 @@ describe('ReviewService', () => {
     });
 
     it('should return reviews', async () => {
-      const review = getMockReview();
-      prismaService.review.findMany.mockResolvedValue([review]);
+      prismaService.review.findMany.mockResolvedValue([mockReview]);
       const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
           orderBy: 'desc',
           page: 1
         },
-        review.userId
+        mockReview.userId
       );
-      expect(result).toEqual([review]);
+      expect(result).toEqual([mockReview]);
     });
 
     it.each([
@@ -107,16 +97,15 @@ describe('ReviewService', () => {
     ])(
       'should pass correct orderBy options for %s %s',
       async (sortBy: SortBy, orderBy: OrderBy) => {
-        const review = getMockReview();
         const page = 1;
-        prismaService.review.findMany.mockResolvedValue([review]);
+        prismaService.review.findMany.mockResolvedValue([mockReview]);
         await service.findSortedAndPaginatedReviews(
           {
             sortBy,
             orderBy,
             page
           },
-          review.userId
+          mockReview.userId
         );
         expect(prismaService.review.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -132,7 +121,6 @@ describe('ReviewService', () => {
 
   describe('findMany', () => {
     it('should return reviews data', async () => {
-      const review = getMockReview();
       const findReviewsDto: FindReviewsDto = {
         page: 1,
         sortBy: 'createdAt',
@@ -140,14 +128,14 @@ describe('ReviewService', () => {
       };
       const total = 1;
       const reviewsData: ReviewsData = {
-        reviews: [review],
+        reviews: [mockReview],
         pageSize: REVIEWS_PAGE_SIZE,
         total,
         totalPages: 1
       };
-      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([review]);
+      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([mockReview]);
       prismaService.review.count.mockResolvedValue(total);
-      const result = await service.findMany(findReviewsDto, review.userId);
+      const result = await service.findMany(findReviewsDto, mockReview.userId);
       expect(result).toEqual(reviewsData);
     });
   });
@@ -163,44 +151,41 @@ describe('ReviewService', () => {
 
   describe('update', () => {
     it('should return a review', async () => {
-      const review = getMockReview();
-      const updateReviewDto: UpdateReviewDto = { text: review.text, rating: review.rating };
-      prismaService.review.findUnique.mockResolvedValue(review);
-      prismaService.review.update.mockResolvedValue(review);
+      const updateReviewDto: UpdateReviewDto = { text: mockReview.text, rating: mockReview.rating };
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      prismaService.review.update.mockResolvedValue(mockReview);
       const result = await service.update({
-        userId: review.userId,
+        userId: mockReview.userId,
         updateReviewDto,
-        id: review.id
+        id: mockReview.id
       });
-      expect(result).toEqual(review);
+      expect(result).toEqual(mockReview);
     });
 
     it('should call prisma transaction method when rating is changed', async () => {
-      const review = getMockReview();
       const updateReviewDto: UpdateReviewDto = {
-        rating: review.rating < 5 ? review.rating + 1 : 4
+        rating: mockReview.rating < 5 ? mockReview.rating + 1 : 4
       };
-      prismaService.review.findUnique.mockResolvedValue(review);
-      prismaService.$transaction.mockResolvedValue(review);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      prismaService.$transaction.mockResolvedValue(mockReview);
       await service.update({
-        userId: review.userId,
+        userId: mockReview.userId,
         updateReviewDto,
-        id: review.id
+        id: mockReview.id
       });
       expect(prismaService.$transaction).toHaveBeenCalled();
     });
 
     it('should call prisma update method when rating is not changed', async () => {
-      const review = getMockReview();
       const updateReviewDto: UpdateReviewDto = {
-        rating: review.rating
+        rating: mockReview.rating
       };
-      prismaService.review.findUnique.mockResolvedValue(review);
-      prismaService.review.update.mockResolvedValue(review);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      prismaService.review.update.mockResolvedValue(mockReview);
       await service.update({
-        userId: review.userId,
+        userId: mockReview.userId,
         updateReviewDto,
-        id: review.id
+        id: mockReview.id
       });
       expect(prismaService.review.update).toHaveBeenCalled();
     });
@@ -214,14 +199,13 @@ describe('ReviewService', () => {
     });
 
     it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
-      const review = getMockReview();
       const updateReviewDto: UpdateReviewDto = { text: 'new-text', rating: 5 };
-      prismaService.review.findUnique.mockResolvedValue(review);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
       return expect(
         service.update({
           userId: 'another-user',
           updateReviewDto,
-          id: review.id
+          id: mockReview.id
         })
       ).rejects.toThrow(ForbiddenException);
     });
@@ -229,10 +213,9 @@ describe('ReviewService', () => {
 
   describe('remove', () => {
     it('should call prisma transaction method when the review exists', async () => {
-      const review = getMockReview();
-      prismaService.review.findUnique.mockResolvedValue(review);
-      prismaService.$transaction.mockResolvedValue(review);
-      await service.remove(review.userId, review.id);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      prismaService.$transaction.mockResolvedValue(mockReview);
+      await service.remove(mockReview.userId, mockReview.id);
       expect(prismaService.$transaction).toHaveBeenCalled();
     });
 
@@ -242,9 +225,10 @@ describe('ReviewService', () => {
     });
 
     it('should throw ForbiddenException when user is not authorized to delete the review', async () => {
-      const review = getMockReview();
-      prismaService.review.findUnique.mockResolvedValue(review);
-      return expect(service.remove('0987654321', review.id)).rejects.toThrow(ForbiddenException);
+      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      return expect(service.remove('0987654321', mockReview.id)).rejects.toThrow(
+        ForbiddenException
+      );
     });
   });
 });

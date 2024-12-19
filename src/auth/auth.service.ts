@@ -62,7 +62,7 @@ export class AuthService {
     const { user: kakaoUser, token: kakaoToken } = await this.kakaoLoginService.login(
       loginDto.code
     );
-    const id = kakaoUser.id.toString();
+    const { id } = kakaoUser;
     const { accessToken, exp } = await this.createAccessToken(id, kakaoToken.expiresIn);
     const { refreshToken, refreshTokenExp } = await this.createRefreshToken(
       id,

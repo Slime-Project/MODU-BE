@@ -6,7 +6,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { getMockAuth } from '@/utils/unit-test';
+import { mockAuth } from '@/utils/unit-test';
 
 import { UserService } from './user.service';
 
@@ -31,23 +31,20 @@ describe('UserService', () => {
 
   describe('findOne', () => {
     it('should return user information', async () => {
-      const auth = getMockAuth();
-      const kakaoUser = {
-        id: Number(auth.id),
-        properties: {
-          nickname: 'nickname',
-          profileImage: 'url'
-        }
-      } as KaKaoUserInfoDto;
+      const kakaoUser: KaKaoUserInfoDto = {
+        id: mockAuth.userId,
+        nickname: 'nickname',
+        profileImg: 'url'
+      };
       const userInfo: UserInfo = {
-        id: auth.userId,
-        nickname: kakaoUser.properties.nickname,
-        profileImage: kakaoUser.properties.profileImage
+        id: mockAuth.userId,
+        nickname: kakaoUser.nickname,
+        profileImg: kakaoUser.profileImg
       };
 
-      prismaService.auth.findUnique.mockResolvedValue(auth);
+      prismaService.auth.findUnique.mockResolvedValue(mockAuth);
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
-      const result = await userService.findOne(auth.userId, auth.refreshToken);
+      const result = await userService.findOne(mockAuth.userId, mockAuth.refreshToken);
       expect(result).toEqual(userInfo);
     });
 
@@ -61,14 +58,13 @@ describe('UserService', () => {
 
   describe('remove', () => {
     it('should remove user and unlink from Kakao', async () => {
-      const auth = getMockAuth();
-      const user: User = { id: auth.userId, role: UserRole.USER };
+      const user: User = { id: mockAuth.userId, role: UserRole.USER };
 
-      prismaService.auth.findUnique.mockResolvedValue(auth);
+      prismaService.auth.findUnique.mockResolvedValue(mockAuth);
       KakaoLoginService.unlink = jest.fn();
       prismaService.$transaction.mockResolvedValue(user);
-      await userService.remove(auth.userId, auth.refreshToken);
-      expect(KakaoLoginService.unlink).toHaveBeenCalledWith(auth.kakaoAccessToken);
+      await userService.remove(mockAuth.userId, mockAuth.refreshToken);
+      expect(KakaoLoginService.unlink).toHaveBeenCalledWith(mockAuth.kakaoAccessToken);
       expect(prismaService.$transaction).toHaveBeenCalled();
     });
 
