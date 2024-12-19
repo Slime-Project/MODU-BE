@@ -4,7 +4,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { WISHLIST_PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { PrismaService } from '@/prisma/prisma.service';
-import { getMockProduct, getMockWishlistItem } from '@/utils/unit-test';
+import { mockProduct, getMockWishlistItem } from '@/utils/unit-test';
 import { FindWishlistProductsDto } from '@/wishlist/product/dto/find-wishlist-products.dto';
 
 import { WishlistProductService } from './wishlist-product.service';
@@ -34,13 +34,12 @@ describe('WishlistProductService', () => {
   describe('create', () => {
     it('should return a review', async () => {
       const userId = '1';
-      const product = getMockProduct();
-      const updatedProduct = { ...product, wishedCount: product.wishedCount + 1 };
-      const wishlistItem = getMockWishlistItem(userId, product.id);
-      prismaService.product.findUnique.mockResolvedValue(product);
+      const updatedProduct = { ...mockProduct, wishedCount: mockProduct.wishedCount + 1 };
+      const wishlistItem = getMockWishlistItem(userId, mockProduct.id);
+      prismaService.product.findUnique.mockResolvedValue(mockProduct);
       prismaService.wishlistItem.findUnique.mockResolvedValue(null);
       prismaService.$transaction.mockResolvedValue([updatedProduct, wishlistItem]);
-      const result = await service.create(userId, product.id);
+      const result = await service.create(userId, mockProduct.id);
       expect(result).toEqual({ product: updatedProduct });
     });
 
@@ -51,21 +50,19 @@ describe('WishlistProductService', () => {
 
     it('should throw ConflictException when user has already added this product to the wishlist', async () => {
       const userId = '1';
-      const product = getMockProduct();
-      const wishlistItem = getMockWishlistItem(userId, product.id);
-      prismaService.product.findUnique.mockResolvedValue(product);
+      const wishlistItem = getMockWishlistItem(userId, mockProduct.id);
+      prismaService.product.findUnique.mockResolvedValue(mockProduct);
       prismaService.wishlistItem.findUnique.mockResolvedValue(wishlistItem);
-      return expect(service.create(userId, product.id)).rejects.toThrow(ConflictException);
+      return expect(service.create(userId, mockProduct.id)).rejects.toThrow(ConflictException);
     });
 
     describe('remove', () => {
       it('should call prisma delete method when the product exists in the wishlist', async () => {
         const userId = '1';
-        const product = getMockProduct();
-        const wishlistItem = getMockWishlistItem(userId, product.id);
+        const wishlistItem = getMockWishlistItem(userId, mockProduct.id);
         prismaService.wishlistItem.findUnique.mockResolvedValue(wishlistItem);
-        prismaService.$transaction.mockResolvedValue([product, wishlistItem]);
-        await service.remove(userId, product.id);
+        prismaService.$transaction.mockResolvedValue([mockProduct, wishlistItem]);
+        await service.remove(userId, mockProduct.id);
         expect(prismaService.wishlistItem.delete).toHaveBeenCalled();
       });
 
@@ -77,18 +74,17 @@ describe('WishlistProductService', () => {
 
     describe('findMany', () => {
       it('should return wishlist products data', async () => {
-        const product = getMockProduct();
         const findWishlistProductsDto: FindWishlistProductsDto = {
           page: 1
         };
         const total = 1;
         const wishlistProductsData: WishlistProductsData = {
-          products: [product],
+          products: [mockProduct],
           pageSize: WISHLIST_PRODUCTS_PAGE_SIZE,
           total: 1,
           totalPages: 1
         };
-        prismaService.product.findMany.mockResolvedValue([product]);
+        prismaService.product.findMany.mockResolvedValue([mockProduct]);
         prismaService.product.count.mockResolvedValue(total);
         const result = await service.findMany('1', findWishlistProductsDto);
         expect(result).toEqual(wishlistProductsData);

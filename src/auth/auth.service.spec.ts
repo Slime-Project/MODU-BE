@@ -12,7 +12,7 @@ import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { UserService } from '@/user/user.service';
 import { convertSecondsToMillis } from '@/utils/date';
-import { getMockAuth } from '@/utils/unit-test';
+import { mockAuth } from '@/utils/unit-test';
 
 import { AuthService } from './auth.service';
 
@@ -189,9 +189,8 @@ describe('AuthService', () => {
     };
 
     const setupFindOneAuthMock = () => {
-      const auth = getMockAuth();
-      prismaService.auth.findUnique.mockResolvedValue(auth);
-      return auth;
+      prismaService.auth.findUnique.mockResolvedValue(mockAuth);
+      return mockAuth;
     };
 
     it('should return a reissued accessToken', async () => {
@@ -242,13 +241,12 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should remove auth and log out from Kakao', async () => {
-      const auth = getMockAuth();
-      prismaService.auth.findUnique.mockResolvedValue(auth);
+      prismaService.auth.findUnique.mockResolvedValue(mockAuth);
       KakaoLoginService.logout = jest.fn();
-      prismaService.auth.delete.mockResolvedValue(auth);
-      await authService.logout(auth.userId, auth.refreshToken);
+      prismaService.auth.delete.mockResolvedValue(mockAuth);
+      await authService.logout(mockAuth.userId, mockAuth.refreshToken);
       expect(prismaService.auth.delete).toHaveBeenCalled();
-      expect(KakaoLoginService.logout).toHaveBeenCalledWith(auth.kakaoAccessToken);
+      expect(KakaoLoginService.logout).toHaveBeenCalledWith(mockAuth.kakaoAccessToken);
     });
   });
 });

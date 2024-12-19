@@ -3,7 +3,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { ProductDto } from '@/product/dto/product.dto';
-import { getMockProduct } from '@/utils/unit-test';
+import { mockProduct } from '@/utils/unit-test';
 
 import { FindProductsDto } from './dto/find-products.dto';
 import { ProductsDto } from './dto/products.dto';
@@ -32,22 +32,20 @@ describe('ProductController', () => {
 
   describe('findOne', () => {
     it('should return an instance of ProductDto', async () => {
-      const product = getMockProduct();
-      service.findOne.mockResolvedValue(product);
-      const result = await controller.findOne(product.id);
+      service.findOne.mockResolvedValue(mockProduct);
+      const result = await controller.findOne(mockProduct.id);
       expect(result).toBeInstanceOf(ProductDto);
     });
   });
 
   describe('findMany', () => {
     it('should return an instance of ProductsDto', async () => {
-      const product = getMockProduct();
       const findProductsDto: FindProductsDto = {
         page: 1,
         query: 'query'
       };
       const productsData: ProductsData = {
-        products: [product],
+        products: [mockProduct],
         pageSize: PRODUCTS_PAGE_SIZE,
         total: 1,
         totalPages: 1

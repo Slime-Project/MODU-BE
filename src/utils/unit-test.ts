@@ -5,59 +5,39 @@ import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 
 import { UserInfo } from '@/types/user.type';
 
-const getMockAuth = () => {
-  const auth: Auth = {
-    id: 1,
-    userId: '1234567890',
-    refreshToken: 'refreshToken',
-    kakaoAccessToken: 'kakaoAccessToken',
-    kakaoRefreshToken: 'kakaoRefreshToken',
-    refreshTokenExp: AuthService.getExpDate(604800000)
-  };
-  return auth;
-};
-
-const getMockReview = () => {
-  const review: Review = {
-    id: 1,
-    productId: 1,
-    userId: '1234567890',
-    text: '',
-    rating: 2,
-    createdAt: new Date()
-  };
-  return review;
-};
-
-const mockReview: Review = {
-  id: 1,
-  userId: '1',
-  productId: 1,
-  text: '',
-  rating: 2,
-  createdAt: new Date()
-};
 const mockUser: UserInfo = {
   id: '1',
   nickname: 'nickname',
   profileImg: 'url'
 };
-
-const getMockProduct = () => {
-  const product: Product = {
-    id: 1,
-    naverProductId: '1',
-    title: 'title',
-    body: null,
-    img: 'url',
-    link: 'url',
-    price: 2000,
-    seller: '네이버',
-    wishedCount: 0,
-    createdAt: new Date(),
-    averageRating: 0
-  };
-  return product;
+const mockAuth: Auth = {
+  id: 1,
+  userId: mockUser.id,
+  refreshToken: 'refreshToken',
+  kakaoAccessToken: 'kakaoAccessToken',
+  kakaoRefreshToken: 'kakaoRefreshToken',
+  refreshTokenExp: AuthService.getExpDate(604800000)
+};
+const mockProduct: Product = {
+  id: 1,
+  naverProductId: '1',
+  title: 'title',
+  body: null,
+  img: 'url',
+  link: 'url',
+  price: 2000,
+  seller: '네이버',
+  wishedCount: 0,
+  createdAt: new Date(),
+  averageRating: 0
+};
+const mockReview: Review = {
+  id: 1,
+  userId: mockUser.id,
+  productId: mockProduct.id,
+  text: '',
+  rating: 2,
+  createdAt: new Date()
 };
 
 const getMockWishlistItem = (
@@ -99,12 +79,4 @@ const mockNaverRes = {
   ]
 };
 
-export {
-  getMockAuth,
-  getMockReview,
-  getMockProduct,
-  getMockWishlistItem,
-  mockNaverRes,
-  mockReview,
-  mockUser
-};
+export { mockAuth, mockProduct, getMockWishlistItem, mockNaverRes, mockReview, mockUser };

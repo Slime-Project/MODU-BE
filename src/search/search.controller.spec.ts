@@ -4,7 +4,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { SearchResDto } from '@/search/dto/search-res.dto';
 import { SearchDto } from '@/search/dto/search.dto';
 import { SearchService } from '@/search/search.service';
-import { getMockProduct } from '@/utils/unit-test';
+import { mockProduct } from '@/utils/unit-test';
 
 import { SearchController } from './search.controller';
 
@@ -28,11 +28,10 @@ describe('SearchController', () => {
 
   describe('findMany', () => {
     it('should return an instance of SearchResDto', async () => {
-      const product = getMockProduct();
       const searchDto: SearchDto = {
         query: 'query'
       };
-      service.findMany.mockResolvedValue({ products: [product], giftCollections: [] });
+      service.findMany.mockResolvedValue({ products: [mockProduct], giftCollections: [] });
       const result = await controller.findMany(searchDto);
       expect(result).toBeInstanceOf(SearchResDto);
     });

@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { WISHLIST_PRODUCTS_PAGE_SIZE } from '@/constants/page';
-import { getMockProduct } from '@/utils/unit-test';
+import { mockProduct } from '@/utils/unit-test';
 import { FindWishlistProductsDto } from '@/wishlist/product/dto/find-wishlist-products.dto';
 import { WishlistProductDto } from '@/wishlist/product/dto/wishlist-product.dto';
 import { WishlistProductsDto } from '@/wishlist/product/dto/wishlist-products.dto';
@@ -39,12 +39,11 @@ describe('WishlistProductController', () => {
 
   describe('create', () => {
     it('should return an instance of WishlistProductDto', async () => {
-      const product = getMockProduct();
       const req = {
         id: '1'
       } as TokenGuardReq;
-      service.create.mockResolvedValue({ product });
-      const result = await controller.create(req, product.id);
+      service.create.mockResolvedValue({ product: mockProduct });
+      const result = await controller.create(req, mockProduct.id);
       expect(result).toBeInstanceOf(WishlistProductDto);
     });
   });
@@ -67,9 +66,8 @@ describe('WishlistProductController', () => {
       const findWishlistProductsDto: FindWishlistProductsDto = {
         page: 1
       };
-      const product = getMockProduct();
       const wishlistProductsData: WishlistProductsData = {
-        products: [product],
+        products: [mockProduct],
         pageSize: WISHLIST_PRODUCTS_PAGE_SIZE,
         total: 1,
         totalPages: 1
