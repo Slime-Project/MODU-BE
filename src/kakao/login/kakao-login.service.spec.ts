@@ -114,19 +114,19 @@ describe('KakaoLoginService', () => {
   describe('login', () => {
     it('should return a kakao token and user', async () => {
       const code = 'test-code';
-      const token = {
+      const token: GetTokenDto = {
         accessToken: 'kakaoAccessToken',
         refreshToken: 'kakaoRefreshToken',
         expiresIn: 3600,
         refreshTokenExpiresIn: 604800
-      } as GetTokenDto;
-      const user = {
+      };
+      const user: KaKaoUserInfoDto = {
         id: 1234567890,
         properties: {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as KaKaoUserInfoDto;
+      };
 
       kakaoLoginService.getToken = jest.fn().mockResolvedValue(token);
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(user);

@@ -1,12 +1,7 @@
 import { Expose } from 'class-transformer';
-import { IsString, IsNotEmpty, IsIn, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class GetTokenDto {
-  @IsIn(['bearer'])
-  @IsNotEmpty()
-  @Expose({ name: 'token_type' })
-  readonly tokenType: 'bearer';
-
   @IsString()
   @IsNotEmpty()
   @Expose({ name: 'access_token' })
@@ -26,9 +21,4 @@ export class GetTokenDto {
   @IsNotEmpty()
   @Expose({ name: 'refresh_token_expires_in' })
   readonly refreshTokenExpiresIn: number;
-
-  @IsString()
-  @IsNotEmpty()
-  @Expose({ name: 'scope' })
-  readonly scope?: string;
 }

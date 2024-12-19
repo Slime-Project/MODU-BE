@@ -11,9 +11,4 @@ export class PropertiesDto {
   @IsNotEmpty()
   @Expose({ name: 'profile_image' })
   readonly profileImage: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Expose({ name: 'thumbnail_image' })
-  readonly thumbnailImage: string;
 }

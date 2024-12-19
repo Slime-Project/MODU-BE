@@ -75,19 +75,19 @@ describe('AuthService', () => {
 
   describe('login', () => {
     const setupKakaoLoginMock = () => {
-      const kakaoToken = {
+      const kakaoToken: GetTokenDto = {
         accessToken: 'kakaoAccessToken',
         refreshToken: 'kakaoRefreshToken',
         expiresIn: 3600,
         refreshTokenExpiresIn: 604800
-      } as GetTokenDto;
-      const kakaoUser = {
+      };
+      const kakaoUser: KaKaoUserInfoDto = {
         id: 1234567890,
         properties: {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as KaKaoUserInfoDto;
+      };
       kakaoLoginService.login.mockResolvedValue({
         user: kakaoUser,
         token: kakaoToken

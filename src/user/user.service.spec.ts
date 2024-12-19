@@ -32,13 +32,13 @@ describe('UserService', () => {
   describe('findOne', () => {
     it('should return user information', async () => {
       const auth = getMockAuth();
-      const kakaoUser = {
+      const kakaoUser: KaKaoUserInfoDto = {
         id: Number(auth.id),
         properties: {
           nickname: 'nickname',
           profileImage: 'url'
         }
-      } as KaKaoUserInfoDto;
+      };
       const userInfo: UserInfo = {
         id: auth.userId,
         nickname: kakaoUser.properties.nickname,
