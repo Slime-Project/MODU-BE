@@ -50,11 +50,9 @@ const mockKakaoLogin = (kakaoLoginService: KakaoLoginService, id: string) => {
     refreshTokenExpiresIn: 604800
   };
   const kakaoUser: KaKaoUserInfoDto = {
-    id: Number(id),
-    properties: {
-      nickname: 'nickname',
-      profileImage: 'url'
-    }
+    id,
+    nickname: 'nickname',
+    profileImg: 'url'
   };
 
   jest.spyOn(kakaoLoginService, 'login').mockResolvedValue({

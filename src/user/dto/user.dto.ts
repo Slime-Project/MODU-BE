@@ -18,7 +18,7 @@ export class UserDto {
   @IsString()
   @IsNotEmpty()
   @Expose()
-  readonly profileImage: string;
+  readonly profileImg: string;
 
   @ApiProperty({
     example: 'apple'

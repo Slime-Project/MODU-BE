@@ -62,8 +62,8 @@ export class UserService {
     const kakaoUserInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
     const userInfo: UserInfo = {
       id,
-      nickname: kakaoUserInfo.properties.nickname,
-      profileImage: kakaoUserInfo.properties.profileImage
+      nickname: kakaoUserInfo.nickname,
+      profileImg: kakaoUserInfo.profileImg
     };
     return userInfo;
   }

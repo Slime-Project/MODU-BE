@@ -121,11 +121,9 @@ describe('KakaoLoginService', () => {
         refreshTokenExpiresIn: 604800
       };
       const user: KaKaoUserInfoDto = {
-        id: 1234567890,
-        properties: {
-          nickname: 'nickname',
-          profileImage: 'url'
-        }
+        id: '1234567890',
+        nickname: 'nickname',
+        profileImg: 'url'
       };
 
       kakaoLoginService.getToken = jest.fn().mockResolvedValue(token);

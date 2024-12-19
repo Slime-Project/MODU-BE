@@ -82,11 +82,9 @@ describe('AuthService', () => {
         refreshTokenExpiresIn: 604800
       };
       const kakaoUser: KaKaoUserInfoDto = {
-        id: 1234567890,
-        properties: {
-          nickname: 'nickname',
-          profileImage: 'url'
-        }
+        id: '1234567890',
+        nickname: 'nickname',
+        profileImg: 'url'
       };
       kakaoLoginService.login.mockResolvedValue({
         user: kakaoUser,
@@ -107,7 +105,7 @@ describe('AuthService', () => {
         ...accessTokenInfo,
         ...refreshTokenInfo
       };
-      const user: User = { id: kakaoUser.id.toString(), role: UserRole.USER };
+      const user: User = { id: kakaoUser.id, role: UserRole.USER };
 
       return {
         user,

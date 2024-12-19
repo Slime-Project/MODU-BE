@@ -33,16 +33,14 @@ describe('UserService', () => {
     it('should return user information', async () => {
       const auth = getMockAuth();
       const kakaoUser: KaKaoUserInfoDto = {
-        id: Number(auth.id),
-        properties: {
-          nickname: 'nickname',
-          profileImage: 'url'
-        }
+        id: auth.userId,
+        nickname: 'nickname',
+        profileImg: 'url'
       };
       const userInfo: UserInfo = {
         id: auth.userId,
-        nickname: kakaoUser.properties.nickname,
-        profileImage: kakaoUser.properties.profileImage
+        nickname: kakaoUser.nickname,
+        profileImg: kakaoUser.profileImg
       };
 
       prismaService.auth.findUnique.mockResolvedValue(auth);
