@@ -6,17 +6,17 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { ReviewDto } from '../../review/dto/review.dto';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
-import { getMockReview } from '@/utils/unit-test';
+import { getMockReview, mockReview, mockUser } from '@/utils/unit-test';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
 import { ReviewCountDto } from './dto/review-count.dto';
-import { ReviewsDto } from './dto/reviews.dto';
+import { ReviewsWithReviwerDto } from './dto/reviews-with-reviewer.dto';
 import { ProductReviewController } from './product-review.controller';
 import { ProductReviewService } from './product-review.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
-import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
+import { OrderBy, ReviewsWithReviewerData, SortBy } from '@/types/review.type';
 
 describe('ProductReviewController', () => {
   let controller: ProductReviewController;
@@ -56,20 +56,24 @@ describe('ProductReviewController', () => {
 
   describe('findMany', () => {
     it('should return an instance of ReviewsDto', async () => {
-      const review = getMockReview();
       const sortBy: SortBy = 'createdAt';
       const orderBy: OrderBy = 'desc';
       const page = 1;
-      const reviewsData: ReviewsData = {
-        reviews: [review],
+      const mockReviewsWithReviewerData: ReviewsWithReviewerData = {
+        reviews: [
+          {
+            ...mockReview,
+            reviewer: mockUser
+          }
+        ],
         pageSize: REVIEWS_PAGE_SIZE,
         total: 1,
         totalPages: 1
       };
-      service.findMany.mockResolvedValue(reviewsData);
+      service.findMany.mockResolvedValue(mockReviewsWithReviewerData);
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
-      const result = await controller.findMany(review.productId, getReviewsDto);
-      expect(result).toBeInstanceOf(ReviewsDto);
+      const result = await controller.findMany(mockReview.productId, getReviewsDto);
+      expect(result).toBeInstanceOf(ReviewsWithReviwerDto);
     });
   });
 

@@ -18,7 +18,7 @@ import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
 import { ReviewCountDto } from './dto/review-count.dto';
-import { ReviewsDto } from './dto/reviews.dto';
+import { ReviewsWithReviwerDto } from './dto/reviews-with-reviewer.dto';
 import { ProductReviewService } from './product-review.service';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -83,7 +83,7 @@ export class ProductReviewController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: ReviewsDto
+    type: ReviewsWithReviwerDto
   })
   @ApiResponse({
     status: 400,
@@ -99,6 +99,6 @@ export class ProductReviewController {
     @Query() findReviewsDto: FindReviewsDto
   ) {
     const reviews = await this.service.findMany(findReviewsDto, productId);
-    return plainToInstance(ReviewsDto, reviews);
+    return plainToInstance(ReviewsWithReviwerDto, reviews);
   }
 }

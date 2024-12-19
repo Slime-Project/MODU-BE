@@ -2,10 +2,12 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
 import { AuthModule } from '@/auth/auth.module';
+import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewsDto } from '@/product/review/dto/reviews.dto';
+import { ReviewsWithReviwerDto } from '@/product/review/dto/reviews-with-reviewer.dto';
 import { ProductReviewModule } from '@/product/review/product-review.module';
 import { ReviewDto } from '@/review/dto/review.dto';
 import {
@@ -20,10 +22,12 @@ import {
 describe('ProductReviewController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
+  let kakaoLoginService: KakaoLoginService;
 
   beforeEach(async () => {
     app = await createTestingApp([ProductReviewModule, AuthModule]);
     prismaService = app.get(PrismaService);
+    kakaoLoginService = app.get(KakaoLoginService);
   });
 
   const createReview = async (userId: string, productId: number, rating?: number) => {
@@ -99,7 +103,7 @@ describe('ProductReviewController (integration)', () => {
     });
   });
 
-  describe('/api/products/:productId/reviews (GET)', () => {
+  describe('/api/products/:id/reviews (GET)', () => {
     it('200', async () => {
       const userId1 = '3456789012';
       const userId2 = '4567890123';
@@ -111,12 +115,15 @@ describe('ProductReviewController (integration)', () => {
         createReview(userId1, product.id, 1),
         createReview(userId2, product.id, 3)
       ]);
-      const page = 1;
+      const kakaoUsers: KaKaoUserInfoDto[] = [
+        { id: userId1, nickname: 'nickname', profileImg: 'url' },
+        { id: userId1, nickname: 'nickname', profileImg: 'url' }
+      ];
+      kakaoLoginService.findUsers = jest.fn().mockResolvedValue(kakaoUsers);
       const { body } = await request(app.getHttpServer())
-        .get(`/api/products/${product.id}/reviews?page=${page}`)
+        .get(`/api/products/${product.id}/reviews?page=1`)
         .expect(200);
-      validateDto(ReviewsDto, body);
-
+      validateDto(ReviewsWithReviwerDto, body);
       await Promise.allSettled([
         deleteUser(prismaService, userId1),
         deleteUser(prismaService, userId2),
@@ -133,7 +140,7 @@ describe('ProductReviewController (integration)', () => {
     });
   });
 
-  describe('/api/products/:productId/reviews/count (GET)', () => {
+  describe('/api/products/:id/reviews/count (GET)', () => {
     it('200', async () => {
       const product = await createProduct(prismaService);
       const { body } = await request(app.getHttpServer())

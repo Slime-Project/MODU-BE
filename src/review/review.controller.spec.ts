@@ -7,10 +7,10 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 import { getMockReview } from '@/utils/unit-test';
 
 import { ReviewDto } from './dto/review.dto';
+import { ReviewsDto } from './dto/reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewController } from './review.controller';
 import { ReviewService } from './review.service';

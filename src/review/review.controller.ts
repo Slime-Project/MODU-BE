@@ -17,9 +17,9 @@ import { plainToInstance } from 'class-transformer';
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { ReviewsDto } from '@/product/review/dto/reviews.dto';
 
 import { ReviewDto } from './dto/review.dto';
+import { ReviewsDto } from './dto/reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
 

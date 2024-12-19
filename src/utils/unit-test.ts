@@ -3,6 +3,8 @@ import { Auth, Product, Review, WishlistItem } from '@prisma/client';
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 
+import { UserInfo } from '@/types/user.type';
+
 const getMockAuth = () => {
   const auth: Auth = {
     id: 1,
@@ -25,6 +27,20 @@ const getMockReview = () => {
     createdAt: new Date()
   };
   return review;
+};
+
+const mockReview: Review = {
+  id: 1,
+  userId: '1',
+  productId: 1,
+  text: '',
+  rating: 2,
+  createdAt: new Date()
+};
+const mockUser: UserInfo = {
+  id: '1',
+  nickname: 'nickname',
+  profileImg: 'url'
 };
 
 const getMockProduct = () => {
@@ -83,4 +99,12 @@ const mockNaverRes = {
   ]
 };
 
-export { getMockAuth, getMockReview, getMockProduct, getMockWishlistItem, mockNaverRes };
+export {
+  getMockAuth,
+  getMockReview,
+  getMockProduct,
+  getMockWishlistItem,
+  mockNaverRes,
+  mockReview,
+  mockUser
+};

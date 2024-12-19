@@ -1,6 +1,8 @@
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Product, Review } from '@prisma/client';
 
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
 import { ProductReviewService } from '@/product/review/product-review.service';
@@ -12,7 +14,7 @@ describe('ProductReviewService (integration)', () => {
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [ProductReviewService, PrismaService]
+      providers: [ProductReviewService, PrismaService, KakaoLoginService, ConfigService]
     }).compile();
 
     service = module.get(ProductReviewService);
