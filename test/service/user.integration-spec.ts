@@ -20,7 +20,7 @@ describe('UserService (integration)', () => {
   });
 
   describe('remove', () => {
-    const userId = '6';
+    const userId = '7';
     const refreshToken = 'refresh-token';
     let productId: number;
 

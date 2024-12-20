@@ -18,7 +18,7 @@ describe('SearchController (integration)', () => {
   let prismaService: PrismaService;
   let productService: ProductService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     app = await createTestingApp([SearchModule]);
     prismaService = app.get(PrismaService);
     productService = app.get(ProductService);
