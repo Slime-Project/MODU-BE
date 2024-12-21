@@ -6,7 +6,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
-import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
+import { ReviewCountDto } from '@/review/dto/review-count.dto';
 import { mockReview, mockReviewWithImgs } from '@/utils/unit-test';
 
 import { ReviewDto } from './dto/review.dto';

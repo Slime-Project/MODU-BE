@@ -23,7 +23,6 @@ import { checkFileExt } from '@/utils/file';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
-import { ReviewCountDto } from './dto/review-count.dto';
 import { ReviewsWithReviwerDto } from './dto/reviews-with-reviewer.dto';
 import { ProductReviewService } from './product-review.service';
 
@@ -60,7 +59,7 @@ export class ProductReviewController {
       limits: {
         fileSize: REVIEW_IMG_SIZE_LIMIT
       },
-      fileFilter: (req, file: Express.Multer.File, callback) => {
+      fileFilter: (_, file: Express.Multer.File, callback) => {
         if (checkFileExt(file, REVIEW_ALLOWED_EXT)) {
           callback(null, true);
         } else {
@@ -83,24 +82,6 @@ export class ProductReviewController {
   ) {
     const review = await this.service.create({ createReviewDto, userId: id, productId, imgs });
     return plainToInstance(ReviewDto, review);
-  }
-
-  @ApiOperation({
-    summary: 'Get product review count'
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Ok',
-    type: ReviewCountDto
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Not Found - Product not found'
-  })
-  @Get('count')
-  async count(@Param('productId', ParseIntPipe) productId: number) {
-    const count = await this.service.count(productId);
-    return plainToInstance(ReviewCountDto, count);
   }
 
   @ApiOperation({

@@ -7,7 +7,6 @@ import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
-import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
 import { ReviewsWithReviwerDto } from '@/product/review/dto/reviews-with-reviewer.dto';
 import { ProductReviewModule } from '@/product/review/product-review.module';
 import { ReviewDto } from '@/review/dto/review.dto';
@@ -136,19 +135,6 @@ describe('ProductReviewController (integration)', () => {
 
     it('404', async () => {
       await request(app.getHttpServer()).get('/api/products/0/reviews?page=1').expect(404);
-    });
-  });
-
-  describe('/api/products/:id/reviews/count (GET)', () => {
-    it('200', async () => {
-      const { body } = await request(app.getHttpServer())
-        .get(`/api/products/${product.id}/reviews/count`)
-        .expect(200);
-      validateDto(ReviewCountDto, body);
-    });
-
-    it('404', async () => {
-      await request(app.getHttpServer()).get('/api/products/0/reviews/count').expect(404);
     });
   });
 });

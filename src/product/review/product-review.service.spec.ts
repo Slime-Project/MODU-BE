@@ -199,19 +199,4 @@ describe('ProductReviewService', () => {
       return expect(service.findMany(findReviewsDto, 1)).rejects.toThrow(NotFoundException);
     });
   });
-
-  describe('count', () => {
-    it('should return product review count', async () => {
-      const count = 5;
-      prismaService.product.findUnique.mockResolvedValue({} as Product);
-      prismaService.review.count.mockResolvedValue(count);
-      const result = await service.count(1);
-      expect(result).toEqual({ count });
-    });
-
-    it('should throw NotFoundException when product is not found', async () => {
-      prismaService.product.findUnique.mockResolvedValue(null);
-      return expect(service.count(1)).rejects.toThrow(NotFoundException);
-    });
-  });
 });

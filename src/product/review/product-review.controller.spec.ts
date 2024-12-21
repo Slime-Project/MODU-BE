@@ -10,7 +10,6 @@ import { mockReview, mockReviewWithImgs, mockUser } from '@/utils/unit-test';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
-import { ReviewCountDto } from './dto/review-count.dto';
 import { ReviewsWithReviwerDto } from './dto/reviews-with-reviewer.dto';
 import { ProductReviewController } from './product-review.controller';
 import { ProductReviewService } from './product-review.service';
@@ -73,14 +72,6 @@ describe('ProductReviewController', () => {
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(mockReview.productId, getReviewsDto);
       expect(result).toBeInstanceOf(ReviewsWithReviwerDto);
-    });
-  });
-
-  describe('count', () => {
-    it('should return an instance of ReviewCountDto', async () => {
-      service.count.mockResolvedValue({ count: 5 });
-      const result = await controller.count(1);
-      expect(result).toBeInstanceOf(ReviewCountDto);
     });
   });
 });
