@@ -15,14 +15,20 @@ type OrderByOpts = {
   rating: Record<OrderBy, OrderByOpt[]>;
 };
 
-type ReviewWithReviewer = Review & {
+type ReviewIncludeImgsUrl = Review & {
+  imgs: { url: string }[];
+};
+type ReviewWithImgs = Review & {
+  imgs: string[];
+};
+type ReviewWithReviewer = ReviewWithImgs & {
   reviewer: UserInfo | null;
 };
 type ReviewsWithReviewerData = ItemsData & {
   reviews: ReviewWithReviewer[];
 };
 type ReviewsData = ItemsData & {
-  reviews: Review[];
+  reviews: ReviewWithImgs[];
 };
 
 export {
@@ -32,5 +38,7 @@ export {
   OrderByOpts,
   ReviewWithReviewer,
   ReviewsWithReviewerData,
-  ReviewsData
+  ReviewWithImgs,
+  ReviewsData,
+  ReviewIncludeImgsUrl
 };

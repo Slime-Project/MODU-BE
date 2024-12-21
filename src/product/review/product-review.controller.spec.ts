@@ -6,11 +6,10 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { ReviewDto } from '../../review/dto/review.dto';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
-import { mockReview, mockUser } from '@/utils/unit-test';
+import { mockReview, mockReviewWithImgs, mockUser } from '@/utils/unit-test';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
-import { ReviewCountDto } from './dto/review-count.dto';
 import { ReviewsWithReviwerDto } from './dto/reviews-with-reviewer.dto';
 import { ProductReviewController } from './product-review.controller';
 import { ProductReviewService } from './product-review.service';
@@ -47,8 +46,8 @@ describe('ProductReviewController', () => {
         id: mockReview.userId
       } as TokenGuardReq;
       const body: CreateReviewDto = { text: mockReview.text, rating: mockReview.rating };
-      service.create.mockResolvedValue(mockReview);
-      const result = await controller.create(req, body, mockReview.productId);
+      service.create.mockResolvedValue(mockReviewWithImgs);
+      const result = await controller.create(req, body, mockReview.productId, []);
       expect(result).toBeInstanceOf(ReviewDto);
     });
   });
@@ -61,7 +60,7 @@ describe('ProductReviewController', () => {
       const mockReviewsWithReviewerData: ReviewsWithReviewerData = {
         reviews: [
           {
-            ...mockReview,
+            ...mockReviewWithImgs,
             reviewer: mockUser
           }
         ],
@@ -73,14 +72,6 @@ describe('ProductReviewController', () => {
       const getReviewsDto: FindReviewsDto = { sortBy, orderBy, page };
       const result = await controller.findMany(mockReview.productId, getReviewsDto);
       expect(result).toBeInstanceOf(ReviewsWithReviwerDto);
-    });
-  });
-
-  describe('count', () => {
-    it('should return an instance of ReviewCountDto', async () => {
-      service.count.mockResolvedValue({ count: 5 });
-      const result = await controller.count(1);
-      expect(result).toBeInstanceOf(ReviewCountDto);
     });
   });
 });

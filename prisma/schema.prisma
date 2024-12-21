@@ -57,12 +57,24 @@ model Review {
   rating                 Int              @db.SmallInt
   text                   String
   createdAt              DateTime         @default(now())
+  imgs                   ReviewImg[]
 
   user                   User?            @relation("UserReviews", fields: [userId], references: [id], onDelete: SetNull)
   product                Product          @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([id, productId])
   @@unique([productId, userId])
+}
+
+model ReviewImg {
+  id                     Int              @id @default(autoincrement())
+  url                    String
+  filePath               String
+  order                  Int
+  reviewId               Int
+  review                 Review           @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, order])
 }
 
 model GiftCollection {

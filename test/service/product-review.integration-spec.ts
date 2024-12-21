@@ -6,42 +6,80 @@ import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/product/review/dto/create-review.dto';
 import { ProductReviewService } from '@/product/review/product-review.service';
+import { S3Service } from '@/s3/s3.service';
 import { createProduct, createReview, deleteProduct } from '@/utils/integration-test';
 
 describe('ProductReviewService (integration)', () => {
   let service: ProductReviewService;
   let prismaService: PrismaService;
 
+  let product: Product;
+  const userId = '4';
+
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [ProductReviewService, PrismaService, KakaoLoginService, ConfigService]
+      providers: [ProductReviewService, PrismaService, KakaoLoginService, S3Service, ConfigService]
     }).compile();
 
     service = module.get(ProductReviewService);
     prismaService = module.get(PrismaService);
+
+    const [createdProduct] = await Promise.all([
+      createProduct(prismaService),
+      prismaService.user.create({
+        data: { id: userId }
+      })
+    ]);
+    product = createdProduct;
+  });
+
+  afterAll(async () => {
+    await Promise.all([
+      prismaService.user.delete({
+        where: {
+          id: userId
+        }
+      }),
+      deleteProduct(prismaService, product.id)
+    ]);
   });
 
   describe('findSortedAndPaginatedReviews', () => {
-    const userId1 = '5678901234';
-    const userId2 = '6789012345';
-    const userId3 = '7890123456';
-    let product: Product;
+    const anotherUserId = '5';
+    const anotherUserId2 = '6';
 
     beforeAll(async () => {
       await prismaService.user.createMany({
-        data: [{ id: userId1 }, { id: userId2 }, { id: userId3 }]
+        data: [{ id: anotherUserId }, { id: anotherUserId2 }]
       });
       product = await createProduct(prismaService);
       await Promise.all(
-        [userId1, userId2, userId3].map((userId, i) =>
+        [userId, anotherUserId, anotherUserId2].map((id, i) =>
           createReview(prismaService, {
-            userId,
+            userId: id,
             productId: product.id,
             rating: i + (1 % 5),
             createdAt: new Date(new Date().getTime() + i * 1000)
           })
         )
       );
+    });
+
+    afterAll(async () => {
+      return Promise.allSettled([
+        prismaService.user.deleteMany({
+          where: {
+            id: {
+              in: [anotherUserId, anotherUserId2]
+            }
+          }
+        }),
+        prismaService.review.deleteMany({
+          where: {
+            productId: product.id
+          }
+        })
+      ]);
     });
 
     it('should return reviews sorted by rating desc', async () => {
@@ -109,41 +147,20 @@ describe('ProductReviewService (integration)', () => {
       );
       expect(isSortedByNewest(result)).toEqual(true);
     });
-
-    afterAll(async () => {
-      return Promise.allSettled([
-        prismaService.user.deleteMany({
-          where: {
-            id: {
-              in: [userId1, userId2, userId3]
-            }
-          }
-        }),
-        deleteProduct(prismaService, product.id)
-      ]);
-    });
   });
 
-  describe('should update product averageRating', () => {
-    const userId = '4';
-    let product: Product;
-
-    beforeAll(async () => {
-      const result = await Promise.all([
-        createProduct(prismaService),
-        prismaService.user.create({
-          data: { id: userId }
-        })
-      ]);
-      product = result[0] as Product;
-    });
-
-    it('create', async () => {
+  describe('create', () => {
+    it('should update product averageRating', async () => {
       const createReviewDto: CreateReviewDto = {
         text: 'good',
         rating: 1
       };
-      const { id } = await service.create(createReviewDto, userId, product.id);
+      const { id } = await service.create({
+        createReviewDto,
+        userId,
+        productId: product.id,
+        imgs: []
+      });
       const updatedProduct = await prismaService.product.findUnique({
         where: { id: product.id }
       });
@@ -154,17 +171,6 @@ describe('ProductReviewService (integration)', () => {
           id
         }
       });
-    });
-
-    afterAll(async () => {
-      await Promise.all([
-        prismaService.user.delete({
-          where: {
-            id: userId
-          }
-        }),
-        deleteProduct(prismaService, product.id)
-      ]);
     });
   });
 });

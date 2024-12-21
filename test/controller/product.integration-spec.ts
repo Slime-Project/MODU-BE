@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { Product } from '@prisma/client';
 import * as request from 'supertest';
 
 import { PrismaService } from '@/prisma/prisma.service';
@@ -19,21 +20,26 @@ describe('ProductController (integration)', () => {
   let prismaService: PrismaService;
   let productService: ProductService;
 
-  beforeEach(async () => {
+  let product: Product;
+
+  beforeAll(async () => {
     app = await createTestingApp([ProductModule]);
     prismaService = app.get(PrismaService);
     productService = app.get(ProductService);
+
+    product = await createProduct(prismaService, '3');
+  });
+
+  afterAll(async () => {
+    await deleteProduct(prismaService, product.id);
   });
 
   describe('/api/products/:id (GET)', () => {
     it('200', async () => {
-      const product = await createProduct(prismaService, '3');
       const { body } = await request(app.getHttpServer())
         .get(`/api/products/${product.id}`)
         .expect(200);
       validateDto(ProductDto, body);
-
-      await deleteProduct(prismaService, product.id);
     });
 
     it('404', async () => {
@@ -43,7 +49,6 @@ describe('ProductController (integration)', () => {
 
   describe('/api/products (GET)', () => {
     it('200', async () => {
-      const product = await createProduct(prismaService, '2');
       const naverProduct: NaverProductDto = {
         title: product.title,
         img: product.img,
@@ -60,8 +65,6 @@ describe('ProductController (integration)', () => {
         .get('/api/products?page=1&query=apple')
         .expect(200);
       validateDto(ProductsDto, body);
-
-      await deleteProduct(prismaService, product.id);
     });
   });
 });

@@ -24,7 +24,7 @@ describe('S3Service', () => {
     const file = { buffer: Buffer.from('file content') } as Express.Multer.File;
     const fileName = 'reviews/1/1.jpg';
     const ext = 'jpg';
-    const result = await service.imageUploadToS3(fileName, file, ext);
+    const result = await service.uploadImgToS3(fileName, file, ext);
     expect(result).toMatch(/^https:\/\/s3\..+\.amazonaws\.com\/.+\/reviews\/1\/1\.jpg$/);
   });
 });
