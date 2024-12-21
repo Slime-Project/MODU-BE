@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsDate, IsInt, Min, Max, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDate,
+  IsInt,
+  Min,
+  Max,
+  ValidateIf,
+  IsArray,
+  ArrayMaxSize
+} from 'class-validator';
 
 export class ReviewDto {
   @ApiProperty({
@@ -51,4 +61,12 @@ export class ReviewDto {
   @Expose()
   @Type(() => Date)
   readonly createdAt: Date;
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @ArrayMaxSize(9)
+  @Expose()
+  readonly imgs: string[];
 }

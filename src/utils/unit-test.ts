@@ -3,6 +3,7 @@ import { Auth, Product, Review, WishlistItem } from '@prisma/client';
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 
+import { ReviewIncludeImgsUrl, ReviewWithImgs } from '@/types/review.type';
 import { UserInfo } from '@/types/user.type';
 
 const mockUser: UserInfo = {
@@ -38,6 +39,14 @@ const mockReview: Review = {
   text: '',
   rating: 2,
   createdAt: new Date()
+};
+const mockReviewIncludeImgsUrl: ReviewIncludeImgsUrl = {
+  ...mockReview,
+  imgs: []
+};
+const mockReviewWithImgs: ReviewWithImgs = {
+  ...mockReview,
+  imgs: []
 };
 
 const getMockWishlistItem = (
@@ -79,4 +88,13 @@ const mockNaverRes = {
   ]
 };
 
-export { mockAuth, mockProduct, getMockWishlistItem, mockNaverRes, mockReview, mockUser };
+export {
+  mockAuth,
+  mockProduct,
+  getMockWishlistItem,
+  mockNaverRes,
+  mockReview,
+  mockReviewWithImgs,
+  mockReviewIncludeImgsUrl,
+  mockUser
+};

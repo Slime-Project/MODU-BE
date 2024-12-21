@@ -57,6 +57,14 @@ describe('UserService (integration)', () => {
       ]);
     });
 
+    afterAll(async () => {
+      await prismaService.product.delete({
+        where: {
+          id: productId
+        }
+      });
+    });
+
     it("Should decrement wishedCount for products in the user's wishlist", async () => {
       KakaoLoginService.unlink = jest.fn();
       await service.remove(userId, refreshToken);
@@ -67,14 +75,6 @@ describe('UserService (integration)', () => {
         select: { wishedCount: true }
       });
       expect(wishedCount).toEqual(0);
-    });
-
-    afterAll(async () => {
-      await prismaService.product.delete({
-        where: {
-          id: productId
-        }
-      });
     });
   });
 });

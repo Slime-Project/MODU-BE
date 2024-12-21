@@ -6,7 +6,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { ReviewDto } from '../../review/dto/review.dto';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
-import { mockReview, mockUser } from '@/utils/unit-test';
+import { mockReview, mockReviewWithImgs, mockUser } from '@/utils/unit-test';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
@@ -47,8 +47,8 @@ describe('ProductReviewController', () => {
         id: mockReview.userId
       } as TokenGuardReq;
       const body: CreateReviewDto = { text: mockReview.text, rating: mockReview.rating };
-      service.create.mockResolvedValue(mockReview);
-      const result = await controller.create(req, body, mockReview.productId);
+      service.create.mockResolvedValue(mockReviewWithImgs);
+      const result = await controller.create(req, body, mockReview.productId, []);
       expect(result).toBeInstanceOf(ReviewDto);
     });
   });
@@ -61,7 +61,7 @@ describe('ProductReviewController', () => {
       const mockReviewsWithReviewerData: ReviewsWithReviewerData = {
         reviews: [
           {
-            ...mockReview,
+            ...mockReviewWithImgs,
             reviewer: mockUser
           }
         ],

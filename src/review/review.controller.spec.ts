@@ -7,7 +7,7 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/product/review/dto/review-count.dto';
-import { mockReview } from '@/utils/unit-test';
+import { mockReview, mockReviewWithImgs } from '@/utils/unit-test';
 
 import { ReviewDto } from './dto/review.dto';
 import { ReviewsDto } from './dto/reviews.dto';
@@ -43,7 +43,7 @@ describe('ReviewController', () => {
 
   describe('findOne', () => {
     it('should return an instance of ReviewDto', async () => {
-      service.findOne.mockResolvedValue(mockReview);
+      service.findOne.mockResolvedValue(mockReviewWithImgs);
       const result = await controller.findOne(mockReview.id);
       expect(result).toBeInstanceOf(ReviewDto);
     });
@@ -58,7 +58,7 @@ describe('ReviewController', () => {
       const orderBy: OrderBy = 'desc';
       const page = 1;
       const reviewsData: ReviewsData = {
-        reviews: [mockReview],
+        reviews: [mockReviewWithImgs],
         pageSize: REVIEWS_PAGE_SIZE,
         total: 1,
         totalPages: 1
@@ -90,7 +90,7 @@ describe('ReviewController', () => {
         text: mockReview.text,
         rating: mockReview.rating
       };
-      service.update.mockResolvedValue(mockReview);
+      service.update.mockResolvedValue(mockReviewWithImgs);
       const result = await controller.update(req, updateReviewDto, mockReview.id);
       expect(result).toBeInstanceOf(ReviewDto);
     });

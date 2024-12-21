@@ -1,12 +1,14 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
+import { S3Service } from '@/s3/s3.service';
 import { calculateSkip } from '@/utils/page';
-import { mockReview } from '@/utils/unit-test';
+import { mockReview, mockReviewIncludeImgsUrl, mockReviewWithImgs } from '@/utils/unit-test';
 
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
@@ -19,7 +21,12 @@ describe('ReviewService', () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [ReviewService, { provide: PrismaService, useValue: mockDeep<PrismaService>() }]
+      providers: [
+        ReviewService,
+        { provide: PrismaService, useValue: mockDeep<PrismaService>() },
+        { provide: S3Service, useValue: mockDeep<S3Service>() },
+        { provide: ConfigService, useValue: mockDeep<ConfigService>() }
+      ]
     }).compile();
 
     service = module.get(ReviewService);
@@ -32,9 +39,9 @@ describe('ReviewService', () => {
 
   describe('findOne', () => {
     it('should return a review', async () => {
-      prismaService.review.findUnique.mockResolvedValue(mockReview);
+      prismaService.review.findUnique.mockResolvedValue(mockReviewIncludeImgsUrl);
       const result = await service.findOne(mockReview.id);
-      expect(result).toEqual(mockReview);
+      expect(result).toEqual(mockReviewWithImgs);
     });
 
     it('should throw NotFoundException when review is not found', async () => {
@@ -46,7 +53,7 @@ describe('ReviewService', () => {
   describe('findSortedAndPaginatedReviews', () => {
     it('should pass correct take and skip values to prismaService', async () => {
       const page = 1;
-      prismaService.review.findMany.mockResolvedValue([mockReview]);
+      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
       await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
@@ -63,11 +70,11 @@ describe('ReviewService', () => {
       );
     });
 
-    it('sshould default to sorting by highest rating', async () => {
+    it('should default to sorting by highest rating', async () => {
       const findReviewsDto: FindReviewsDto = {
         page: 1
       };
-      prismaService.review.findMany.mockResolvedValue([mockReview]);
+      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
       await service.findSortedAndPaginatedReviews(findReviewsDto, mockReview.userId);
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -77,7 +84,7 @@ describe('ReviewService', () => {
     });
 
     it('should return reviews', async () => {
-      prismaService.review.findMany.mockResolvedValue([mockReview]);
+      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
       const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
@@ -86,7 +93,7 @@ describe('ReviewService', () => {
         },
         mockReview.userId
       );
-      expect(result).toEqual([mockReview]);
+      expect(result).toEqual([mockReviewIncludeImgsUrl]);
     });
 
     it.each([
@@ -98,7 +105,7 @@ describe('ReviewService', () => {
       'should pass correct orderBy options for %s %s',
       async (sortBy: SortBy, orderBy: OrderBy) => {
         const page = 1;
-        prismaService.review.findMany.mockResolvedValue([mockReview]);
+        prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
         await service.findSortedAndPaginatedReviews(
           {
             sortBy,
@@ -128,12 +135,12 @@ describe('ReviewService', () => {
       };
       const total = 1;
       const reviewsData: ReviewsData = {
-        reviews: [mockReview],
+        reviews: [mockReviewWithImgs],
         pageSize: REVIEWS_PAGE_SIZE,
         total,
         totalPages: 1
       };
-      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([mockReview]);
+      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([mockReviewWithImgs]);
       prismaService.review.count.mockResolvedValue(total);
       const result = await service.findMany(findReviewsDto, mockReview.userId);
       expect(result).toEqual(reviewsData);
@@ -153,13 +160,13 @@ describe('ReviewService', () => {
     it('should return a review', async () => {
       const updateReviewDto: UpdateReviewDto = { text: mockReview.text, rating: mockReview.rating };
       prismaService.review.findUnique.mockResolvedValue(mockReview);
-      prismaService.review.update.mockResolvedValue(mockReview);
+      prismaService.review.update.mockResolvedValue(mockReviewIncludeImgsUrl);
       const result = await service.update({
         userId: mockReview.userId,
         updateReviewDto,
         id: mockReview.id
       });
-      expect(result).toEqual(mockReview);
+      expect(result).toEqual(mockReviewIncludeImgsUrl);
     });
 
     it('should call prisma transaction method when rating is changed', async () => {
@@ -167,7 +174,7 @@ describe('ReviewService', () => {
         rating: mockReview.rating < 5 ? mockReview.rating + 1 : 4
       };
       prismaService.review.findUnique.mockResolvedValue(mockReview);
-      prismaService.$transaction.mockResolvedValue(mockReview);
+      prismaService.$transaction.mockResolvedValue(mockReviewIncludeImgsUrl);
       await service.update({
         userId: mockReview.userId,
         updateReviewDto,
@@ -181,7 +188,7 @@ describe('ReviewService', () => {
         rating: mockReview.rating
       };
       prismaService.review.findUnique.mockResolvedValue(mockReview);
-      prismaService.review.update.mockResolvedValue(mockReview);
+      prismaService.review.update.mockResolvedValue(mockReviewIncludeImgsUrl);
       await service.update({
         userId: mockReview.userId,
         updateReviewDto,
@@ -214,7 +221,7 @@ describe('ReviewService', () => {
   describe('remove', () => {
     it('should call prisma transaction method when the review exists', async () => {
       prismaService.review.findUnique.mockResolvedValue(mockReview);
-      prismaService.$transaction.mockResolvedValue(mockReview);
+      prismaService.reviewImg.findMany.mockResolvedValue([]);
       await service.remove(mockReview.userId, mockReview.id);
       expect(prismaService.$transaction).toHaveBeenCalled();
     });
