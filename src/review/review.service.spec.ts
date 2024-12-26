@@ -4,8 +4,8 @@ import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
 import { REVIEW_IMGS_ORDER_BY, REVIEWS_PAGE_SIZE } from '@/constants/review';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { S3Service } from '@/s3/s3.service';
 import { calculateSkip } from '@/utils/page';
 import {
@@ -17,6 +17,7 @@ import {
   fileMock
 } from '@/utils/unit-test';
 
+import { FindReviewsDto } from './dto/find-reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
 
@@ -33,7 +34,8 @@ describe('ReviewService', () => {
         ReviewService,
         { provide: PrismaService, useValue: mockDeep<PrismaService>() },
         { provide: S3Service, useValue: mockDeep<S3Service>() },
-        { provide: ConfigService, useValue: mockDeep<ConfigService>() }
+        { provide: ConfigService, useValue: mockDeep<ConfigService>() },
+        { provide: KakaoLoginService, useValue: mockDeep<KakaoLoginService>() }
       ]
     }).compile();
 
@@ -69,7 +71,7 @@ describe('ReviewService', () => {
           orderBy: 'desc',
           page
         },
-        reviewMock.userId
+        { userId: reviewMock.userId }
       );
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -84,7 +86,7 @@ describe('ReviewService', () => {
         page: 1
       };
       prismaService.review.findMany.mockResolvedValue([reviewIncludeImgsUrlMock]);
-      await service.findSortedAndPaginatedReviews(findReviewsDto, reviewMock.userId);
+      await service.findSortedAndPaginatedReviews(findReviewsDto, { userId: reviewMock.userId });
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: [{ rating: 'desc' }, { id: 'desc' }]
@@ -100,7 +102,7 @@ describe('ReviewService', () => {
           orderBy: 'desc',
           page: 1
         },
-        reviewMock.userId
+        { userId: reviewMock.userId }
       );
       expect(result).toEqual([reviewIncludeImgsUrlMock]);
     });
@@ -121,7 +123,7 @@ describe('ReviewService', () => {
             orderBy,
             page
           },
-          reviewMock.userId
+          { userId: reviewMock.userId }
         );
         expect(prismaService.review.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -151,7 +153,7 @@ describe('ReviewService', () => {
       };
       service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([reviewMockWithImgs]);
       prismaService.review.count.mockResolvedValue(total);
-      const result = await service.findMany(findReviewsDto, reviewMock.userId);
+      const result = await service.findUserReviews(findReviewsDto, reviewMock.userId);
       expect(result).toEqual(reviewsData);
     });
   });

@@ -1,93 +1,39 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { PrismaClient, ReviewImg } from '@prisma/client';
 import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
 import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS, REVIEW_IMGS_ORDER_BY } from '@/constants/review';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
+import { CreateReviewDto } from '@/review/dto/create-review.dto';
 import { S3Service } from '@/s3/s3.service';
 import { calculateSkip, calculateTotalPages } from '@/utils/page';
 import { updateAverageRating } from '@/utils/review';
 
+import { FindReviewsDto } from './dto/find-reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
-import { ReviewIncludeImgs, ReviewsData, ReviewWithImgs } from '@/types/review.type';
+import {
+  CreateReview,
+  ReviewIncludeImgs,
+  ReviewsData,
+  ReviewsWithReviewerData,
+  ReviewWithImgs,
+  ReviewWithReviewer
+} from '@/types/review.type';
 
 @Injectable()
 export class ReviewService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+    private readonly kakaoLoginService: KakaoLoginService
   ) {}
-
-  async findOne(id: number): Promise<ReviewWithImgs> {
-    const review = await this.prismaService.review.findUnique({
-      where: { id },
-      include: {
-        imgs: {
-          select: {
-            url: true
-          }
-        }
-      }
-    });
-
-    if (!review) {
-      throw new NotFoundException('Review not found');
-    }
-
-    return { ...review, imgs: review.imgs.map(({ url }) => url) };
-  }
-
-  async findSortedAndPaginatedReviews(
-    findReviewsDto: FindReviewsDto,
-    userId: string
-  ): Promise<ReviewWithImgs[]> {
-    const reviews = await this.prismaService.review.findMany({
-      where: {
-        userId
-      },
-      take: REVIEWS_PAGE_SIZE,
-      skip: calculateSkip(findReviewsDto.page, REVIEWS_PAGE_SIZE),
-      orderBy:
-        REIVEW_ORDERBY_OPTS[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc'],
-      include: {
-        imgs: {
-          select: {
-            url: true
-          }
-        }
-      }
-    });
-
-    return reviews.map(review => ({ ...review, imgs: review.imgs.map(({ url }) => url) }));
-  }
-
-  async findMany(findReviewsDto: FindReviewsDto, userId: string) {
-    const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, userId);
-    const total = await this.prismaService.review.count({
-      where: {
-        userId
-      }
-    });
-    const totalPages = calculateTotalPages(total, REVIEWS_PAGE_SIZE);
-    const reviewsData: ReviewsData = {
-      reviews,
-      pageSize: REVIEWS_PAGE_SIZE,
-      total,
-      totalPages
-    };
-    return reviewsData;
-  }
-
-  async count(userId: string) {
-    const count = await this.prismaService.review.count({
-      where: {
-        userId
-      }
-    });
-    return { count };
-  }
 
   async createImgs({
     prisma,
@@ -118,6 +64,167 @@ export class ReviewService {
       await Promise.all(imgsData.map(({ filePath }) => this.s3Service.deleteImgFromS3(filePath)));
       throw error;
     }
+  }
+
+  async create({
+    createReviewDto,
+    userId,
+    productId,
+    imgs
+  }: {
+    createReviewDto: CreateReviewDto;
+    userId: string;
+    productId: number;
+    imgs?: Express.Multer.File[];
+  }): Promise<ReviewWithImgs> {
+    const product = await this.prismaService.product.findUnique({
+      where: {
+        id: productId
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const review = await this.prismaService.review.findUnique({
+      where: {
+        productId_userId: {
+          userId,
+          productId
+        }
+      }
+    });
+
+    if (review) {
+      throw new ConflictException('User has already submitted a review for this product');
+    }
+
+    const data: CreateReview = { ...createReviewDto, userId, productId };
+    const result = await this.prismaService.$transaction(async prisma => {
+      const createdReview = await prisma.review.create({ data });
+      const createdImgsUrl: string[] = [];
+
+      if (imgs) {
+        const [imgsUrl] = await Promise.all([
+          this.createImgs({ prisma, imgs, reviewId: createdReview.id }),
+          updateAverageRating(prisma, productId)
+        ]);
+        createdImgsUrl.push(...imgsUrl);
+      } else {
+        await updateAverageRating(prisma, productId);
+      }
+
+      return { ...createdReview, imgs: createdImgsUrl };
+    });
+    return result;
+  }
+
+  async findOne(id: number): Promise<ReviewWithImgs> {
+    const review = await this.prismaService.review.findUnique({
+      where: { id },
+      include: {
+        imgs: {
+          select: {
+            url: true
+          }
+        }
+      }
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    return { ...review, imgs: review.imgs.map(({ url }) => url) };
+  }
+
+  async findSortedAndPaginatedReviews(
+    findReviewsDto: FindReviewsDto,
+    where: { userId?: string; productId?: number }
+  ): Promise<ReviewWithImgs[]> {
+    const reviews = await this.prismaService.review.findMany({
+      where,
+      take: REVIEWS_PAGE_SIZE,
+      skip: calculateSkip(findReviewsDto.page, REVIEWS_PAGE_SIZE),
+      orderBy:
+        REIVEW_ORDERBY_OPTS[findReviewsDto.sortBy || 'rating'][findReviewsDto.orderBy || 'desc'],
+      include: {
+        imgs: {
+          select: {
+            url: true
+          }
+        }
+      }
+    });
+
+    return reviews.map(review => ({ ...review, imgs: review.imgs.map(({ url }) => url) }));
+  }
+
+  async findUserReviews(findReviewsDto: FindReviewsDto, userId: string) {
+    const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, { userId });
+    const total = await this.prismaService.review.count({
+      where: {
+        userId
+      }
+    });
+    const totalPages = calculateTotalPages(total, REVIEWS_PAGE_SIZE);
+    const reviewsData: ReviewsData = {
+      reviews,
+      pageSize: REVIEWS_PAGE_SIZE,
+      total,
+      totalPages
+    };
+    return reviewsData;
+  }
+
+  async findProductReviews(findReviewsDto: FindReviewsDto, productId: number) {
+    const product = await this.prismaService.product.findUnique({
+      where: {
+        id: productId
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const reviews = await this.findSortedAndPaginatedReviews(findReviewsDto, { productId });
+    const reviewsWithreviewer: ReviewWithReviewer[] = reviews.map(review => ({
+      ...review,
+      reviewer: null
+    }));
+    const ids = reviews.filter(({ userId }) => userId !== null).map(({ userId }) => Number(userId));
+
+    if (ids.length) {
+      const users = await this.kakaoLoginService.findUsers(ids);
+      users.forEach(user => {
+        reviewsWithreviewer.find(({ userId }) => userId === user.id).reviewer = user;
+      });
+    }
+
+    const total = await this.prismaService.review.count({
+      where: {
+        productId
+      }
+    });
+    const totalPages = calculateTotalPages(total, REVIEWS_PAGE_SIZE);
+    const reviewsData: ReviewsWithReviewerData = {
+      reviews: reviewsWithreviewer,
+      pageSize: REVIEWS_PAGE_SIZE,
+      total,
+      totalPages
+    };
+    return reviewsData;
+  }
+
+  async count(userId: string) {
+    const count = await this.prismaService.review.count({
+      where: {
+        userId
+      }
+    });
+    return { count };
   }
 
   static async updateImgsOrder({

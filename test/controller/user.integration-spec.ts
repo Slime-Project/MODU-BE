@@ -19,7 +19,7 @@ describe('UserController (integration)', () => {
 
   describe('/api/user (GET)', () => {
     it('200', async () => {
-      const id = '13';
+      const id = '4';
       const { accessTokenCookie, refreshTokenCookie, kakaoUser } = await createUser(app, id);
 
       KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
@@ -39,7 +39,7 @@ describe('UserController (integration)', () => {
 
   describe('/api/user (DELETE)', () => {
     it('204', async () => {
-      const id = '14';
+      const id = '9';
       const { accessTokenCookie, refreshTokenCookie } = await createUser(app, id);
 
       KakaoLoginService.unlink = jest.fn();
