@@ -9,14 +9,19 @@ import {
   Patch,
   Query,
   Req,
-  UseGuards
+  UnsupportedMediaTypeException,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
+import { reviewImgInterceptor } from '@/interceptor/review.interceptor';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/review/dto/review-count.dto';
+import { isValidFileContent } from '@/utils/file';
 
 import { ReviewDto } from './dto/review.dto';
 import { ReviewsDto } from './dto/reviews.dto';
@@ -114,17 +119,37 @@ export class ReviewController {
     status: 404,
     description: 'Not Found - Review not found'
   })
+  @ApiResponse({
+    status: 413,
+    description: 'Payload Too Large - File too large'
+  })
+  @ApiResponse({
+    status: 415,
+    description: 'Unsupported Media Type - Only JPEG or PNG files are allowed'
+  })
+  @ApiConsumes('multipart/form-data')
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(reviewImgInterceptor)
   @Patch(':id')
   async update(
     @Req() req: TokenGuardReq,
     @Body() updateReviewDto: UpdateReviewDto,
-    @Param('id', ParseIntPipe) reviewId: number
+    @Param('id', ParseIntPipe) reviewId: number,
+    @UploadedFiles() imgs?: Express.Multer.File[]
   ) {
+    if (imgs) {
+      imgs.forEach(img => {
+        if (!isValidFileContent(img)) {
+          throw new UnsupportedMediaTypeException('Only JPEG or PNG files are allowed');
+        }
+      });
+    }
+
     const review = await this.service.update({
       userId: req.id,
-      id: reviewId,
-      updateReviewDto
+      reviewId,
+      updateReviewDto,
+      newImgs: imgs
     });
     return plainToInstance(ReviewDto, review);
   }

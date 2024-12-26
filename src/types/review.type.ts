@@ -1,4 +1,4 @@
-import { Prisma, Review } from '@prisma/client';
+import { Prisma, Review, ReviewImg } from '@prisma/client';
 
 import { ItemsData } from '@/types/common.type';
 import { UserInfo } from '@/types/user.type';
@@ -15,6 +15,9 @@ type OrderByOpts = {
   rating: Record<OrderBy, OrderByOpt[]>;
 };
 
+type ReviewIncludeImgs = Review & {
+  imgs: ReviewImg[];
+};
 type ReviewIncludeImgsUrl = Review & {
   imgs: { url: string }[];
 };
@@ -40,5 +43,6 @@ export {
   ReviewsWithReviewerData,
   ReviewWithImgs,
   ReviewsData,
+  ReviewIncludeImgs,
   ReviewIncludeImgsUrl
 };

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -12,14 +11,12 @@ import {
   UseGuards,
   UseInterceptors
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { ReviewDto } from '../../review/dto/review.dto';
 import { AccessTokenGuard } from '@/auth/guard/access-token.guard';
-import { REVIEW_ALLOWED_EXT, REVIEW_IMG_SIZE_LIMIT } from '@/constants/review';
-import { checkFileExt } from '@/utils/file';
+import { reviewImgInterceptor } from '@/interceptor/review.interceptor';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
@@ -54,25 +51,7 @@ export class ProductReviewController {
     description: 'Conflict - User has already submitted a review for this product'
   })
   @UseGuards(AccessTokenGuard)
-  @UseInterceptors(
-    FilesInterceptor('imgs', 9, {
-      limits: {
-        fileSize: REVIEW_IMG_SIZE_LIMIT
-      },
-      fileFilter: (_, file: Express.Multer.File, callback) => {
-        if (checkFileExt(file, REVIEW_ALLOWED_EXT)) {
-          callback(null, true);
-        } else {
-          callback(
-            new BadRequestException(
-              'Only image files with jpg, jpeg, png, or gif extensions are allowed'
-            ),
-            false
-          );
-        }
-      }
-    })
-  )
+  @UseInterceptors(reviewImgInterceptor)
   @Post('')
   async create(
     @Req() { id }: TokenGuardReq,

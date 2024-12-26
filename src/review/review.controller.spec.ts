@@ -1,3 +1,4 @@
+import { UnsupportedMediaTypeException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -7,7 +8,7 @@ import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { ReviewCountDto } from '@/review/dto/review-count.dto';
-import { mockReview, mockReviewWithImgs } from '@/utils/unit-test';
+import { fileMock, reviewMock, reviewMockWithImgs } from '@/utils/unit-test';
 
 import { ReviewDto } from './dto/review.dto';
 import { ReviewsDto } from './dto/reviews.dto';
@@ -21,6 +22,7 @@ import { OrderBy, ReviewsData, SortBy } from '@/types/review.type';
 describe('ReviewController', () => {
   let controller: ReviewController;
   let service: DeepMockProxy<ReviewService>;
+  const isValidFileContent = mockDeep<typeof isValidFileContent>();
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -43,8 +45,8 @@ describe('ReviewController', () => {
 
   describe('findOne', () => {
     it('should return an instance of ReviewDto', async () => {
-      service.findOne.mockResolvedValue(mockReviewWithImgs);
-      const result = await controller.findOne(mockReview.id);
+      service.findOne.mockResolvedValue(reviewMockWithImgs);
+      const result = await controller.findOne(reviewMock.id);
       expect(result).toBeInstanceOf(ReviewDto);
     });
   });
@@ -52,13 +54,13 @@ describe('ReviewController', () => {
   describe('findMany', () => {
     it('should return an instance of ReviewsDto', async () => {
       const req = {
-        id: mockReview.userId
+        id: reviewMock.userId
       } as TokenGuardReq;
       const sortBy: SortBy = 'createdAt';
       const orderBy: OrderBy = 'desc';
       const page = 1;
       const reviewsData: ReviewsData = {
-        reviews: [mockReviewWithImgs],
+        reviews: [reviewMockWithImgs],
         pageSize: REVIEWS_PAGE_SIZE,
         total: 1,
         totalPages: 1
@@ -84,24 +86,39 @@ describe('ReviewController', () => {
   describe('update', () => {
     it('should return an instance of ReviewDto', async () => {
       const req = {
-        id: mockReview.userId
+        id: reviewMock.userId
       } as TokenGuardReq;
       const updateReviewDto: UpdateReviewDto = {
-        text: mockReview.text,
-        rating: mockReview.rating
+        text: reviewMock.text,
+        rating: reviewMock.rating
       };
-      service.update.mockResolvedValue(mockReviewWithImgs);
-      const result = await controller.update(req, updateReviewDto, mockReview.id);
+      service.update.mockResolvedValue(reviewMockWithImgs);
+      const result = await controller.update(req, updateReviewDto, reviewMock.id);
       expect(result).toBeInstanceOf(ReviewDto);
+    });
+
+    it('should UnsupportedMediaTypeException when file content is not valid', async () => {
+      const req = {
+        id: reviewMock.userId
+      } as TokenGuardReq;
+      const updateReviewDto: UpdateReviewDto = {
+        text: reviewMock.text,
+        rating: reviewMock.rating
+      };
+      service.update.mockResolvedValue(reviewMockWithImgs);
+      isValidFileContent.mockReturnValue(false);
+      return expect(
+        controller.update(req, updateReviewDto, reviewMock.id, [fileMock])
+      ).rejects.toThrow(UnsupportedMediaTypeException);
     });
   });
 
   describe('remove', () => {
     it('should call remove method of reviewService', async () => {
       const req = {
-        id: mockReview.userId
+        id: reviewMock.userId
       } as TokenGuardReq;
-      await controller.remove(req, mockReview.id);
+      await controller.remove(req, reviewMock.id);
       expect(service.remove).toHaveBeenCalled();
     });
   });

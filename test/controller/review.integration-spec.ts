@@ -162,6 +162,51 @@ describe('ProductReviewController (integration)', () => {
         .set('Cookie', [accessTokenCookie])
         .expect(404);
     });
+
+    it('413', async () => {
+      const patchReviewDto: UpdateReviewDto = {
+        text: 'new-text',
+        rating: 5
+      };
+
+      await request(app.getHttpServer())
+        .patch('/api/reviews/0')
+        .field('text', patchReviewDto.text)
+        .field('rating', patchReviewDto.rating)
+        .attach('imgs', 'test/large.jpeg')
+        .set('Cookie', [accessTokenCookie])
+        .expect(413);
+    });
+
+    it('415 - fake PNG file', async () => {
+      const patchReviewDto: UpdateReviewDto = {
+        text: 'new-text',
+        rating: 5
+      };
+
+      await request(app.getHttpServer())
+        .patch('/api/reviews/0')
+        .field('text', patchReviewDto.text)
+        .field('rating', patchReviewDto.rating)
+        .attach('imgs', 'test/fake-png.png')
+        .set('Cookie', [accessTokenCookie])
+        .expect(415);
+    });
+
+    it('415', async () => {
+      const patchReviewDto: UpdateReviewDto = {
+        text: 'new-text',
+        rating: 5
+      };
+
+      await request(app.getHttpServer())
+        .patch('/api/reviews/0')
+        .field('text', patchReviewDto.text)
+        .field('rating', patchReviewDto.rating)
+        .attach('imgs', 'test/unsupported.pdf')
+        .set('Cookie', [accessTokenCookie])
+        .expect(415);
+    });
   });
 
   describe('/api/reviews/:id (DELETE)', () => {

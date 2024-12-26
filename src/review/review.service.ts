@@ -1,6 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaClient, ReviewImg } from '@prisma/client';
+import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
-import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
+import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS, REVIEW_IMGS_ORDER_BY } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FindReviewsDto } from '@/product/review/dto/find-reviews.dto';
 import { S3Service } from '@/s3/s3.service';
@@ -9,7 +11,7 @@ import { updateAverageRating } from '@/utils/review';
 
 import { UpdateReviewDto } from './dto/update-review.dto';
 
-import { ReviewsData, ReviewWithImgs } from '@/types/review.type';
+import { ReviewIncludeImgs, ReviewsData, ReviewWithImgs } from '@/types/review.type';
 
 @Injectable()
 export class ReviewService {
@@ -87,17 +89,148 @@ export class ReviewService {
     return { count };
   }
 
+  async createImgs({
+    prisma,
+    imgs,
+    reviewId,
+    startOrder = 1
+  }: {
+    prisma: Omit<PrismaClient, ITXClientDenyList>;
+    imgs: Express.Multer.File[];
+    reviewId: number;
+    startOrder?: number;
+  }) {
+    const imgsData = await Promise.all(
+      imgs.map(async (img, i) => {
+        const ext = img.mimetype.match(/^image\/(.+)$/)[1];
+        const filePath = `review/${reviewId}/${i + startOrder}.${ext}`;
+        const url = await this.s3Service.uploadImgToS3(filePath, img, ext);
+        return { filePath, url };
+      })
+    );
+
+    try {
+      await prisma.reviewImg.createMany({
+        data: imgsData.map((imgData, i) => ({ reviewId, ...imgData, order: i + startOrder }))
+      });
+      return imgsData.map(({ url }) => url);
+    } catch (error) {
+      await Promise.all(imgsData.map(({ filePath }) => this.s3Service.deleteImgFromS3(filePath)));
+      throw error;
+    }
+  }
+
+  static async updateImgsOrder({
+    prisma,
+    reviewImgs,
+    reorderedImgsUrl
+  }: {
+    prisma: Omit<PrismaClient, ITXClientDenyList>;
+    reviewImgs: ReviewImg[];
+    reorderedImgsUrl: string[];
+  }) {
+    const orderChangedImgs: { id: number; order: number }[] = [];
+    reviewImgs.forEach(({ id, url, order }) => {
+      const i = reorderedImgsUrl.findIndex(reorderedImgUrl => reorderedImgUrl === url);
+      const updatedOrder = i + 1;
+
+      if (i !== -1 && order !== updatedOrder) {
+        orderChangedImgs.push({ id, order: updatedOrder });
+      }
+    });
+    await Promise.all(
+      orderChangedImgs.map(({ id, order }) =>
+        prisma.reviewImg.update({
+          where: { id },
+          data: { order }
+        })
+      )
+    );
+  }
+
+  static async deleteReviewImgs(
+    prisma: Omit<PrismaClient, ITXClientDenyList>,
+    reviewImgsId: number[]
+  ) {
+    await prisma.reviewImg.deleteMany({
+      where: {
+        id: {
+          in: reviewImgsId
+        }
+      }
+    });
+  }
+
+  static async deleteAllReviewImgs(
+    prisma: Omit<PrismaClient, ITXClientDenyList>,
+    reviewId: number
+  ) {
+    await prisma.reviewImg.deleteMany({
+      where: {
+        reviewId
+      }
+    });
+  }
+
+  async updateImgs({
+    prisma,
+    review,
+    imgs,
+    newImgs
+  }: {
+    prisma: Omit<PrismaClient, ITXClientDenyList>;
+    review: ReviewIncludeImgs;
+    imgs?: string[];
+    newImgs?: Express.Multer.File[];
+  }) {
+    const updatedImgsUrl: string[] = [];
+    let imgDeletionPromise: Promise<void | void[]>;
+
+    if (imgs === undefined) {
+      imgDeletionPromise = ReviewService.deleteAllReviewImgs(prisma, review.id);
+    } else {
+      updatedImgsUrl.push(...imgs);
+      imgDeletionPromise = Promise.all([
+        ReviewService.deleteReviewImgs(
+          prisma,
+          review.imgs.filter(({ url }) => !imgs.includes(url)).map(({ id }) => id)
+        ),
+        ReviewService.updateImgsOrder({ prisma, reviewImgs: review.imgs, reorderedImgsUrl: imgs })
+      ]);
+    }
+
+    if (newImgs) {
+      const newImgsUrl = await this.createImgs({
+        prisma,
+        imgs: newImgs,
+        reviewId: review.id,
+        startOrder: (imgs?.length || 0) + 1
+      });
+      updatedImgsUrl.push(...newImgsUrl);
+    }
+
+    await imgDeletionPromise;
+    return updatedImgsUrl;
+  }
+
   async update({
     userId,
-    id,
-    updateReviewDto
+    reviewId,
+    updateReviewDto,
+    newImgs
   }: {
     userId: string;
-    id: number;
+    reviewId: number;
     updateReviewDto: UpdateReviewDto;
+    newImgs?: Express.Multer.File[];
   }): Promise<ReviewWithImgs> {
     const review = await this.prismaService.review.findUnique({
-      where: { id }
+      where: { id: reviewId },
+      include: {
+        imgs: {
+          orderBy: REVIEW_IMGS_ORDER_BY
+        }
+      }
     });
 
     if (!review) {
@@ -108,43 +241,36 @@ export class ReviewService {
       throw new ForbiddenException('You are not authorized to delete this review');
     }
 
-    let result;
-
-    if (updateReviewDto.rating !== review.rating) {
-      result = await this.prismaService.$transaction(async prisma => {
-        const updatedReview = await prisma.review.update({
-          where: {
-            id
-          },
-          data: updateReviewDto,
-          include: {
-            imgs: {
-              select: {
-                url: true
-              }
-            }
-          }
-        });
-        await updateAverageRating(prisma, review.productId);
-        return updatedReview;
-      });
-    } else {
-      result = await this.prismaService.review.update({
+    const result = await this.prismaService.$transaction(async prisma => {
+      const reviewUpdatePromise = prisma.review.update({
         where: {
-          id
+          id: reviewId
         },
-        data: updateReviewDto,
-        include: {
-          imgs: {
-            select: {
-              url: true
-            }
-          }
-        }
+        data: { rating: updateReviewDto.rating, text: updateReviewDto.text }
       });
-    }
+      const imgsUpdatePromise = this.updateImgs({
+        review,
+        imgs: updateReviewDto.imgs,
+        newImgs,
+        prisma
+      });
+      const updatedReview = await reviewUpdatePromise;
 
-    return { ...result, imgs: result.imgs.map(({ url }) => url) };
+      if (updateReviewDto.rating !== review.rating) {
+        // Must run after the review update is completed
+        await updateAverageRating(prisma, review.productId);
+      }
+
+      const updatedImgsUrl = await imgsUpdatePromise;
+      return { ...updatedReview, imgs: updatedImgsUrl };
+    });
+
+    await Promise.all(
+      review.imgs
+        .filter(({ url }) => !result.imgs.includes(url))
+        .map(({ filePath }) => this.s3Service.deleteImgFromS3(filePath))
+    );
+    return result;
   }
 
   async remove(userId: string, id: number) {

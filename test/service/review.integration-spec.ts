@@ -43,8 +43,8 @@ describe('ReviewService (integration)', () => {
     ]);
   });
 
-  describe('should update product averageRating', () => {
-    it('update', async () => {
+  describe('update', () => {
+    it('should update product averageRating', async () => {
       const review = await createReview(prismaService, {
         userId,
         productId: product.id,
@@ -54,7 +54,7 @@ describe('ReviewService (integration)', () => {
       const updateReviewDto: UpdateReviewDto = {
         rating: 2
       };
-      await service.update({ userId, id: review.id, updateReviewDto });
+      await service.update({ userId, reviewId: review.id, updateReviewDto });
       const updatedProduct = await prismaService.product.findUnique({
         where: { id: product.id }
       });

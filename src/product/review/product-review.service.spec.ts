@@ -11,9 +11,9 @@ import { S3Service } from '@/s3/s3.service';
 import { calculateSkip } from '@/utils/page';
 import {
   mockProduct,
-  mockReview,
-  mockReviewIncludeImgsUrl,
-  mockReviewWithImgs,
+  reviewMock,
+  reviewIncludeImgsUrlMock,
+  reviewMockWithImgs,
   mockUser
 } from '@/utils/unit-test';
 
@@ -50,17 +50,17 @@ describe('ProductReviewService', () => {
 
   describe('create', () => {
     it('should return a review', async () => {
-      const createReviewDto: CreateReviewDto = { text: mockReview.text, rating: mockReview.rating };
+      const createReviewDto: CreateReviewDto = { text: reviewMock.text, rating: reviewMock.rating };
       prismaService.product.findUnique.mockResolvedValue(mockProduct);
       prismaService.review.findUnique.mockResolvedValue(null);
-      prismaService.$transaction.mockResolvedValue(mockReviewIncludeImgsUrl);
+      prismaService.$transaction.mockResolvedValue(reviewIncludeImgsUrlMock);
       const result = await service.create({
         createReviewDto,
-        userId: mockReview.userId,
-        productId: mockReview.productId,
+        userId: reviewMock.userId,
+        productId: reviewMock.productId,
         imgs: []
       });
-      expect(result).toEqual(mockReviewWithImgs);
+      expect(result).toEqual(reviewMockWithImgs);
     });
 
     it('should throw NotFoundException when product is not found', async () => {
@@ -72,14 +72,14 @@ describe('ProductReviewService', () => {
     });
 
     it('should throw ConflictException when user has already submitted a review for this product', async () => {
-      const createReviewDto: CreateReviewDto = { text: mockReview.text, rating: mockReview.rating };
+      const createReviewDto: CreateReviewDto = { text: reviewMock.text, rating: reviewMock.rating };
       prismaService.product.findUnique.mockResolvedValue(mockProduct);
-      prismaService.review.findUnique.mockResolvedValue(mockReviewIncludeImgsUrl);
+      prismaService.review.findUnique.mockResolvedValue(reviewIncludeImgsUrlMock);
       return expect(
         service.create({
           createReviewDto,
-          userId: mockReview.userId,
-          productId: mockReview.productId,
+          userId: reviewMock.userId,
+          productId: reviewMock.productId,
           imgs: []
         })
       ).rejects.toThrow(ConflictException);
@@ -89,14 +89,14 @@ describe('ProductReviewService', () => {
   describe('findSortedAndPaginatedReviews', () => {
     it('should pass correct take and skip values to prismaService', async () => {
       const page = 1;
-      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
+      prismaService.review.findMany.mockResolvedValue([reviewIncludeImgsUrlMock]);
       await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
           orderBy: 'desc',
           page
         },
-        mockReview.productId
+        reviewMock.productId
       );
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -110,8 +110,8 @@ describe('ProductReviewService', () => {
       const findReviewsDto: FindReviewsDto = {
         page: 1
       };
-      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
-      await service.findSortedAndPaginatedReviews(findReviewsDto, mockReview.productId);
+      prismaService.review.findMany.mockResolvedValue([reviewIncludeImgsUrlMock]);
+      await service.findSortedAndPaginatedReviews(findReviewsDto, reviewMock.productId);
       expect(prismaService.review.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: [{ rating: 'desc' }, { id: 'desc' }]
@@ -120,16 +120,16 @@ describe('ProductReviewService', () => {
     });
 
     it('should return reviews', async () => {
-      prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
+      prismaService.review.findMany.mockResolvedValue([reviewIncludeImgsUrlMock]);
       const result = await service.findSortedAndPaginatedReviews(
         {
           sortBy: 'createdAt',
           orderBy: 'desc',
           page: 1
         },
-        mockReview.productId
+        reviewMock.productId
       );
-      expect(result).toEqual([mockReviewWithImgs]);
+      expect(result).toEqual([reviewMockWithImgs]);
     });
 
     it.each([
@@ -141,14 +141,14 @@ describe('ProductReviewService', () => {
       'should pass correct orderBy options for %s %s',
       async (sortBy: SortBy, orderBy: OrderBy) => {
         const page = 1;
-        prismaService.review.findMany.mockResolvedValue([mockReviewIncludeImgsUrl]);
+        prismaService.review.findMany.mockResolvedValue([reviewIncludeImgsUrlMock]);
         await service.findSortedAndPaginatedReviews(
           {
             sortBy,
             orderBy,
             page
           },
-          mockReview.productId
+          reviewMock.productId
         );
         expect(prismaService.review.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -170,10 +170,10 @@ describe('ProductReviewService', () => {
         orderBy: 'desc'
       };
       const total = 1;
-      const mockReviewsWithReviewerData: ReviewsWithReviewerData = {
+      const reviewMocksWithReviewerData: ReviewsWithReviewerData = {
         reviews: [
           {
-            ...mockReviewWithImgs,
+            ...reviewMockWithImgs,
             reviewer: mockUser
           }
         ],
@@ -182,13 +182,13 @@ describe('ProductReviewService', () => {
         totalPages: 1
       };
       prismaService.product.findUnique.mockResolvedValue({
-        id: mockReview.productId
+        id: reviewMock.productId
       } as Product);
-      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([mockReviewWithImgs]);
+      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([reviewMockWithImgs]);
       kakaoLoginService.findUsers.mockResolvedValue([mockUser]);
       prismaService.review.count.mockResolvedValue(total);
-      const result = await service.findMany(findReviewsDto, mockReview.productId);
-      expect(result).toEqual(mockReviewsWithReviewerData);
+      const result = await service.findMany(findReviewsDto, reviewMock.productId);
+      expect(result).toEqual(reviewMocksWithReviewerData);
     });
 
     it('should throw NotFoundException when product is not found', async () => {
