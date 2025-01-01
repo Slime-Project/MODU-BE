@@ -1,4 +1,4 @@
-import { Auth, Product, Review, ReviewImg, WishlistItem } from '@prisma/client';
+import { Auth, Product, Review, ReviewImg, UserRole, WishlistItem } from '@prisma/client';
 
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
@@ -8,6 +8,7 @@ import { UserInfo } from '@/types/user.type';
 
 const mockUser: UserInfo = {
   id: '1',
+  role: UserRole.USER,
   nickname: 'nickname',
   profileImg: 'url'
 };

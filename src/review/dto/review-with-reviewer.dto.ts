@@ -1,18 +1,19 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { ValidateIf, ValidateNested } from 'class-validator';
 
-import { ReviewDto } from '@/review/dto/review.dto';
-import { UserDto } from '@/user/dto/user.dto';
+import { ProfileDto } from '@/user/dto/profile.dto';
 
-export class ReviewWithReviewerDto extends OmitType(ReviewDto, ['userId']) {
+import { ReviewDto } from './review.dto';
+
+export class ReviewWithReviewerDto extends ReviewDto {
   @ApiProperty({
-    type: UserDto,
+    type: ProfileDto,
     nullable: true
   })
   @Expose()
-  @Type(() => UserDto)
+  @Type(() => ProfileDto)
   @ValidateIf(o => o.reviewer !== null)
   @ValidateNested()
-  reviewer: UserDto | null;
+  reviewer: ProfileDto | null;
 }

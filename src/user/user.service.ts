@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -62,6 +63,7 @@ export class UserService {
     const kakaoUserInfo = await KakaoLoginService.getUserInfo(auth.kakaoAccessToken);
     const userInfo: UserInfo = {
       id,
+      role: UserRole.USER,
       nickname: kakaoUserInfo.nickname,
       profileImg: kakaoUserInfo.profileImg
     };

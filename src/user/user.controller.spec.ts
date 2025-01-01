@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserRole } from '@prisma/client';
 import { Response } from 'express';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
@@ -46,6 +47,7 @@ describe('UserController', () => {
       };
       const userInfo: UserInfo = {
         id: req.id,
+        role: UserRole.USER,
         nickname: 'nickname',
         profileImg: 'url'
       };
