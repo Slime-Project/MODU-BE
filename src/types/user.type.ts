@@ -1,8 +1,10 @@
 import { User } from '@prisma/client';
 
-type UserInfo = Omit<User, 'role'> & {
+type Profile = {
   nickname: string;
   profileImg: string;
 };
 
-export { UserInfo };
+type UserInfo = User & Profile;
+
+export { Profile, UserInfo };

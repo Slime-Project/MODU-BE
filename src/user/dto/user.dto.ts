@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
 import { Expose } from 'class-transformer';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
-export class UserDto {
+import { ProfileDto } from '@/user/dto/profile.dto';
+
+export class UserDto extends ProfileDto {
   @ApiProperty({
     description: 'User ID',
     example: '1234567890'
@@ -12,19 +15,9 @@ export class UserDto {
   @Expose()
   readonly id: string;
 
-  @ApiProperty({
-    description: 'profile image url'
-  })
-  @IsString()
+  @ApiProperty({ enum: UserRole })
+  @IsEnum(UserRole)
   @IsNotEmpty()
   @Expose()
-  readonly profileImg: string;
-
-  @ApiProperty({
-    example: 'apple'
-  })
-  @IsString()
-  @IsNotEmpty()
-  @Expose()
-  readonly nickname: string;
+  readonly role: UserRole;
 }

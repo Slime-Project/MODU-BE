@@ -38,6 +38,7 @@ describe('UserService', () => {
       };
       const userInfo: UserInfo = {
         id: mockAuth.userId,
+        role: UserRole.USER,
         nickname: kakaoUser.nickname,
         profileImg: kakaoUser.profileImg
       };

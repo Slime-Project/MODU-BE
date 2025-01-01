@@ -1,7 +1,7 @@
 import { Prisma, Review, ReviewImg } from '@prisma/client';
 
 import { ItemsData } from '@/types/common.type';
-import { UserInfo } from '@/types/user.type';
+import { Profile } from '@/types/user.type';
 
 type CreateReview = Pick<Review, Exclude<keyof Review, 'id' | 'createdAt'>>;
 
@@ -25,7 +25,7 @@ type ReviewWithImgs = Review & {
   imgs: string[];
 };
 type ReviewWithReviewer = ReviewWithImgs & {
-  reviewer: UserInfo | null;
+  reviewer: Profile | null;
 };
 type ReviewsWithReviewerData = ItemsData & {
   reviews: ReviewWithReviewer[];

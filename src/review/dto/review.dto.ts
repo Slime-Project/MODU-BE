@@ -7,7 +7,6 @@ import {
   IsInt,
   Min,
   Max,
-  ValidateIf,
   IsArray,
   ArrayMaxSize
 } from 'class-validator';
@@ -27,13 +26,6 @@ export class ReviewDto {
   @IsNotEmpty()
   @Expose()
   productId: number;
-
-  @ApiProperty()
-  @ValidateIf(o => o.userId !== null)
-  @IsString()
-  @IsNotEmpty()
-  @Expose()
-  userId: string | null;
 
   @ApiProperty({
     description: 'The rating score for the product, typically between 1 and 5',
