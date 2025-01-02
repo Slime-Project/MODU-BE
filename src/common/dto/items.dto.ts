@@ -1,15 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsIn, IsNotEmpty, IsNumber } from 'class-validator';
-
-import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
+import { IsInt, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class ItemsDto {
   @ApiProperty({ example: 10 })
-  @IsIn([PRODUCTS_PAGE_SIZE])
   @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   @Expose()
-  readonly pageSize: typeof PRODUCTS_PAGE_SIZE;
+  readonly pageSize: number;
 
   @ApiProperty()
   @IsNumber()

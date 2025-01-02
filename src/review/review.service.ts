@@ -7,7 +7,8 @@ import {
 import { PrismaClient, ReviewImg } from '@prisma/client';
 import { ITXClientDenyList } from '@prisma/client/runtime/library';
 
-import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS, REVIEW_IMGS_ORDER_BY } from '@/constants/review';
+import { REVIEWS_PAGE_SIZE, REIVEW_ORDERBY_OPTS } from '@/constants/review';
+import { REVIEW_IMGS_ORDER_BY } from '@/constants/review-img';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateReviewDto } from '@/review/dto/create-review.dto';
@@ -198,8 +199,8 @@ export class ReviewService {
 
     if (ids.length) {
       const users = await this.kakaoLoginService.findUsers(ids);
-      users.forEach(user => {
-        reviewsWithreviewer.find(({ userId }) => userId === user.id).reviewer = user;
+      users.forEach(({ id, ...profile }) => {
+        reviewsWithreviewer.find(({ userId }) => userId === id).reviewer = profile;
       });
     }
 

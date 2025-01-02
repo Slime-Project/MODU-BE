@@ -109,7 +109,7 @@ const createReview = async (
     productId,
     rating,
     createdAt
-  }: { userId: string; productId: number; rating?: number; createdAt?: Date }
+  }: { userId?: string; productId: number; rating?: number; createdAt?: Date }
 ) => {
   return prismaService.review.create({
     data: { userId, productId, text: '', rating: rating || 1, createdAt }

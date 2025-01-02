@@ -11,18 +11,16 @@ const REIVEW_ORDERBY_OPTS: OrderByOpts = {
     asc: [{ rating: 'asc' }, { id: 'desc' }]
   }
 };
+const REVIEW_ORDER_BY_DEFAULT = REIVEW_ORDERBY_OPTS.rating.desc;
 
 const REVIEWS_PAGE_SIZE = 10;
 const REVIEW_IMG_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
 const REVIEW_ALLOWED_MIME_TYPE: MimeType[] = ['image/jpeg', 'image/png'];
-const REVIEW_IMGS_ORDER_BY: { order: 'asc' } = {
-  order: 'asc'
-};
 
 export {
   REIVEW_ORDERBY_OPTS,
+  REVIEW_ORDER_BY_DEFAULT,
   REVIEWS_PAGE_SIZE,
   REVIEW_IMG_SIZE_LIMIT,
-  REVIEW_ALLOWED_MIME_TYPE,
-  REVIEW_IMGS_ORDER_BY
+  REVIEW_ALLOWED_MIME_TYPE
 };
