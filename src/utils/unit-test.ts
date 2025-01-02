@@ -2,16 +2,39 @@ import { Auth, Product, Review, ReviewImg, UserRole, WishlistItem } from '@prism
 
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
+import { REVIEW_IMGS_PAGE_SIZE } from '@/constants/review-img';
+import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 
-import { ReviewIncludeImgs, ReviewIncludeImgsUrl, ReviewWithImgs } from '@/types/review.type';
-import { UserInfo } from '@/types/user.type';
+import {
+  ReviewImgsData,
+  ReviewImgWithReview,
+  ReviewImgWithReviewAndReviewer
+} from '@/types/review-img.type';
+import {
+  ReviewIncludeImgs,
+  ReviewIncludeImgsUrl,
+  ReviewWithImgs,
+  ReviewWithReviewer
+} from '@/types/review.type';
+import { Profile, UserInfo } from '@/types/user.type';
 
-const mockUser: UserInfo = {
-  id: '1',
-  role: UserRole.USER,
+const profileMock: Profile = {
   nickname: 'nickname',
   profileImg: 'url'
 };
+
+const kakaoUserInfoDtoMock: KaKaoUserInfoDto = {
+  id: '1',
+  nickname: 'nickname',
+  profileImg: 'url'
+};
+
+const mockUser: UserInfo = {
+  id: kakaoUserInfoDtoMock.id,
+  role: UserRole.USER,
+  ...profileMock
+};
+
 const mockAuth: Auth = {
   id: 1,
   userId: mockUser.id,
@@ -20,6 +43,7 @@ const mockAuth: Auth = {
   kakaoRefreshToken: 'kakaoRefreshToken',
   refreshTokenExp: AuthService.getExpDate(604800000)
 };
+
 const mockProduct: Product = {
   id: 1,
   naverProductId: '1',
@@ -33,6 +57,7 @@ const mockProduct: Product = {
   createdAt: new Date(),
   averageRating: 0
 };
+
 const reviewMock: Review = {
   id: 1,
   userId: mockUser.id,
@@ -41,9 +66,20 @@ const reviewMock: Review = {
   rating: 2,
   createdAt: new Date()
 };
+
 const reviewIncludeImgsUrlMock: ReviewIncludeImgsUrl = {
   ...reviewMock,
   imgs: []
+};
+
+const reviewMockWithImgs: ReviewWithImgs = {
+  ...reviewMock,
+  imgs: []
+};
+
+const reviewWithReviewerMock: ReviewWithReviewer = {
+  ...reviewMockWithImgs,
+  reviewer: profileMock
 };
 
 const reviewImgMock: ReviewImg = {
@@ -53,6 +89,27 @@ const reviewImgMock: ReviewImg = {
   order: 1,
   reviewId: 1
 };
+
+const reviewImgWithReviewMock: ReviewImgWithReview = {
+  ...reviewImgMock,
+  review: reviewMock
+};
+
+const reviewImgWithReviewAndReviewerMock: ReviewImgWithReviewAndReviewer = {
+  ...reviewImgMock,
+  review: {
+    ...reviewMock,
+    reviewer: profileMock
+  }
+};
+
+const reviewImgsDataMock: ReviewImgsData = {
+  reviewImgs: [reviewImgWithReviewAndReviewerMock],
+  pageSize: REVIEW_IMGS_PAGE_SIZE,
+  total: 1,
+  totalPages: 1
+};
+
 const reviewImgsMock: ReviewImg[] = [
   reviewImgMock,
   {
@@ -70,11 +127,6 @@ const reviewImgsMock: ReviewImg[] = [
     reviewId: 1
   }
 ];
-
-const reviewMockWithImgs: ReviewWithImgs = {
-  ...reviewMock,
-  imgs: []
-};
 
 const reviewIncludeImgsMock: ReviewIncludeImgs = { ...reviewMock, imgs: [reviewImgMock] };
 
@@ -138,9 +190,14 @@ export {
   reviewMock,
   reviewMockWithImgs,
   reviewIncludeImgsMock,
+  reviewWithReviewerMock,
   reviewIncludeImgsUrlMock,
   reviewImgMock,
   reviewImgsMock,
+  reviewImgWithReviewMock,
+  reviewImgWithReviewAndReviewerMock,
+  reviewImgsDataMock,
   mockUser,
+  kakaoUserInfoDtoMock,
   fileMock
 };

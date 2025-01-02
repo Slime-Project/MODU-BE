@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 
-import { REVIEW_IMGS_ORDER_BY, REVIEWS_PAGE_SIZE } from '@/constants/review';
+import { REVIEWS_PAGE_SIZE } from '@/constants/review';
+import { REVIEW_IMGS_ORDER_BY } from '@/constants/review-img';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { S3Service } from '@/s3/s3.service';
@@ -14,7 +15,10 @@ import {
   reviewMockWithImgs,
   reviewIncludeImgsMock,
   reviewImgsMock,
-  fileMock
+  fileMock,
+  mockProduct,
+  kakaoUserInfoDtoMock,
+  reviewWithReviewerMock
 } from '@/utils/unit-test';
 
 import { FindReviewsDto } from './dto/find-reviews.dto';
@@ -27,6 +31,7 @@ describe('ReviewService', () => {
   let service: ReviewService;
   let prismaService: DeepMockProxy<PrismaService>;
   let s3Service: DeepMockProxy<S3Service>;
+  let kakaoLoginService: DeepMockProxy<KakaoLoginService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -42,6 +47,7 @@ describe('ReviewService', () => {
     service = module.get(ReviewService);
     s3Service = module.get(S3Service);
     prismaService = module.get(PrismaService);
+    kakaoLoginService = module.get(KakaoLoginService);
   });
 
   it('should be defined', () => {
@@ -127,17 +133,14 @@ describe('ReviewService', () => {
         );
         expect(prismaService.review.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
-            orderBy: [
-              expect.objectContaining({ [sortBy]: orderBy }),
-              expect.objectContaining({ id: 'desc' })
-            ]
+            orderBy: [{ [sortBy]: orderBy }, { id: 'desc' }]
           })
         );
       }
     );
   });
 
-  describe('findMany', () => {
+  describe('findUserReviews', () => {
     it('should return reviews data', async () => {
       const findReviewsDto: FindReviewsDto = {
         page: 1,
@@ -155,6 +158,37 @@ describe('ReviewService', () => {
       prismaService.review.count.mockResolvedValue(total);
       const result = await service.findUserReviews(findReviewsDto, reviewMock.userId);
       expect(result).toEqual(reviewsData);
+    });
+  });
+
+  describe('findProductReviews', () => {
+    it('should return reviews data', async () => {
+      const findReviewsDto: FindReviewsDto = {
+        page: 1
+      };
+      const total = 1;
+      const reviewsData: ReviewsData = {
+        reviews: [reviewWithReviewerMock],
+        pageSize: REVIEWS_PAGE_SIZE,
+        total,
+        totalPages: 1
+      };
+      prismaService.product.findUnique.mockResolvedValue(mockProduct);
+      service.findSortedAndPaginatedReviews = jest.fn().mockResolvedValue([reviewMockWithImgs]);
+      kakaoLoginService.findUsers.mockResolvedValue([kakaoUserInfoDtoMock]);
+      prismaService.review.count.mockResolvedValue(total);
+      const result = await service.findProductReviews(findReviewsDto, reviewMock.productId);
+      expect(result).toEqual(reviewsData);
+    });
+
+    it('should throw NotFoundException when product is not found', async () => {
+      const findReviewsDto: FindReviewsDto = {
+        page: 1
+      };
+      prismaService.product.findUnique.mockResolvedValue(null);
+      return expect(
+        service.findProductReviews(findReviewsDto, reviewMock.productId)
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
