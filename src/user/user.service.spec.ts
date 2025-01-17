@@ -44,7 +44,7 @@ describe('UserService', () => {
       };
 
       prismaService.auth.findUnique.mockResolvedValue(mockAuth);
-      KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
+      KakaoLoginService.getMyInfo = jest.fn().mockResolvedValue(kakaoUser);
       const result = await userService.findOne(mockAuth.userId, mockAuth.refreshToken);
       expect(result).toEqual(userInfo);
     });

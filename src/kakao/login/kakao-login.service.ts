@@ -58,7 +58,7 @@ export class KakaoLoginService {
     return plainToInstance(ReissueTokenDto, data, { excludeExtraneousValues: true });
   }
 
-  static async getUserInfo(accessToken: string) {
+  static async getMyInfo(accessToken: string) {
     const userInfoUrl = 'https://kapi.kakao.com/v2/user/me';
     const { data } = await axios.get(userInfoUrl, {
       headers: {
@@ -66,6 +66,22 @@ export class KakaoLoginService {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       params: {
+        property_keys: JSON.stringify(['kakao_account.profile'])
+      }
+    });
+    return plainToInstance(KaKaoUserInfoDto, data, { excludeExtraneousValues: true });
+  }
+
+  async getUserInfo(id: number) {
+    const userInfoUrl = 'https://kapi.kakao.com/v2/user/me';
+    const { data } = await axios.get(userInfoUrl, {
+      headers: {
+        Authorization: `KakaoAK ${this.configService.get('KAKAO_ADMIN_KEY')}`,
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+      },
+      params: {
+        target_id_type: 'user_id',
+        target_id: id,
         property_keys: JSON.stringify(['kakao_account.profile'])
       }
     });
@@ -92,7 +108,7 @@ export class KakaoLoginService {
 
   async login(code: string) {
     const token = await this.getToken(code);
-    const user = await KakaoLoginService.getUserInfo(token.accessToken);
+    const user = await KakaoLoginService.getMyInfo(token.accessToken);
     return {
       token,
       user

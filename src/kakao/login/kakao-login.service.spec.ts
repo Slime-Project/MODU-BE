@@ -5,12 +5,14 @@ import axios, { AxiosError } from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { mockDeep } from 'jest-mock-extended';
 
+import { kakaoUserInfoResMock, kakaoUsersResMock } from '@/utils/unit-test';
+
 import { GetTokenDto } from './dto/get-token.dto';
 import { KaKaoUserInfoDto } from './dto/kakao-user-info.dto';
 import { ReissueTokenDto } from './dto/reissue-token.dto';
 import { KakaoLoginService } from './kakao-login.service';
 
-import { GetTokenRes, ReissueTokenRes, UserInfoRes } from '@/types/kakao.type';
+import { GetTokenRes, ReissueTokenRes } from '@/types/kakao.type';
 
 describe('KakaoLoginService', () => {
   let kakaoLoginService: KakaoLoginService;
@@ -46,6 +48,7 @@ describe('KakaoLoginService', () => {
       const result = await kakaoLoginService.getToken(accessToken);
       expect(result).toEqual(token);
     });
+
     it('should throw BadRequestException when code is invalid', async () => {
       const code = 'test-code';
       const errorResponse = {
@@ -80,34 +83,39 @@ describe('KakaoLoginService', () => {
     });
   });
 
-  describe('getUserInfo', () => {
-    it('should return user', async () => {
+  describe('getMyInfo', () => {
+    it('should return user information', async () => {
       const accessToken = 'kakaoAccessToken';
-      const res: UserInfoRes = {
-        id: 1234567890,
-        connected_at: new Date().toISOString(),
-        properties: {
-          nickname: 'nickname',
-          profile_image: 'url',
-          thumbnail_image: 'url'
-        },
-        kakao_account: {
-          profile_nickname_needs_agreement: false,
-          profile_image_needs_agreement: false,
-          profile: {
-            nickname: 'nickname',
-            thumbnail_image_url: 'url',
-            profile_image_url: 'url',
-            is_default_image: true,
-            is_default_nickname: false
-          }
-        }
-      };
-      const user = plainToInstance(KaKaoUserInfoDto, res, { excludeExtraneousValues: true });
+      const user = plainToInstance(KaKaoUserInfoDto, kakaoUserInfoResMock, {
+        excludeExtraneousValues: true
+      });
 
-      axios.get = jest.fn().mockResolvedValue({ data: res });
-      const result = await KakaoLoginService.getUserInfo(accessToken);
+      axios.get = jest.fn().mockResolvedValue({ data: kakaoUserInfoResMock });
+      const result = await KakaoLoginService.getMyInfo(accessToken);
       expect(result).toEqual(user);
+    });
+  });
+
+  describe('getUserInfo', () => {
+    it('should return user information', async () => {
+      const user = plainToInstance(KaKaoUserInfoDto, kakaoUserInfoResMock, {
+        excludeExtraneousValues: true
+      });
+
+      axios.get = jest.fn().mockResolvedValue({ data: kakaoUserInfoResMock });
+      const result = await kakaoLoginService.getUserInfo(kakaoUserInfoResMock.id);
+      expect(result).toEqual(user);
+    });
+  });
+
+  describe('findUsers', () => {
+    it('should return users information', async () => {
+      const users = kakaoUsersResMock.map(user =>
+        plainToInstance(KaKaoUserInfoDto, user, { excludeExtraneousValues: true })
+      );
+      axios.get = jest.fn().mockResolvedValue({ data: kakaoUsersResMock });
+      const result = await kakaoLoginService.findUsers(kakaoUsersResMock.map(({ id }) => id));
+      expect(result).toEqual(users);
     });
   });
 
@@ -127,7 +135,7 @@ describe('KakaoLoginService', () => {
       };
 
       kakaoLoginService.getToken = jest.fn().mockResolvedValue(token);
-      KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(user);
+      KakaoLoginService.getMyInfo = jest.fn().mockResolvedValue(user);
       const result = await kakaoLoginService.login(code);
       expect(result).toEqual({ user, token });
     });
