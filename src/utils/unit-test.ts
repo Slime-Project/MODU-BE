@@ -5,6 +5,7 @@ import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
 import { REVIEW_IMGS_PAGE_SIZE } from '@/constants/review-img';
 import { KaKaoUserInfoDto } from '@/kakao/login/dto/kakao-user-info.dto';
 
+import { UserInfoRes, UsersRes } from '@/types/kakao.type';
 import {
   ReviewImgsData,
   ReviewImgWithReview,
@@ -18,15 +19,42 @@ import {
 } from '@/types/review.type';
 import { Profile, UserInfo } from '@/types/user.type';
 
-const profileMock: Profile = {
-  nickname: 'nickname',
-  profileImg: 'url'
+const kakaoUsersResMock: UsersRes = [
+  {
+    id: 1,
+    connected_at: new Date().toISOString(),
+    kakao_account: {
+      profile_nickname_needs_agreement: false,
+      profile_image_needs_agreement: false,
+      profile: {
+        nickname: 'nickname',
+        thumbnail_image_url: 'url',
+        profile_image_url: 'url',
+        is_default_image: true,
+        is_default_nickname: false
+      }
+    }
+  }
+];
+
+const kakaoUserInfoResMock: UserInfoRes = {
+  ...kakaoUsersResMock[0],
+  properties: {
+    nickname: 'nickname',
+    profile_image: 'url',
+    thumbnail_image: 'url'
+  }
 };
 
 const kakaoUserInfoDtoMock: KaKaoUserInfoDto = {
-  id: '1',
-  nickname: 'nickname',
-  profileImg: 'url'
+  id: kakaoUserInfoResMock.id.toString(),
+  nickname: kakaoUserInfoResMock.properties.nickname,
+  profileImg: kakaoUserInfoResMock.properties.profile_image
+};
+
+const profileMock: Profile = {
+  nickname: kakaoUserInfoDtoMock.nickname,
+  profileImg: kakaoUserInfoDtoMock.profileImg
 };
 
 const mockUser: UserInfo = {
@@ -183,6 +211,8 @@ const mockNaverRes = {
 };
 
 export {
+  kakaoUsersResMock,
+  kakaoUserInfoResMock,
   mockAuth,
   mockProduct,
   getMockWishlistItem,
