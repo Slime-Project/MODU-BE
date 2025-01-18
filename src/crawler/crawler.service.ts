@@ -50,8 +50,8 @@ export class CrawlerService {
           resolve();
         }, 300);
       });
-      await page.waitForSelector('._submit_4u1o5_94');
-      await Promise.all([page.waitForNavigation(), page.click('._submit_4u1o5_94')]);
+      await page.waitForSelector('._submit_18zzo_94');
+      await Promise.all([page.waitForNavigation(), page.click('._submit_18zzo_94')]);
       await new Promise<void>(resolve => {
         setTimeout(() => {
           resolve();
