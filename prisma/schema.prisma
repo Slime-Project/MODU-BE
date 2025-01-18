@@ -18,6 +18,7 @@ model User {
   role                   UserRole        @default(USER)
   reviews                Review[]        @relation("UserReviews")
   wishlistItems          WishlistItem[]
+  collections            GiftCollection[] 
 }
 
 model Auth {
@@ -48,6 +49,7 @@ model Product {
   reviews                Review[]         @relation("ProductReviews")
   wishlistItems          WishlistItem[]
   tags                   ProductTag[]
+  giftCollections        GiftCollectionProduct[] 
 }
 
 model Review {
@@ -79,9 +81,37 @@ model ReviewImg {
 
 model GiftCollection {
   id                     Int              @id @default(autoincrement())
+  userId                 String?
+  imgId                  Int              @unique
+  title                  String
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  wishedCount            Int              @default(0)
+
+  img                    GiftCollectionImg @relation(fields: [imgId], references: [id])
+  products               GiftCollectionProduct[]
+  user                   User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   wishlistItems          WishlistItem[]
+  tags                   GiftCollectionTag[]
 }
 
+model GiftCollectionImg {
+  id                     Int              @id @default(autoincrement())
+  url                    String
+  filePath               String
+  
+  giftCollection         GiftCollection?  
+}
+
+model GiftCollectionProduct {
+  giftCollectionId      Int
+  productId             Int
+
+  giftCollection        GiftCollection @relation(fields: [giftCollectionId], references: [id],onDelete: Cascade)
+  product               Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([giftCollectionId, productId]) 
+}
 model WishlistItem {
   id                     Int              @id @default(autoincrement())
   userId                 String
@@ -99,7 +129,9 @@ model WishlistItem {
 model Tag {
   id                     Int       @id @default(autoincrement())
   name                   String    @unique
+  
   products               ProductTag[] 
+  giftCollection         GiftCollectionTag[]
 }
 
 model ProductTag {
@@ -110,4 +142,15 @@ model ProductTag {
   tag       Tag     @relation(fields: [tagId], references: [id])
 
   @@id([productId, tagId]) // 복합 기본키 설정
+}
+
+
+model GiftCollectionTag {
+  GiftCollectionId        Int
+  tagId                   Int
+
+  giftCollection          GiftCollection @relation(fields: [GiftCollectionId], references: [id],onDelete: Cascade)
+  tag                     Tag            @relation(fields: [tagId], references: [id])
+
+  @@id([GiftCollectionId, tagId]) // 복합 기본키 설정
 }
