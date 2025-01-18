@@ -22,7 +22,7 @@ describe('UserController (integration)', () => {
       const id = '4';
       const { accessTokenCookie, refreshTokenCookie, kakaoUser } = await createUser(app, id);
 
-      KakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
+      KakaoLoginService.getMyInfo = jest.fn().mockResolvedValue(kakaoUser);
       const { body } = await request(app.getHttpServer())
         .get('/api/user')
         .set('Cookie', [accessTokenCookie, refreshTokenCookie])
