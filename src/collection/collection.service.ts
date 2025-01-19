@@ -11,6 +11,8 @@ import { ITXClientDenyList } from '@prisma/client/runtime/library';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AuthorDto } from '@/common/dto/author.dto';
+import { COLLECTIONS_PAGE_SIZE } from '@/constants/collection';
+import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { S3Service } from '@/s3/s3.service';
 import { TagService } from '@/tag/tag.service';
@@ -18,9 +20,10 @@ import { UserService } from '@/user/user.service';
 
 import { CollectionResponseDto } from './dto/collection-res.dto';
 import { CreateCollectionDto } from './dto/create-collection.dto';
+import { FindCollectionsDto } from './dto/find-collections.dto';
 import { PatchCollectionDto } from './dto/patch-collection.dto';
 
-import { CollectionWithImg, UpdateGiftCollection } from '@/types/collection.type';
+import { CollectionWithImg, SortOrder, UpdateGiftCollection } from '@/types/collection.type';
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Injectable()
@@ -29,7 +32,8 @@ export class CollectionService {
     private readonly prismaService: PrismaService,
     private readonly s3Service: S3Service,
     private readonly tagService: TagService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly kakaoLoginService: KakaoLoginService
   ) {}
 
   private async createImg(
@@ -67,7 +71,7 @@ export class CollectionService {
     const filePath = `collection/${uniqueId}/${newImg.originalname}`;
     // 새 이미지 s3 생성
     const url = await this.s3Service.uploadImgToS3(filePath, newImg, ext);
-    console.log(oldFilePath, 'oldFilePath');
+
     // 기존 이미지 s3 삭제
     try {
       await this.s3Service.deleteImgFromS3(oldFilePath);
@@ -223,19 +227,6 @@ export class CollectionService {
     if (req.id !== collection.userId) {
       throw new ForbiddenException('You are not authorized to update this collection');
     }
-    // 수정전 collection;
-    //     {
-    //   id: 2,
-    //   userId: '1234',
-    //   imgId: 2,
-    //   title: '친구 생일선물 추천',
-    //   createdAt: 2025-01-06T03:18:51.661Z,
-    //   updatedAt: 2025-01-06T03:18:51.661Z,
-    //   wishedCount: 0,
-    //   img: { filePath: 'collection/4e310205/7.png' },
-    //   products: [ { productId: 11 }, { productId: 12 } ],
-    //   tags: [ { tag: { "id": 19, "name": "연말" } }, { tag: { "id": 20, "name": "가성비" } } ]
-    // }
 
     let updatedImgUrl;
 
@@ -312,18 +303,7 @@ export class CollectionService {
         }
       }
     });
-    console.log(updatedCollection, 'updatedCollection');
-    //     {
-    //   id: 3,
-    //   userId: '3861867065',
-    //   imgId: 3,
-    //   title: '크롱이짱이다',
-    //   createdAt: 2025-01-06T05:35:03.405Z,
-    //   updatedAt: 2025-01-16T05:51:53.812Z,
-    //   wishedCount: 0,
-    //   products: [ { productId: 1 }, { productId: 2 } ],
-    //   tags: [ { tagId: 19 }, { tagId: 21 } ]
-    // }
+
     const updatedCollectionWithImg: CollectionWithImg = {
       ...updatedCollection,
       img: updatedImgUrl
@@ -444,14 +424,15 @@ export class CollectionService {
     if (!collection) {
       throw new NotFoundException('Collection not found');
     }
+    const author = await this.kakaoLoginService.getUserInfo(parseInt(collection.userId));
 
     const collectionData = {
       ...collection,
       img: collection.img.url,
       products: collection.products.map(product => product.product),
-      tags: collection.tags.map(tag => tag.tag.name)
+      tags: collection.tags.map(tag => tag.tag.name),
+      author
     };
-    // const author: AuthorDto = await this.userService.findOne(req.id, req.cookies.refresh_token);
 
     const response = {
       collection: [
@@ -462,41 +443,51 @@ export class CollectionService {
     };
 
     return response;
-    //     {
-    //     "collection": [
-    //         {
-    //             "id": 5,
-    //             "userId": "3861867065",
-    //             "imgId": 5,
-    //             "title": "연말가성비선물모음",
-    //             "createdAt": "2025-01-17T08:01:25.016Z",
-    //             "updatedAt": "2025-01-17T08:01:25.016Z",
-    //             "wishedCount": 0,
-    //             "img": "https://s3.ap-southeast-2.amazonaws.com/modu-bucket/collection/2a344a69-fd40-4b20-8ee2-3c2c0baf9b2b/ct.png",
-    //             "products": [
-    //                 {
-    //                     "id": 11,
-    //                     "title": "[New Frequency] 스탠리 퀜처 H2.0 플로우스테이트 텀블러 1.18L",
-    //                     "img": "https://shopping-phinf.pstatic.net/main_8882568/88825680116.2.jpg?type=f300",
-    //                     "price": 59000,
-    //                     "seller": "스탠리 코리아"
-    //                 },
-    //                 {
-    //                     "id": 1,
-    //                     "title": "[우슴] 고급 천연 소이 밀랍 필라 오브제캔들",
-    //                     "img": "https://searchad-phinf.pstatic.net/MjAyNDAzMjJfMjcy/MDAxNzExMTA0NzUwOTk4.n9sS0jLC0nGAO65ltrk8v43ZyZ7Ft1Vt0RdK8jj1xhQg.pk0G3KlyvnKSSq4DJMBwUVSiHq9Tdb3QTUWRt-8IiWkg.PNG/2429721-03532fcd-a16d-4fc1-b807-342996a8ab12.png?type=f300",
-    //                     "price": 97000,
-    //                     "seller": "WOOSM"
-    //                 }
-    //             ],
-    //             "tags": [
-    //                 "연말",
-    //                 "가성비"
-    //             ]
-    //         }
-    //     ]
-    // }
   }
 
-  // async findAll() {}
+  async findAll(findCollectionsDto: FindCollectionsDto) {
+    const { page, sortOrder } = findCollectionsDto;
+    const skip = (page - 1) * COLLECTIONS_PAGE_SIZE;
+    const orderByLists = {
+      [SortOrder.POPULAR]: { wishedCount: 'desc' },
+      [SortOrder.LATEST]: { createdAt: 'desc' },
+      [SortOrder.OLDEST]: { createdAt: 'asc' }
+    } as const;
+
+    const orderBy = orderByLists[sortOrder];
+
+    const [collections, total] = await Promise.all([
+      this.prismaService.giftCollection.findMany({
+        skip,
+        take: COLLECTIONS_PAGE_SIZE,
+        orderBy,
+        include: {
+          img: {
+            select: {
+              url: true
+            }
+          }
+        }
+      }),
+      this.prismaService.giftCollection.count()
+    ]);
+
+    const collectionsWithAuthor = await Promise.all(
+      collections.map(async collection => {
+        const author = await this.kakaoLoginService.getUserInfo(parseInt(collection.userId));
+        return { ...collection, img: collection.img.url, author };
+      })
+    );
+
+    const hasMore = total - page * COLLECTIONS_PAGE_SIZE > 0;
+
+    return {
+      items: collectionsWithAuthor,
+      meta: {
+        currentPage: page,
+        hasMore,
+        totalItems: total
+      }
+    };
+  }
 }

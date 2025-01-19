@@ -12,7 +12,8 @@ import {
   Param,
   ParseIntPipe,
   Delete,
-  Get
+  Get,
+  Query
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -28,6 +29,7 @@ import { checkFileMimeType } from '@/utils/file';
 import { CollectionService } from './collection.service';
 import { CollectionResponseDto } from './dto/collection-res.dto';
 import { CreateCollectionDto } from './dto/create-collection.dto';
+import { FindCollectionsDto } from './dto/find-collections.dto';
 import { PatchCollectionDto } from './dto/patch-collection.dto';
 
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
@@ -186,8 +188,8 @@ export class CollectionController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Success',
-    type: CollectionResponseDto
+    description: 'Success'
+    // type: CollectionResponseDto
   })
   @ApiResponse({
     status: 404,
@@ -195,8 +197,25 @@ export class CollectionController {
   })
   @Get('/:collectionId')
   async findOne(@Param('collectionId', ParseIntPipe) collectionId: number) {
-    // : Promise<CollectionResponseDto>
+    // : Promise<CollectionResponseDto> to do: 일관되게 타입 추가
     const collection = await this.collectionService.findOne(collectionId);
+    return collection;
+  }
+
+  @ApiOperation({
+    summary: 'Get all paginated gift collections'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid or missing query fields'
+  })
+  @Get('')
+  async findAll(@Query() findCollectionsDto: FindCollectionsDto) {
+    const collection = await this.collectionService.findAll(findCollectionsDto);
     return collection;
   }
 }

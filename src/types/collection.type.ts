@@ -50,4 +50,10 @@ interface UpdateGiftCollection {
   };
 }
 
-export { CreateGiftCollection, CollectionWithImg, UpdateGiftCollection };
+enum SortOrder {
+  POPULAR = 'POPULAR',
+  LATEST = 'LATEST',
+  OLDEST = 'OLDEST'
+}
+
+export { CreateGiftCollection, CollectionWithImg, UpdateGiftCollection, SortOrder };
