@@ -1,6 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, IsInt, MaxLength, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  IsInt,
+  MaxLength,
+  MinLength,
+  ArrayMaxSize
+} from 'class-validator';
 
 export class CreateCollectionDto {
   @ApiProperty({
@@ -13,11 +21,12 @@ export class CreateCollectionDto {
   title: string;
 
   @ApiPropertyOptional({
-    description: 'Array of id of products',
+    description: 'Array of id of products (maximum 10 items)',
     example: [1, 2]
   })
   @IsArray()
   @IsInt({ each: true })
+  @ArrayMaxSize(10)
   @Type(() => Number)
   productsId: number[];
 

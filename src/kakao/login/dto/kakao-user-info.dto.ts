@@ -9,12 +9,12 @@ export class KaKaoUserInfoDto {
   readonly id: string;
 
   @IsNotEmpty()
-  @Transform(({ obj }) => obj.kakao_account.profile.nickname)
+  @Transform(({ obj }) => obj.kakao_account.profile.nickname, { toClassOnly: true })
   @Expose()
   readonly nickname: string;
 
   @IsNotEmpty()
-  @Transform(({ obj }) => obj.kakao_account.profile.profile_image_url)
+  @Transform(({ obj }) => obj.kakao_account.profile.profile_image_url, { toClassOnly: true })
   @Expose()
   readonly profileImg: string;
 }
