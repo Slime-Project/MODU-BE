@@ -7,7 +7,7 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { REVIEWS_PAGE_SIZE } from '@/constants/review';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ReviewsWithReviwerDto } from '@/review/dto/reviews-with-reviewer.dto';
-import { fileMock, mockUser, reviewMock, reviewMockWithImgs } from '@/utils/unit-test';
+import { fileMock, userInfoMock, reviewMock, reviewMockWithImgs } from '@/utils/unit-test';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindReviewsDto } from './dto/find-reviews.dto';
@@ -74,7 +74,7 @@ describe('ReviewController', () => {
         reviews: [
           {
             ...reviewMockWithImgs,
-            reviewer: mockUser
+            reviewer: userInfoMock
           }
         ],
         pageSize: REVIEWS_PAGE_SIZE,

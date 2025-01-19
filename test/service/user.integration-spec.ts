@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
@@ -12,7 +13,7 @@ describe('UserService (integration)', () => {
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [UserService, PrismaService]
+      providers: [UserService, PrismaService, KakaoLoginService, ConfigService]
     }).compile();
 
     service = module.get(UserService);

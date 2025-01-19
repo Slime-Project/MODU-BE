@@ -1,4 +1,4 @@
-import { Auth, Product, Review, ReviewImg, UserRole, WishlistItem } from '@prisma/client';
+import { Auth, Product, Review, ReviewImg, User, UserRole, WishlistItem } from '@prisma/client';
 
 import { AuthService } from '@/auth/auth.service';
 import { PRODUCTS_PAGE_SIZE } from '@/constants/page';
@@ -57,15 +57,19 @@ const profileMock: Profile = {
   profileImg: kakaoUserInfoDtoMock.profileImg
 };
 
-const mockUser: UserInfo = {
+const userMock: User = {
   id: kakaoUserInfoDtoMock.id,
-  role: UserRole.USER,
+  role: UserRole.USER
+};
+
+const userInfoMock: UserInfo = {
+  ...userMock,
   ...profileMock
 };
 
 const mockAuth: Auth = {
   id: 1,
-  userId: mockUser.id,
+  userId: userMock.id,
   refreshToken: 'refreshToken',
   kakaoAccessToken: 'kakaoAccessToken',
   kakaoRefreshToken: 'kakaoRefreshToken',
@@ -88,7 +92,7 @@ const mockProduct: Product = {
 
 const reviewMock: Review = {
   id: 1,
-  userId: mockUser.id,
+  userId: userMock.id,
   productId: mockProduct.id,
   text: '',
   rating: 2,
@@ -214,6 +218,8 @@ export {
   kakaoUsersResMock,
   kakaoUserInfoResMock,
   mockAuth,
+  userMock,
+  userInfoMock,
   mockProduct,
   getMockWishlistItem,
   mockNaverRes,
@@ -227,7 +233,6 @@ export {
   reviewImgWithReviewMock,
   reviewImgWithReviewAndReviewerMock,
   reviewImgsDataMock,
-  mockUser,
   kakaoUserInfoDtoMock,
   fileMock
 };
