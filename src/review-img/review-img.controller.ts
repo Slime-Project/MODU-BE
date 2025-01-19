@@ -1,5 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { FindReviewImgsDto } from './dto/find-review-imgs.dto';
@@ -7,6 +7,7 @@ import { ReviewImgsDto } from './dto/review-imgs.dto';
 import { ReviewImgService } from './review-img.service';
 
 @Controller('products/:id/review-imgs')
+@ApiTags('review img')
 export class ReviewImgController {
   constructor(private readonly service: ReviewImgService) {}
 

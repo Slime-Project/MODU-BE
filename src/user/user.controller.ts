@@ -32,7 +32,7 @@ export class UserController {
   @UseGuards(RefreshTokenGuard)
   @Get('')
   async findOne(@Req() req: TokenGuardReq) {
-    const user = await this.userService.findOne(req.id, req.cookies.refresh_token);
+    const user = await this.userService.findOne(req.id);
     return plainToInstance(UserDto, user);
   }
 

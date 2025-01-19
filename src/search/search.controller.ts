@@ -1,11 +1,12 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { SearchResDto } from '@/search/dto/search-res.dto';
 import { SearchDto } from '@/search/dto/search.dto';
 import { SearchService } from '@/search/search.service';
 
+@ApiTags('search')
 @Controller('search')
 export class SearchController {
   constructor(private readonly service: SearchService) {}

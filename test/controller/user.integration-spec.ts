@@ -11,10 +11,12 @@ import { createTestingApp, createUser, deleteUser, validateDto } from '@/utils/i
 describe('UserController (integration)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
+  let kakaoLoginService: KakaoLoginService;
 
   beforeAll(async () => {
     app = await createTestingApp([UserModule, AuthModule]);
     prismaService = app.get(PrismaService);
+    kakaoLoginService = app.get(KakaoLoginService);
   });
 
   describe('/api/user (GET)', () => {
@@ -22,7 +24,7 @@ describe('UserController (integration)', () => {
       const id = '4';
       const { accessTokenCookie, refreshTokenCookie, kakaoUser } = await createUser(app, id);
 
-      KakaoLoginService.getMyInfo = jest.fn().mockResolvedValue(kakaoUser);
+      kakaoLoginService.getUserInfo = jest.fn().mockResolvedValue(kakaoUser);
       const { body } = await request(app.getHttpServer())
         .get('/api/user')
         .set('Cookie', [accessTokenCookie, refreshTokenCookie])

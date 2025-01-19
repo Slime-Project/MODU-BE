@@ -42,9 +42,6 @@ describe('UserController', () => {
       const req = {
         id: '1234567890'
       } as TokenGuardReq;
-      req.cookies = {
-        refresh_token: 'refreshToken'
-      };
       const userInfo: UserInfo = {
         id: req.id,
         role: UserRole.USER,
