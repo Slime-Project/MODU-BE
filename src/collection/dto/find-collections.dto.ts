@@ -14,5 +14,5 @@ export class FindCollectionsDto extends FindItemsDto {
   })
   @IsEnum(SortOrder)
   @IsOptional()
-  readonly sortOrder: SortOrder = SortOrder.LATEST; // 디폴트
+  readonly sortOrder?: SortOrder = SortOrder.LATEST; // 디폴트
 }

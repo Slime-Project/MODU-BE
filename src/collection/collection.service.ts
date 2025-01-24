@@ -10,20 +10,23 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { ITXClientDenyList } from '@prisma/client/runtime/library';
 import { v4 as uuidv4 } from 'uuid';
 
-import { AuthorDto } from '@/common/dto/author.dto';
 import { COLLECTIONS_PAGE_SIZE } from '@/constants/collection';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { S3Service } from '@/s3/s3.service';
 import { TagService } from '@/tag/tag.service';
 import { UserService } from '@/user/user.service';
+import { getOrderBy } from '@/utils/collection';
 
-import { CollectionResponseDto } from './dto/collection-res.dto';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { FindCollectionsDto } from './dto/find-collections.dto';
 import { PatchCollectionDto } from './dto/patch-collection.dto';
+import { CollectionDetailResDto } from './dto/res/collection-detail-res.dto';
+import { CollectionsResponseDto } from './dto/res/collections-res.dto';
+import { CollectionCreateResDto } from './dto/res/create-collection-res.dto';
+import { SearchCollectionsDto } from './dto/search-collections.dto';
 
-import { CollectionWithImg, SortOrder, UpdateGiftCollection } from '@/types/collection.type';
+import { UpdateGiftCollection } from '@/types/collection.type';
 import { TokenGuardReq } from '@/types/refreshTokenGuard.type';
 
 @Injectable()
@@ -41,7 +44,6 @@ export class CollectionService {
     img: Express.Multer.File
   ): Promise<{
     imgId: number;
-    imgUrl: string;
   }> {
     const ext = img.originalname.split('.').pop();
     const uniqueId = uuidv4();
@@ -56,8 +58,7 @@ export class CollectionService {
         }
       });
       return {
-        imgId: createdImg.id,
-        imgUrl: createdImg.url
+        imgId: createdImg.id
       };
     } catch (error) {
       await this.s3Service.deleteImgFromS3(filePath);
@@ -99,14 +100,13 @@ export class CollectionService {
   async createCollection(
     createCollectionDto: CreateCollectionDto,
     userId: string,
-    refreshToken: string,
     img: Express.Multer.File
-  ): Promise<CollectionResponseDto> {
-    const { imgId, imgUrl } = await this.createImg(this.prismaService, img);
+  ): Promise<CollectionCreateResDto> {
+    const { imgId } = await this.createImg(this.prismaService, img);
 
     const { tags, title, productsId } = createCollectionDto;
 
-    // update or create tags and apply tags to products
+    // update or create tags
     const tagsId = await this.tagService.getTagsId(tags);
 
     const data: Prisma.GiftCollectionCreateInput = {
@@ -138,43 +138,12 @@ export class CollectionService {
     };
 
     const createdCollection = await this.prismaService.giftCollection.create({
-      data,
-      include: {
-        products: {
-          select: {
-            productId: true
-          }
-        },
-        //  products: [
-        //     { productId: 5 },
-        //     { productId: 6 }
-        //   ]
-        tags: {
-          select: {
-            tagId: true
-          }
-        }
-      }
+      data
     });
 
-    const createdCollectionWithImg: CollectionWithImg = { ...createdCollection, img: imgUrl };
-
-    const author: AuthorDto = await this.userService.findOne(userId, refreshToken);
-
     const response = {
-      collection: [
-        {
-          id: createdCollectionWithImg.id,
-          title: createdCollectionWithImg.title,
-          img: createdCollectionWithImg.img,
-          createdAt: createdCollectionWithImg.createdAt,
-          updatedAt: createdCollectionWithImg.updatedAt,
-          wishedCount: createdCollectionWithImg.wishedCount,
-          productsId: createdCollectionWithImg.products.map(p => p.productId),
-          tagsId: createdCollectionWithImg.tags.map(p => p.tagId),
-          author
-        }
-      ]
+      id: createdCollection.id,
+      status: 201
     };
     return response;
   }
@@ -184,7 +153,7 @@ export class CollectionService {
     collectionId: number,
     req: TokenGuardReq,
     img?: Express.Multer.File
-  ): Promise<CollectionResponseDto> {
+  ): Promise<CollectionCreateResDto> {
     let collection;
 
     try {
@@ -228,11 +197,9 @@ export class CollectionService {
       throw new ForbiddenException('You are not authorized to update this collection');
     }
 
-    let updatedImgUrl;
-
     if (img) {
       // 기존 이미지 s3에서 삭제 후 새로운 이미지 s3생성 및 giftCollectionImg 업데이트
-      updatedImgUrl = await this.updateImg(img, collection.img.filePath, collection.imgId);
+      await this.updateImg(img, collection.img.filePath, collection.imgId);
     }
 
     // this.prismaService.giftCollection.update 해야함
@@ -289,41 +256,12 @@ export class CollectionService {
 
     const updatedCollection = await this.prismaService.giftCollection.update({
       where: { id: collectionId },
-      data: updateData,
-      include: {
-        products: {
-          select: {
-            productId: true
-          }
-        },
-        tags: {
-          select: {
-            tagId: true
-          }
-        }
-      }
+      data: updateData
     });
 
-    const updatedCollectionWithImg: CollectionWithImg = {
-      ...updatedCollection,
-      img: updatedImgUrl
-    };
-    const author: AuthorDto = await this.userService.findOne(req.id, req.cookies.refresh_token);
-
     const response = {
-      collection: [
-        {
-          id: updatedCollectionWithImg.id,
-          title: updatedCollectionWithImg.title,
-          img: updatedCollectionWithImg.img,
-          createdAt: updatedCollectionWithImg.createdAt,
-          updatedAt: updatedCollectionWithImg.updatedAt,
-          wishedCount: updatedCollectionWithImg.wishedCount,
-          productsId: updatedCollectionWithImg.products.map(p => p.productId),
-          tagsId: updatedCollectionWithImg.tags.map(p => p.tagId),
-          author
-        }
-      ]
+      id: updatedCollection.id,
+      status: 201
     };
     return response;
   }
@@ -373,7 +311,7 @@ export class CollectionService {
         });
 
         return {
-          status: 'delete collection success',
+          status: 200,
           message: `Collection (ID: ${collectionId}) has been successfully deleted`
         };
       });
@@ -385,8 +323,7 @@ export class CollectionService {
     }
   }
 
-  async findOne(collectionId: number) {
-    // : Promise<CollectionResponseDto>
+  async findOne(collectionId: number): Promise<CollectionDetailResDto> {
     const collection = await this.prismaService.giftCollection.findUnique({
       where: { id: collectionId },
       include: {
@@ -424,7 +361,7 @@ export class CollectionService {
     if (!collection) {
       throw new NotFoundException('Collection not found');
     }
-    const author = await this.kakaoLoginService.getUserInfo(parseInt(collection.userId));
+    const author = await this.userService.findOne(collection.userId);
 
     const collectionData = {
       ...collection,
@@ -434,33 +371,18 @@ export class CollectionService {
       author
     };
 
-    const response = {
-      collection: [
-        {
-          ...collectionData
-        }
-      ]
-    };
-
-    return response;
+    return collectionData;
   }
 
-  async findAll(findCollectionsDto: FindCollectionsDto) {
+  async findAll(findCollectionsDto: FindCollectionsDto): Promise<CollectionsResponseDto> {
     const { page, sortOrder } = findCollectionsDto;
     const skip = (page - 1) * COLLECTIONS_PAGE_SIZE;
-    const orderByLists = {
-      [SortOrder.POPULAR]: { wishedCount: 'desc' },
-      [SortOrder.LATEST]: { createdAt: 'desc' },
-      [SortOrder.OLDEST]: { createdAt: 'asc' }
-    } as const;
 
-    const orderBy = orderByLists[sortOrder];
-
-    const [collections, total] = await Promise.all([
+    const [collections, totalItems] = await Promise.all([
       this.prismaService.giftCollection.findMany({
         skip,
         take: COLLECTIONS_PAGE_SIZE,
-        orderBy,
+        orderBy: getOrderBy(sortOrder),
         include: {
           img: {
             select: {
@@ -474,19 +396,105 @@ export class CollectionService {
 
     const collectionsWithAuthor = await Promise.all(
       collections.map(async collection => {
-        const author = await this.kakaoLoginService.getUserInfo(parseInt(collection.userId));
-        return { ...collection, img: collection.img.url, author };
+        const author = await this.userService.findOne(collection.userId);
+
+        return {
+          ...collection,
+          img: collection.img.url,
+          author
+        };
       })
     );
 
-    const hasMore = total - page * COLLECTIONS_PAGE_SIZE > 0;
+    const hasMore = totalItems - page * COLLECTIONS_PAGE_SIZE > 0;
 
     return {
       items: collectionsWithAuthor,
       meta: {
         currentPage: page,
         hasMore,
-        totalItems: total
+        totalItems
+      }
+    };
+  }
+
+  async searchCollection(
+    searchCollectionsDto: SearchCollectionsDto
+  ): Promise<CollectionsResponseDto> {
+    const { keyword, page, sortOrder } = searchCollectionsDto;
+
+    let searchCondition;
+
+    if (keyword.startsWith('#')) {
+      // 태그 기반 검색
+      const tagName = keyword.slice(1);
+      searchCondition = {
+        tags: {
+          some: {
+            // tags 들 중 하나라도
+            tag: {
+              name: {
+                contains: tagName,
+                mode: 'insensitive'
+              }
+            }
+          }
+        }
+      };
+    } else {
+      // 타이틀 기반 검색
+      const keywordsArr = keyword.trim().split(/\s+/);
+      searchCondition = {
+        OR: keywordsArr.map(word => ({
+          title: {
+            contains: word,
+            mode: 'insensitive'
+          }
+        }))
+      };
+    }
+
+    const skip = (page - 1) * COLLECTIONS_PAGE_SIZE;
+
+    const [searchedCollections, totalItems] = await Promise.all([
+      this.prismaService.giftCollection.findMany({
+        where: searchCondition,
+        skip,
+        take: COLLECTIONS_PAGE_SIZE,
+        orderBy: getOrderBy(sortOrder),
+        include: {
+          img: {
+            select: {
+              url: true
+            }
+          }
+        }
+      }),
+      this.prismaService.giftCollection.count({
+        where: searchCondition
+      })
+    ]);
+
+    const collectionsWithAuthor = await Promise.all(
+      searchedCollections.map(async collection => {
+        const author = await this.userService.findOne(collection.userId);
+
+        return {
+          ...collection,
+          img: collection.img.url,
+          author
+        };
+      })
+    );
+
+    const hasMore = totalItems - page * COLLECTIONS_PAGE_SIZE > 0;
+
+    return {
+      items: collectionsWithAuthor,
+      meta: {
+        currentPage: page,
+        hasMore,
+        totalItems
       }
     };
   }

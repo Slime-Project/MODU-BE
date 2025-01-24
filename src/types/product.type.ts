@@ -8,4 +8,6 @@ type ProductsData = ItemsData & {
   products: Product[];
 };
 
-export { Sort, ProductsData };
+type ProductThumbnailData = Pick<Product, 'id' | 'img' | 'title' | 'price' | 'seller'>;
+
+export { Sort, ProductsData, ProductThumbnailData };

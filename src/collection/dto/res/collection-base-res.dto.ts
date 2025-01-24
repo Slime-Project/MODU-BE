@@ -1,19 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsString,
-  IsNotEmpty,
-  IsDate,
-  IsInt,
-  IsArray,
-  ArrayMaxSize,
-  IsUrl,
-  ValidateNested
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsDate, IsInt, IsUrl, ValidateNested } from 'class-validator';
 
 import { AuthorDto } from '@/common/dto/author.dto';
 
-export class CollectionItemDto {
+export class CollectionBaseResDto {
   @ApiProperty({
     description: 'The unique identifier of the giftCollection',
     example: 1
@@ -22,21 +13,13 @@ export class CollectionItemDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({ type: [Number] })
-  @IsInt({ each: true })
-  @IsArray()
-  @IsNotEmpty({ each: true })
-  @ArrayMaxSize(9)
+  @ApiProperty({
+    description: 'The unique identifier of img',
+    example: 1
+  })
+  @IsInt()
   @IsNotEmpty()
-  productsId: number[];
-
-  @ApiProperty({ type: [Number] })
-  @IsInt({ each: true })
-  @IsArray()
-  @IsNotEmpty({ each: true })
-  @ArrayMaxSize(9)
-  @IsNotEmpty()
-  tagsId: number[];
+  readonly imgId: number;
 
   @ApiProperty({
     example: '10 gifts for teenager girl'
