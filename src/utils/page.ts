@@ -6,4 +6,7 @@ const calculateSkip = (page: number, pageSize: number) => {
   return (page - 1) * pageSize;
 };
 
-export { calculateTotalPages, calculateSkip };
+const calculateHasMore = (totalItems: number, page: number, pageSize: number): boolean => {
+  return totalItems - page * pageSize > 0;
+};
+export { calculateTotalPages, calculateSkip, calculateHasMore };
