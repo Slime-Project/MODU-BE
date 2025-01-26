@@ -13,7 +13,8 @@ import {
   ParseIntPipe,
   Delete,
   Get,
-  Query
+  Query,
+  HttpCode
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -169,6 +170,7 @@ export class CollectionController {
   })
   @UseGuards(AccessTokenGuard)
   @Delete('/:collectionId')
+  @HttpCode(204)
   async deleteCollection(
     @Req() { id }: TokenGuardReq,
     @Param('collectionId', ParseIntPipe) collectionId: number

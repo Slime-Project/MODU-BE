@@ -16,6 +16,7 @@ import { SearchModule } from './search/search.module';
 import { TagModule } from './tag/tag.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './user/user.module';
+import { WishlistCollectionModule } from './wishlist/collection/wishlist-collection.module';
 import { WishlistProductModule } from './wishlist/product/wishlist-product.module';
 
 @Module({
@@ -36,7 +37,8 @@ import { WishlistProductModule } from './wishlist/product/wishlist-product.modul
     S3Module,
     ReviewImgModule,
     CollectionModule,
-    TagModule
+    TagModule,
+    WishlistCollectionModule
   ],
   controllers: [],
   providers: []

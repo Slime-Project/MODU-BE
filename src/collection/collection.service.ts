@@ -3,13 +3,13 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
-  RequestTimeoutException
+  NotFoundException
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { ITXClientDenyList } from '@prisma/client/runtime/library';
 import { v4 as uuidv4 } from 'uuid';
 
+import { PaginationResponseDto } from '@/common/dto/pagination-res.dto';
 import { COLLECTIONS_PAGE_SIZE } from '@/constants/collection';
 import { KakaoLoginService } from '@/kakao/login/kakao-login.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -21,8 +21,8 @@ import { getOrderBy } from '@/utils/collection';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { FindCollectionsDto } from './dto/find-collections.dto';
 import { PatchCollectionDto } from './dto/patch-collection.dto';
+import { CollectionBaseResDto } from './dto/res/collection-base-res.dto';
 import { CollectionDetailResDto } from './dto/res/collection-detail-res.dto';
-import { CollectionsResponseDto } from './dto/res/collections-res.dto';
 import { CollectionCreateResDto } from './dto/res/create-collection-res.dto';
 import { SearchCollectionsDto } from './dto/search-collections.dto';
 
@@ -154,41 +154,33 @@ export class CollectionService {
     req: TokenGuardReq,
     img?: Express.Multer.File
   ): Promise<CollectionCreateResDto> {
-    let collection;
-
-    try {
-      // collection 찾기
-      collection = await this.prismaService.giftCollection.findUnique({
-        where: { id: collectionId },
-        include: {
-          img: {
-            select: {
-              filePath: true
-            }
-          },
-          // products
-          products: {
-            select: {
-              productId: true
-            }
-          },
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true
-                }
+    const collection = await this.prismaService.giftCollection.findUnique({
+      where: { id: collectionId },
+      include: {
+        img: {
+          select: {
+            filePath: true
+          }
+        },
+        // products
+        products: {
+          select: {
+            productId: true
+          }
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true
               }
             }
           }
         }
-      });
-    } catch (error) {
-      throw new RequestTimeoutException('db is not connected'); // 408
-    }
+      }
+    });
 
-    // console.log(collection, 'collection before updated');
     if (!collection) {
       throw new NotFoundException('Collection not found'); // 404
     }
@@ -267,23 +259,16 @@ export class CollectionService {
   }
 
   async deleteCollection(id: string, collectionId: number) {
-    let collection;
-
-    try {
-      // collection 찾기
-      collection = await this.prismaService.giftCollection.findUnique({
-        where: { id: collectionId },
-        include: {
-          img: {
-            select: {
-              filePath: true
-            }
+    const collection = await this.prismaService.giftCollection.findUnique({
+      where: { id: collectionId },
+      include: {
+        img: {
+          select: {
+            filePath: true
           }
         }
-      });
-    } catch (error) {
-      throw new RequestTimeoutException('db is not connected'); // 408
-    }
+      }
+    });
 
     if (!collection) {
       throw new NotFoundException('Collection not found'); // 404
@@ -374,7 +359,9 @@ export class CollectionService {
     return collectionData;
   }
 
-  async findAll(findCollectionsDto: FindCollectionsDto): Promise<CollectionsResponseDto> {
+  async findAll(
+    findCollectionsDto: FindCollectionsDto
+  ): Promise<PaginationResponseDto<CollectionBaseResDto>> {
     const { page, sortOrder } = findCollectionsDto;
     const skip = (page - 1) * COLLECTIONS_PAGE_SIZE;
 
@@ -420,7 +407,7 @@ export class CollectionService {
 
   async searchCollection(
     searchCollectionsDto: SearchCollectionsDto
-  ): Promise<CollectionsResponseDto> {
+  ): Promise<PaginationResponseDto<CollectionBaseResDto>> {
     const { keyword, page, sortOrder } = searchCollectionsDto;
 
     let searchCondition;

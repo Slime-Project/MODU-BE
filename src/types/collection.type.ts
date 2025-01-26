@@ -18,12 +18,6 @@ type CreateGiftCollection = {
 
 type CollectionWithImg = GiftCollection & {
   img: string;
-  products: {
-    productId: number;
-  }[];
-  tags: {
-    tagId: number;
-  }[];
 };
 
 interface UpdateGiftCollection {

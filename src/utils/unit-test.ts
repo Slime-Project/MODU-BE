@@ -184,7 +184,8 @@ const getMockWishlistItem = (
     id: 1,
     userId,
     productId,
-    giftCollectionId
+    giftCollectionId,
+    createdAt: new Date()
   };
   return mockWishlistItem;
 };
