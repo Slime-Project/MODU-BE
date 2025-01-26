@@ -114,6 +114,7 @@ model GiftCollectionProduct {
 }
 model WishlistItem {
   id                     Int              @id @default(autoincrement())
+  createdAt              DateTime         @default(now())
   userId                 String
   productId              Int?
   giftCollectionId       Int?
