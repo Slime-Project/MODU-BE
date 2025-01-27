@@ -80,7 +80,6 @@ const mockProduct: Product = {
   id: 1,
   naverProductId: '1',
   title: 'title',
-  body: null,
   img: 'url',
   link: 'url',
   price: 2000,

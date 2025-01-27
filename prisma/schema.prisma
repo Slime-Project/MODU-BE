@@ -36,7 +36,6 @@ model Auth {
 model Product {
   id                     Int              @id @default(autoincrement()) 
   title                  String
-  body                   String?          @db.Text
   img                    String?
   link                   String           @default("")
   price                  Int
