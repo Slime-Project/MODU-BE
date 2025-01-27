@@ -1,6 +1,7 @@
 export enum Gender {
-  MALE = '남자',
-  FEMALE = '여자'
+  MALE = '남성',
+  FEMALE = '여성',
+  ETC = '기타'
 }
 
 export enum Age {
@@ -11,7 +12,8 @@ export enum Age {
   FIFTY = '50대',
   SIXTY = '60대',
   SEVENTY = '70대',
-  EIGHTY = '80대'
+  EIGHTY = '80대',
+  NINTY = '90대'
 }
 
 export enum Range {
