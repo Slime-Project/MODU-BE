@@ -1,9 +1,13 @@
 import { Injectable, RequestTimeoutException } from '@nestjs/common';
 import puppeteer from 'puppeteer';
+import { addExtra } from 'puppeteer-extra';
 
 import { PrismaService } from '@/prisma/prisma.service';
 
-import { ProductCrawled } from '@/types/crawler.type';
+import { CrawledItemResDto } from './dto/crawled-item-res.dto';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const stealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 @Injectable()
 export class CrawlerService {
@@ -14,11 +18,11 @@ export class CrawlerService {
     min: string,
     max: string,
     tagIds?: number[]
-  ): Promise<{
-    keyword: string;
-    items: ProductCrawled[];
-  }> {
-    const browser = await puppeteer.launch({ headless: false });
+  ): Promise<CrawledItemResDto> {
+    const puppeteerExtra = addExtra(puppeteer);
+    const stealth = stealthPlugin();
+    puppeteerExtra.use(stealth);
+    const browser = await puppeteerExtra.launch();
     const encodedProduct = encodeURIComponent(product);
     try {
       const page = await browser.newPage();
@@ -29,8 +33,13 @@ export class CrawlerService {
         page.goto(`https://search.shopping.naver.com/ns/search?query=${encodedProduct}`)
       ]);
 
+      // await page.screenshot({
+      //   path: `debug-${Date.now()}.png`,
+      //   fullPage: true
+      // });
+
       try {
-        await page.waitForSelector('#filter_min_price', { timeout: 1500 }); // 1.5초 대기
+        await page.waitForSelector('#filter_min_price', { timeout: 500 }); // 0.5초 대기
       } catch (error) {
         throw new RequestTimeoutException('The filter_min_price element was not found.', {
           description: 'Product does not exist in Naver Store'
@@ -41,21 +50,21 @@ export class CrawlerService {
       await new Promise<void>(resolve => {
         setTimeout(() => {
           resolve();
-        }, 300);
+        }, 250);
       });
       await page.type('#filter_min_price', ' ');
       await page.type('#filter_max_price', max);
       await new Promise<void>(resolve => {
         setTimeout(() => {
           resolve();
-        }, 300);
+        }, 250);
       });
       await page.waitForSelector('._submit_18zzo_94');
       await Promise.all([page.waitForNavigation(), page.click('._submit_18zzo_94')]);
       await new Promise<void>(resolve => {
         setTimeout(() => {
           resolve();
-        }, 1500);
+        }, 250);
       });
 
       const result = await page.$$eval(
