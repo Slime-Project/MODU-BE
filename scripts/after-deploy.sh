@@ -1,10 +1,10 @@
 #!/bin/bash
 export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.13.1/bin
 
-cd /home/api/api_back
+cd /home/api
 
 # Git 저장소 소유권 문제 해결
-git config --global --add safe.directory /home/api/api_back
+git config --global --add safe.directory /home/api
 
 echo "Installing dependencies..."
 npm install
