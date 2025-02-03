@@ -15,9 +15,8 @@ permissions:
 
 hooks:
   ApplicationStop:
-    - location: /bin/echo
+    - location: scripts/stop.sh
       timeout: 300
-      runas: root
   AfterInstall:
     - location: scripts/after-deploy.sh
       timeout: 2000
