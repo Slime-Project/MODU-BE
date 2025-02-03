@@ -3,8 +3,6 @@ os: linux
 files:
   - source: /
     destination: /home/api
-  - source: /.env
-    destination: /home/api
 file_exists_behavior: OVERWRITE
 
 permissions:
