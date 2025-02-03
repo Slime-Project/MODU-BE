@@ -12,9 +12,9 @@ npm install
 echo "Building project..."
 npm run build
 
-echo "> Starting new process."
+echo "> Reloading existing process."
 pm2 startup
-pm2 start dist/src/main.js --name "api_back"
+pm2 reload api_back
 pm2 save
 
 echo "Deployment completed successfully!"
