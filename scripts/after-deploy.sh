@@ -12,17 +12,15 @@ echo "Building project..."
 npm run build
 
 echo "Starting application with PM2..."
-pm2 start dist/main.js --name "app_back"
-
-# 서버 재시작시 자동 시작
+pm2 start dist/main.js --name "api_back"
 pm2 save
 
 echo "Deployment completed successfully!"
-
 echo "Performing health check..."
-sleep 10  # 애플리케이션 시작 대기
+sleep 10
 
-if nc -z localhost 3000; then
+# netcat 대신 curl 사용 (curl은 보통 기본 설치되어 있음)
+if curl -s http://localhost:3000 > /dev/null; then
     echo "Application is running successfully"
     exit 0
 else
