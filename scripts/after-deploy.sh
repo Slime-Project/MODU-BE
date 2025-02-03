@@ -1,3 +1,5 @@
+export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.13.1/bin
+
 cd /home/api/api_back
 
 echo "> Stopping current NestJS process."
