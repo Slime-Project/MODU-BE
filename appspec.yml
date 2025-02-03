@@ -4,7 +4,7 @@ files:
   - source: /
     destination: /home/api/api_back
   - source: /.env
-    destination: /home/api
+    destination: /home/api/api_back
 file_exists_behavior: OVERWRITE
 
 permissions:
