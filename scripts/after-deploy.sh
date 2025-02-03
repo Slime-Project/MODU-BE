@@ -12,14 +12,8 @@ npm install
 echo "Building project..."
 npm run build
 
-echo "> Checking if NestJS process is running..."
-if ! pm2 list | grep -q "api_back"; then
-    echo "> Reloading existing process."
-    pm2 reload api_back
-else
-    echo "> Starting new process."
-    pm2 start dist/src/main.js --name "api_back"
-fi
+echo "> Starting new process."
+pm2 start dist/src/main.js --name "api_back"
 
 pm2 save
 
