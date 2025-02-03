@@ -1,8 +1,9 @@
 cd /home/api/api_back
 
 echo "> Stopping current NestJS process."
-pm2 stop api || true
-pm2 delete api || true
+if pm2 list | grep -q "api_back"; then
+    pm2 delete api_back
+fi
 
 echo "Installing dependencies..."
 npm install
