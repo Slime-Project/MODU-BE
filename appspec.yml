@@ -14,9 +14,9 @@ permissions:
     group: root
 
 hooks:
-  # ApplicationStop:
-  #   - location: scripts/stop.sh
-  #     timeout: 300
+  ApplicationStop:
+    - location: scripts/stop.sh
+      timeout: 300
   AfterInstall:
     - location: scripts/after-deploy.sh
       timeout: 2000
