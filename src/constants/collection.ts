@@ -1,0 +1,3 @@
+const COLLECTIONS_PAGE_SIZE = 10;
+
+export { COLLECTIONS_PAGE_SIZE };

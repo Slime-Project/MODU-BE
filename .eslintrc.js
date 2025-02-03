@@ -22,14 +22,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     'prettier/prettier': 'error',
-    'import/extensions': [
-      'error',
-      'never',
-      {
-        js: 'never',
-        ts: 'never'
-      }
-    ],
+    'import/extensions': 'off',
     'import/order': [
       'error',
       {
@@ -57,6 +50,14 @@ module.exports = {
       }
     ],
     'import/no-unresolved': [2, { ignore: ['@/'] }],
-    'import/prefer-default-export': 'off'
+    'import/prefer-default-export': 'off',
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: ['**/*-spec.ts', '**/*.spec.ts', '**/integration-test.ts']
+      }
+    ],
+    radix: ['error', 'as-needed']
+
   }
 };

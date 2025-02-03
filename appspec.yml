@@ -1,0 +1,20 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/api/api_back
+  - source: /.env
+    destination: /home/api
+file_exists_behavior: OVERWRITE
+
+permissions:
+  - object: /home/api
+    pattern: '**'
+    owner: root
+    group: root
+
+hooks:
+  AfterInstall:
+    - location: scripts/after-deploy.sh
+      timeout: 2000
+      runas: root

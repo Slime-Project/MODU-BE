@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,152 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id                     String          @id
+  auths                  Auth[]      
+  role                   UserRole        @default(USER)
+  reviews                Review[]        @relation("UserReviews")
+  wishlistItems          WishlistItem[]
+  collections            GiftCollection[] 
+}
+
+model Auth {
+  id                     Int             @id @default(autoincrement())
+  userId                 String      
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken           String
+  refreshTokenExp        DateTime
+  kakaoAccessToken       String
+  kakaoRefreshToken      String
+
+  @@unique([userId, refreshToken])
+}
+
+model Product {
+  id                     Int              @id @default(autoincrement()) 
+  title                  String
+  img                    String?
+  link                   String           @default("")
+  price                  Int
+  seller                 String
+  createdAt              DateTime         @default(now())
+  wishedCount            Int              @default(0)
+  naverProductId         String?          @unique
+  averageRating          Int              @default(0)
+       
+  reviews                Review[]         @relation("ProductReviews")
+  wishlistItems          WishlistItem[]
+  tags                   ProductTag[]
+  giftCollections        GiftCollectionProduct[] 
+}
+
+model Review {
+  id                     Int              @id @default(autoincrement())
+  productId              Int
+  userId                 String?
+  rating                 Int              @db.SmallInt
+  text                   String
+  createdAt              DateTime         @default(now())
+  imgs                   ReviewImg[]
+
+  user                   User?            @relation("UserReviews", fields: [userId], references: [id], onDelete: SetNull)
+  product                Product          @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([id, productId])
+  @@unique([productId, userId])
+}
+
+model ReviewImg {
+  id                     Int              @id @default(autoincrement())
+  url                    String
+  filePath               String
+  order                  Int
+  reviewId               Int
+  review                 Review           @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, order])
+}
+
+model GiftCollection {
+  id                     Int              @id @default(autoincrement())
+  userId                 String?
+  imgId                  Int              @unique
+  title                  String
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  wishedCount            Int              @default(0)
+
+  img                    GiftCollectionImg @relation(fields: [imgId], references: [id])
+  products               GiftCollectionProduct[]
+  user                   User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  wishlistItems          WishlistItem[]
+  tags                   GiftCollectionTag[]
+}
+
+model GiftCollectionImg {
+  id                     Int              @id @default(autoincrement())
+  url                    String
+  filePath               String
+  
+  giftCollection         GiftCollection?  
+}
+
+model GiftCollectionProduct {
+  giftCollectionId      Int
+  productId             Int
+
+  giftCollection        GiftCollection @relation(fields: [giftCollectionId], references: [id],onDelete: Cascade)
+  product               Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([giftCollectionId, productId]) 
+}
+model WishlistItem {
+  id                     Int              @id @default(autoincrement())
+  createdAt              DateTime         @default(now())
+  userId                 String
+  productId              Int?
+  giftCollectionId       Int?
+
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product                Product?         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  giftCollection         GiftCollection?  @relation(fields: [giftCollectionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@unique([userId, giftCollectionId])
+}
+
+model Tag {
+  id                     Int       @id @default(autoincrement())
+  name                   String    @unique
+  
+  products               ProductTag[] 
+  giftCollection         GiftCollectionTag[]
+}
+
+model ProductTag {
+  productId Int
+  tagId     Int
+
+  product   Product @relation(fields: [productId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([productId, tagId]) // 복합 기본키 설정
+}
+
+
+model GiftCollectionTag {
+  GiftCollectionId        Int
+  tagId                   Int
+
+  giftCollection          GiftCollection @relation(fields: [GiftCollectionId], references: [id],onDelete: Cascade)
+  tag                     Tag            @relation(fields: [tagId], references: [id])
+
+  @@id([GiftCollectionId, tagId]) // 복합 기본키 설정
 }
