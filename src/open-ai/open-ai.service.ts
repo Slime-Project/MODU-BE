@@ -8,7 +8,7 @@ import { TagService } from '@/tag/tag.service';
 import { GetRecommendedGiftsDto } from './dto/get-recommended-gifts-req-query-dto';
 import { RecommendedGiftsResponseDto } from './dto/get-recommended-gifts-res.dto';
 
-import { Gender } from '@/types/open-ai.type';
+import { Gender, Relation } from '@/types/open-ai.type';
 
 const INSTRUCTION = `
 You are an AI that recommends gifts. The client wants to receive gift recommendations. 
@@ -43,7 +43,14 @@ export class OpenAiService {
       getRecommendedGiftsDto;
 
     // gender, age, relation, character 태그 ID 조회
-    const tagNames: string[] = [relation, character];
+    const tagNames: string[] = [character];
+
+    const isEnumRelation = Object.values(Relation).includes(relation as Relation);
+
+    if (isEnumRelation) {
+      // '기타'를 선택해서 enum 아닌 값들은 태그저장X
+      tagNames.push(relation);
+    }
 
     if (gender !== Gender.ETC) {
       tagNames.push(`${age} ${gender}`);

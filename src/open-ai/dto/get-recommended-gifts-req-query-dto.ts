@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsNotEmpty, IsEnum } from 'class-validator';
 
-import { Age, Character, Gender, Range, Relation } from '@/types/open-ai.type';
+import { Age, Character, Gender, Range } from '@/types/open-ai.type';
 
 export class GetRecommendedGiftsDto {
   @IsEnum(Gender)
@@ -15,9 +15,9 @@ export class GetRecommendedGiftsDto {
   @IsNotEmpty()
   range: Range;
 
-  @IsEnum(Relation)
   @IsNotEmpty()
-  relation: Relation;
+  @IsString()
+  relation: string;
 
   @IsString()
   @IsNotEmpty()
