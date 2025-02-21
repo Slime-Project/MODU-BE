@@ -1,0 +1,55 @@
+name: Test and Lint
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-timeout=30s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'node'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Set up PostgreSQL Database
+        run: |
+          npx prisma migrate deploy]
+
+      - name: Run Unit Tests
+        run: |
+          npm run test
+
+      - name: Run Integration Tests
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/testdb
+        run: |
+          npm run test:integration
+
+      - name: Lint code
+        run: |
+          npm run lint
