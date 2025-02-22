@@ -13,7 +13,6 @@ echo "Building project..."
 npm run build
 
 echo "> Reloading existing process."
-pm2 startup
 pm2 reload api_back
 pm2 save
 
