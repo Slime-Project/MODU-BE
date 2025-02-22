@@ -13,7 +13,8 @@ echo "Building project..."
 npm run build
 
 echo "> Reloading existing process."
-pm2 reload api_back
+# pm2 reload api_back
+pm2 pm2 start /home/api/dist/src/main.js --name "api_back"
 pm2 save
 
 echo "Deployment completed successfully!"
