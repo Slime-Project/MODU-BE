@@ -16,9 +16,8 @@ echo "Applying Prisma migrations..."
 npx prisma migrate deploy
 
 echo "> Reloading existing process."
-pm2 startup
+# pm2 startup
 pm2 reload api_back
-# pm2 start /home/api/dist/src/main.js --name "api_back"
 pm2 save
 
 echo "Deployment completed successfully!"
